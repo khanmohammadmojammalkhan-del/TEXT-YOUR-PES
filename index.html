@@ -7238,7 +7238,7 @@ window.saveTrnMatchResults = async function() {
   }
 
   // ── FLUSH STAT DELTAS TO FIREBASE ──
-  const DB = 'https://typ-chapm-default-rtdb.firebaseio.com';
+  const DB = TRN_DB;
   for (const [uid, delta] of Object.entries(statDelta)) {
     const base = userMap[uid];
     if (!base) continue;
@@ -7257,8 +7257,21 @@ window.saveTrnMatchResults = async function() {
   }
 
   window._allUsersCache = [];
+  const _savedDay = document.getElementById('trnMatchdaySelect').value;
+  const _savedMatchupKey = window._trnCurrentMatchupKey;
   await fetchTrnData();
   loadTrnMatchdays();
+  // Restore matchday + matchup selection so Save/Export keeps working after save
+  if (_savedDay) {
+    const daySel = document.getElementById('trnMatchdaySelect');
+    daySel.value = _savedDay;
+    loadMatchdayForEntry();
+    if (_savedMatchupKey) {
+      const mSel = document.getElementById('trnMatchupSelect');
+      mSel.value = _savedMatchupKey;
+      renderSelectedMatchup();
+    }
+  }
   statusEl.textContent = `✅ ${saved} bout saved! 👤 ${profilesUpdated} player profile updated.`;
   setTimeout(() => statusEl.textContent = '', 5000);
 };
