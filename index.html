@@ -5301,6 +5301,9 @@ async function loadHomeLiveMatchday() {
 
       const homeWins = mdMatches.filter(m => m.homeScore !== undefined && m.homeScore > m.awayScore).length;
       const awayWins = mdMatches.filter(m => m.awayScore !== undefined && m.awayScore > m.homeScore).length;
+      const draws = mdMatches.filter(m => m.homeScore !== undefined && m.homeScore === m.awayScore).length;
+      const homePoints = (homeWins * 3) + (draws * 1);
+      const awayPoints = (awayWins * 3) + (draws * 1);
       const played_count = mdMatches.filter(m => m.homeScore !== undefined).length;
       const total = mdMatches.length;
       const hasResults = played_count > 0;
@@ -5317,8 +5320,8 @@ async function loadHomeLiveMatchday() {
           </div>
           <div style="text-align:center;min-width:80px">
             ${hasResults
-              ? `<div style="font-size:28px;font-weight:900;font-family:'Inter',monospace;color:var(--cyan)">${homeWins} <span style="color:var(--text3);font-size:18px">–</span> ${awayWins}</div>
-                 <div style="font-size:10px;color:var(--text3);margin-top:2px">wins</div>`
+              ? `<div style="font-size:28px;font-weight:900;font-family:'Inter',monospace;color:var(--cyan)">${homePoints} <span style="color:var(--text3);font-size:18px">–</span> ${awayPoints}</div>
+                 <div style="font-size:10px;color:var(--text3);margin-top:2px">points</div>`
               : `<div style="font-size:20px;color:var(--text3)">vs</div>`}
           </div>
           <div style="flex:1;text-align:center">
