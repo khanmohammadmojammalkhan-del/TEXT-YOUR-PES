@@ -7105,6 +7105,10 @@ window.loadMatchdayForEntry = function() {
         <div style="font-size:11px;color:${doneCount===groupMatches.length?'#34d399':doneCount>0?'#fbbf24':'rgba(255,255,255,0.5)'};font-weight:600">
           ${doneCount}/${groupMatches.length} bouts
         </div>
+        <button onclick="downloadMatchupResultCard('${key}')" title="এই matchup এর card export করুন"
+          style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;border:1px solid rgba(255,255,255,0.25);cursor:pointer;font-size:11px;font-weight:700;background:rgba(255,255,255,0.1);color:#fff;white-space:nowrap">
+          📸 Export
+        </button>
       </div>
       <div style="padding:12px">${boutRows}</div>
     </div>`;
@@ -7438,6 +7442,49 @@ window.downloadFixturePDF = async function() {
 // ══════════════════════════════════════════
 // 📸 CANVAS RESULT CARD — cobegbd style
 // ══════════════════════════════════════════
+window.downloadMatchupResultCard = async function(matchupKey) {
+  const dayVal = document.getElementById('trnMatchdaySelect').value;
+  if (!dayVal) { alert('⚠️ আগে একটা matchday select করুন।'); return; }
+
+  const normDayVal = raw => (raw||'').replace(/\s*—.*$/, '').trim().replace(/^GRP-[AB]\s+Day\s+(\d+)$/i, 'Matchday $1');
+  const baseMatches = trnMatchesCache.filter(m => normDayVal(m.matchday) === dayVal && `${m.homeTeam}_${m.awayTeam}` === matchupKey);
+  if (!baseMatches.length) { alert('⚠️ এই matchup এর bout পাওয়া যায়নি।'); return; }
+
+  const matches = baseMatches.map(m => {
+    const homeInp = document.querySelector(`.trn-score-home[data-id="${m.id}"]`);
+    const awayInp = document.querySelector(`.trn-score-away[data-id="${m.id}"]`);
+    const p1Sel   = document.querySelector(`.trn-player1-select[data-id="${m.id}"]`);
+    const p2Sel   = document.querySelector(`.trn-player2-select[data-id="${m.id}"]`);
+    const hs = homeInp && homeInp.value !== '' ? parseInt(homeInp.value) : (m.homeScore ?? null);
+    const as_ = awayInp && awayInp.value !== '' ? parseInt(awayInp.value) : (m.awayScore ?? null);
+    const getPlayerName = (sel, fallback) => {
+      if (sel && sel.value) {
+        const opt = sel.options[sel.selectedIndex];
+        return opt ? opt.text : fallback;
+      }
+      return fallback;
+    };
+    return {
+      ...m,
+      homeScore: hs,
+      awayScore: as_,
+      player1: getPlayerName(p1Sel, m.player1),
+      player2: getPlayerName(p2Sel, m.player2),
+    };
+  }).filter(m => m.homeScore !== null && m.awayScore !== null)
+    .sort((a,b) => (a.boutNumber||0)-(b.boutNumber||0));
+
+  if (!matches.length) { alert('⚠️ এই matchup-এ কোনো bout-এ score enter করা হয়নি।'); return; }
+
+  const teamMap = {};
+  trnTeamsCache.forEach(t => { teamMap[t.id] = t; });
+  const sampleM = matches[0];
+  const homeTeam = teamMap[sampleM.homeTeam] || { name: 'HOME', emoji: '🏟️' };
+  const awayTeam = teamMap[sampleM.awayTeam] || { name: 'AWAY', emoji: '🏟️' };
+
+  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: `${homeTeam.name||'Home'}-vs-${awayTeam.name||'Away'}` });
+};
+
 window.downloadMatchdayResultCard = async function() {
   const dayVal = document.getElementById('trnMatchdaySelect').value;
   if (!dayVal) { alert('⚠️ আগে একটা matchday select করুন।'); return; }
@@ -7479,6 +7526,12 @@ window.downloadMatchdayResultCard = async function() {
   const sampleM = matches[0];
   const homeTeam = teamMap[sampleM.homeTeam] || { name: 'HOME', emoji: '🏟️' };
   const awayTeam = teamMap[sampleM.awayTeam] || { name: 'AWAY', emoji: '🏟️' };
+
+  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: dayVal });
+};
+
+// Shared canvas-drawing routine used by both full-matchday and per-matchup exports
+async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix }) {
 
   // Tally matchday winner
   let homeWins = 0, awayWins = 0, draws = 0;
@@ -7770,11 +7823,11 @@ window.downloadMatchdayResultCard = async function() {
 
   // ── DOWNLOAD ──
   const link = document.createElement('a');
-  const safeDay = dayVal.replace(/[^a-zA-Z0-9\-_]/g,'_').slice(0,40);
-  link.download = `TYP-Result-${safeDay}.png`;
+  const safeName = (fileSuffix||dayVal).replace(/[^a-zA-Z0-9\-_]/g,'_').slice(0,60);
+  link.download = `TYP-Result-${safeName}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
-};
+}
 
 // helper: wrap text for canvas
 function wrapTextCanvas(ctx, text, maxW) {
