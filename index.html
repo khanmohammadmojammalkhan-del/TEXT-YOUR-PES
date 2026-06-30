@@ -2715,10 +2715,15 @@ if (document.readyState === 'loading') {
       </select>
       <button class="btn btn-outline" onclick="loadTrnMatchdays()" style="padding:9px 16px;font-size:12px">🔄 Load</button>
     </div>
+    <div id="trnMatchupSelectWrap" style="margin-bottom:12px;display:none">
+      <select class="form-input" id="trnMatchupSelect" style="width:100%" onchange="renderSelectedMatchup()">
+        <option value="">-- একটা matchup (team vs team) select করুন --</option>
+      </select>
+    </div>
     <div id="trnMatchEntryArea"></div>
     <div style="margin-top:12px;display:none" id="trnSaveMatchBtnWrap">
-      <button class="btn btn-gold" onclick="saveTrnMatchResults()" style="padding:10px 24px">💾 Save All Results</button>
-      <button class="btn btn-outline" onclick="downloadMatchdayResultCard()" style="padding:10px 20px;margin-left:8px;background:linear-gradient(135deg,rgba(113,50,202,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--gold);color:var(--gold)">📸 Export Result Card</button>
+      <button class="btn btn-gold" onclick="saveTrnMatchResults()" style="padding:10px 24px">💾 Save Results</button>
+      <button class="btn btn-outline" id="trnExportThisMatchupBtn" onclick="downloadCurrentMatchupCard()" style="padding:10px 20px;margin-left:8px;background:linear-gradient(135deg,rgba(113,50,202,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--gold);color:var(--gold)">📸 Export এই Matchup-এর Card</button>
       <span id="trnMatchSaveStatus" style="margin-left:12px;font-size:13px;color:var(--green)"></span>
     </div>
   </div>
@@ -7017,22 +7022,25 @@ window.loadTrnMatchdays = async function() {
     }).join('');
 };
 
+// Step 1: Matchday select হলে শুধু matchup dropdown populate হবে, bout area খালি থাকবে
 window.loadMatchdayForEntry = function() {
   const day = document.getElementById('trnMatchdaySelect').value;
   const area = document.getElementById('trnMatchEntryArea');
   const btnWrap = document.getElementById('trnSaveMatchBtnWrap');
-  if (!day) { area.innerHTML = ''; btnWrap.style.display = 'none'; return; }
+  const matchupWrap = document.getElementById('trnMatchupSelectWrap');
+  const matchupSel = document.getElementById('trnMatchupSelect');
 
-  // Support both old (GRP-A Day 1) and new (Matchday 1) label formats
+  area.innerHTML = '';
+  btnWrap.style.display = 'none';
+  matchupSel.innerHTML = '<option value="">-- একটা matchup (team vs team) select করুন --</option>';
+
+  if (!day) { matchupWrap.style.display = 'none'; return; }
+
   const normDay = raw => (raw||'').replace(/\s*—.*$/, '').trim().replace(/^GRP-[AB]\s+Day\s+(\d+)$/i, 'Matchday $1');
   const matches = trnMatchesCache.filter(m => normDay(m.matchday) === day);
   const teamMap = {};
   trnTeamsCache.forEach(t => { teamMap[t.id] = t; });
 
-  // Build player options for each team
-  const allUsers = window._trnAllUsers || [];
-
-  // Group bouts by team match (homeTeam_awayTeam)
   const matchGroups = {};
   const matchOrder = [];
   matches.forEach(m => {
@@ -7041,80 +7049,111 @@ window.loadMatchdayForEntry = function() {
     matchGroups[key].push(m);
   });
 
-  area.innerHTML = matchOrder.map(key => {
-    const groupMatches = matchGroups[key].sort((a,b) => (a.boutNumber||0)-(b.boutNumber||0));
-    const ht = teamMap[groupMatches[0].homeTeam] || {};
-    const at = teamMap[groupMatches[0].awayTeam] || {};
-    const doneCount = groupMatches.filter(m => m.status === 'completed').length;
-    const grp = groupMatches[0].group || '';
+  window._trnCurrentMatchGroups = matchGroups;
+  window._trnCurrentTeamMap = teamMap;
+  window._trnCurrentDay = day;
 
-    const boutRows = groupMatches.map(m => {
-      const done = m.status === 'completed';
-      const htPlayers = (ht.players || []);
-      const atPlayers = (at.players || []);
-      const homeOpts = htPlayers.map(p =>
-        `<option value="${p.uid}" ${p.uid === m.player1uid ? 'selected' : ''}>${p.name}</option>`
-      ).join('');
-      const awayOpts = atPlayers.map(p =>
-        `<option value="${p.uid}" ${p.uid === m.player2uid ? 'selected' : ''}>${p.name}</option>`
-      ).join('');
+  matchupSel.innerHTML += matchOrder.map(key => {
+    const gm = matchGroups[key].sort((a,b) => (a.boutNumber||0)-(b.boutNumber||0));
+    const ht = teamMap[gm[0].homeTeam] || {};
+    const at = teamMap[gm[0].awayTeam] || {};
+    const doneCount = gm.filter(m => m.status === 'completed').length;
+    const allDone = doneCount === gm.length;
+    const label = `${ht.name||'—'}  VS  ${at.name||'—'}   (${doneCount}/${gm.length} bouts${allDone?' ✓':''})`;
+    return `<option value="${key}">${label}</option>`;
+  }).join('');
 
-      return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px">
-        <input type="hidden" class="trn-match-id" value="${m.id}">
-        <div style="font-size:10px;color:var(--text3);font-family:'Inter',monospace;margin-bottom:8px;letter-spacing:1px">
-          BOUT ${m.boutNumber || '?'} ${done ? '<span style="color:var(--green)">✅</span>' : ''}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div style="flex:1;min-width:100px">
-            <div style="font-size:10px;color:var(--cyan);margin-bottom:4px">🏠 HOME</div>
-            <select class="form-input trn-player1-select" data-id="${m.id}" style="font-size:12px;padding:7px 10px">
-              <option value="">-- Select --</option>
-              ${homeOpts}
-            </select>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;padding-top:16px">
-            <input type="number" min="0" max="99" value="${done ? m.homeScore : ''}" placeholder="0"
-              class="form-input trn-score-home" data-id="${m.id}"
-              style="width:52px;text-align:center;padding:8px 4px;font-size:16px;font-weight:700">
-            <span style="color:var(--text3);font-weight:700">—</span>
-            <input type="number" min="0" max="99" value="${done ? m.awayScore : ''}" placeholder="0"
-              class="form-input trn-score-away" data-id="${m.id}"
-              style="width:52px;text-align:center;padding:8px 4px;font-size:16px;font-weight:700">
-          </div>
-          <div style="flex:1;min-width:100px">
-            <div style="font-size:10px;color:var(--gold);margin-bottom:4px;text-align:right">AWAY 🏟️</div>
-            <select class="form-input trn-player2-select" data-id="${m.id}" style="font-size:12px;padding:7px 10px">
-              <option value="">-- Select --</option>
-              ${awayOpts}
-            </select>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+  matchupWrap.style.display = matchOrder.length ? 'block' : 'none';
+};
 
-    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden">
-      <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <div style="font-size:10px;color:rgba(255,255,255,0.6);font-weight:700;letter-spacing:2px;font-family:'Inter',monospace">GRP-${grp}</div>
-        <div style="flex:1;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#fff">
-          <span>${ht.emoji||'🏟️'}</span>
-          <span>${ht.name||'—'}</span>
-          <span style="font-size:11px;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:6px">VS</span>
-          <span>${at.name||'—'}</span>
-          <span>${at.emoji||'🏟️'}</span>
-        </div>
-        <div style="font-size:11px;color:${doneCount===groupMatches.length?'#34d399':doneCount>0?'#fbbf24':'rgba(255,255,255,0.5)'};font-weight:600">
-          ${doneCount}/${groupMatches.length} bouts
-        </div>
-        <button onclick="downloadMatchupResultCard('${key}')" title="এই matchup এর card export করুন"
-          style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;border:1px solid rgba(255,255,255,0.25);cursor:pointer;font-size:11px;font-weight:700;background:rgba(255,255,255,0.1);color:#fff;white-space:nowrap">
-          📸 Export
-        </button>
+// Step 2: একটা specific matchup select হলে শুধু সেই 8টা bout দেখাবে
+window.renderSelectedMatchup = function() {
+  const key = document.getElementById('trnMatchupSelect').value;
+  const area = document.getElementById('trnMatchEntryArea');
+  const btnWrap = document.getElementById('trnSaveMatchBtnWrap');
+
+  if (!key) { area.innerHTML = ''; btnWrap.style.display = 'none'; return; }
+
+  const matchGroups = window._trnCurrentMatchGroups || {};
+  const teamMap = window._trnCurrentTeamMap || {};
+  const groupMatches = (matchGroups[key] || []).sort((a,b) => (a.boutNumber||0)-(b.boutNumber||0));
+  if (!groupMatches.length) { area.innerHTML = ''; btnWrap.style.display = 'none'; return; }
+
+  const ht = teamMap[groupMatches[0].homeTeam] || {};
+  const at = teamMap[groupMatches[0].awayTeam] || {};
+  const doneCount = groupMatches.filter(m => m.status === 'completed').length;
+  const grp = groupMatches[0].group || '';
+
+  const boutRows = groupMatches.map(m => {
+    const done = m.status === 'completed';
+    const htPlayers = (ht.players || []);
+    const atPlayers = (at.players || []);
+    const homeOpts = htPlayers.map(p =>
+      `<option value="${p.uid}" ${p.uid === m.player1uid ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
+    const awayOpts = atPlayers.map(p =>
+      `<option value="${p.uid}" ${p.uid === m.player2uid ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
+
+    return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px">
+      <input type="hidden" class="trn-match-id" value="${m.id}">
+      <div style="font-size:10px;color:var(--text3);font-family:'Inter',monospace;margin-bottom:8px;letter-spacing:1px">
+        BOUT ${m.boutNumber || '?'} ${done ? '<span style="color:var(--green)">✅</span>' : ''}
       </div>
-      <div style="padding:12px">${boutRows}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:100px">
+          <div style="font-size:10px;color:var(--cyan);margin-bottom:4px">🏠 HOME</div>
+          <select class="form-input trn-player1-select" data-id="${m.id}" style="font-size:12px;padding:7px 10px">
+            <option value="">-- Select --</option>
+            ${homeOpts}
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding-top:16px">
+          <input type="number" min="0" max="99" value="${done ? m.homeScore : ''}" placeholder="0"
+            class="form-input trn-score-home" data-id="${m.id}"
+            style="width:52px;text-align:center;padding:8px 4px;font-size:16px;font-weight:700">
+          <span style="color:var(--text3);font-weight:700">—</span>
+          <input type="number" min="0" max="99" value="${done ? m.awayScore : ''}" placeholder="0"
+            class="form-input trn-score-away" data-id="${m.id}"
+            style="width:52px;text-align:center;padding:8px 4px;font-size:16px;font-weight:700">
+        </div>
+        <div style="flex:1;min-width:100px">
+          <div style="font-size:10px;color:var(--gold);margin-bottom:4px;text-align:right">AWAY 🏟️</div>
+          <select class="form-input trn-player2-select" data-id="${m.id}" style="font-size:12px;padding:7px 10px">
+            <option value="">-- Select --</option>
+            ${awayOpts}
+          </select>
+        </div>
+      </div>
     </div>`;
   }).join('');
 
+  area.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="font-size:10px;color:rgba(255,255,255,0.6);font-weight:700;letter-spacing:2px;font-family:'Inter',monospace">GRP-${grp}</div>
+      <div style="flex:1;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#fff">
+        <span>${ht.emoji||'🏟️'}</span>
+        <span>${ht.name||'—'}</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:6px">VS</span>
+        <span>${at.name||'—'}</span>
+        <span>${at.emoji||'🏟️'}</span>
+      </div>
+      <div style="font-size:11px;color:${doneCount===groupMatches.length?'#34d399':doneCount>0?'#fbbf24':'rgba(255,255,255,0.5)'};font-weight:600">
+        ${doneCount}/${groupMatches.length} bouts
+      </div>
+    </div>
+    <div style="padding:12px">${boutRows}</div>
+  </div>`;
+
+  window._trnCurrentMatchupKey = key;
   btnWrap.style.display = 'block';
+};
+
+// Export বাটন এখন current selected matchup এর card বানাবে
+window.downloadCurrentMatchupCard = function() {
+  const key = window._trnCurrentMatchupKey;
+  if (!key) { alert('⚠️ আগে একটা matchup select করুন।'); return; }
+  return downloadMatchupResultCard(key);
 };
 
 window.saveTrnMatchResults = async function() {
