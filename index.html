@@ -7755,8 +7755,17 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const awayNameLines = wrapTextCanvas(ctx, (awayTeam.name||'AWAY').toUpperCase(), 130);
   awayNameLines.forEach((ln, i) => ctx.fillText(ln, CARD_W-290, logoY + 16 + i*18));
 
-  // ── SCORE BADGE (premium with shadow & gold ring) ──
-  const sbW = 116, sbH = 52;
+  // ── SCORE BADGE (premium with shadow & gold ring, dynamic width for any digit count) ──
+  ctx.font = '800 27px Inter, Arial';
+  const homeStr = String(homePoints);
+  const awayStr = String(awayPoints);
+  const homeNumW = ctx.measureText(homeStr).width;
+  const awayNumW = ctx.measureText(awayStr).width;
+  const dashW = ctx.measureText('-').width;
+  const numGap = 12; // space between each number and the dash
+  const contentW = homeNumW + awayNumW + dashW + numGap * 2;
+  const sbPadX = 24;
+  const sbW = Math.max(116, contentW + sbPadX * 2), sbH = 52;
   const sbX = CARD_W/2 - sbW/2;
   const sbY = logoY + 6;
 
@@ -7772,10 +7781,16 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 12);
   ctx.strokeStyle = '#c9a84c'; ctx.lineWidth = 2; ctx.stroke();
 
-  ctx.textAlign = 'center';
   ctx.fillStyle = '#0f5132';
   ctx.font = '800 27px Inter, Arial';
-  ctx.fillText(`${homePoints}  -  ${awayPoints}`, CARD_W/2, sbY + 33);
+  ctx.textAlign = 'right';
+  ctx.fillText(homeStr, CARD_W/2 - dashW/2 - numGap, sbY + 33);
+  ctx.textAlign = 'center';
+  ctx.fillText('-', CARD_W/2, sbY + 33);
+  ctx.textAlign = 'left';
+  ctx.fillText(awayStr, CARD_W/2 + dashW/2 + numGap, sbY + 33);
+
+  ctx.textAlign = 'center';
   ctx.font = '700 8px Inter, Arial';
   ctx.letterSpacing = '0.15em';
   ctx.fillStyle = '#a07830';
