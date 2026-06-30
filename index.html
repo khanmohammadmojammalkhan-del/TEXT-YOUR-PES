@@ -7260,7 +7260,7 @@ window.saveTrnMatchResults = async function() {
   const _savedDay = document.getElementById('trnMatchdaySelect').value;
   const _savedMatchupKey = window._trnCurrentMatchupKey;
   await fetchTrnData();
-  loadTrnMatchdays();
+  await loadTrnMatchdays();
   // Restore matchday + matchup selection so Save/Export keeps working after save
   if (_savedDay) {
     const daySel = document.getElementById('trnMatchdaySelect');
@@ -7495,7 +7495,7 @@ window.downloadFixturePDF = async function() {
 // 📸 CANVAS RESULT CARD — cobegbd style
 // ══════════════════════════════════════════
 window.downloadMatchupResultCard = async function(matchupKey) {
-  const dayVal = document.getElementById('trnMatchdaySelect').value;
+  const dayVal = document.getElementById('trnMatchdaySelect').value || window._trnCurrentDay || '';
   if (!dayVal) { alert('⚠️ আগে একটা matchday select করুন।'); return; }
 
   const normDayVal = raw => (raw||'').replace(/\s*—.*$/, '').trim().replace(/^GRP-[AB]\s+Day\s+(\d+)$/i, 'Matchday $1');
