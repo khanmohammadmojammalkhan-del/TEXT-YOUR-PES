@@ -7633,44 +7633,35 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     img.src = window.TYP_LOGO_DATA;
   });
 
-  // ── BACKGROUND ──
-  const bgGrad = ctx.createLinearGradient(0, 0, CARD_W, CARD_H);
-  bgGrad.addColorStop(0,   '#0b0820');
-  bgGrad.addColorStop(0.5, '#12093a');
-  bgGrad.addColorStop(1,   '#0e0b28');
-  ctx.fillStyle = bgGrad;
+  // ── BACKGROUND (off-white theme matching website) ──
+  ctx.fillStyle = '#f5f4fb';
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
   // subtle grid lines
-  ctx.strokeStyle = 'rgba(113,50,202,0.06)';
+  ctx.strokeStyle = 'rgba(124,111,224,0.05)';
   ctx.lineWidth = 1;
   for (let x = 0; x < CARD_W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CARD_H); ctx.stroke(); }
   for (let y = 0; y < CARD_H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CARD_W,y); ctx.stroke(); }
 
   // ── HEADER BG ──
   const hGrad = ctx.createLinearGradient(0,0,CARD_W,0);
-  hGrad.addColorStop(0,   'rgba(113,50,202,0.35)');
-  hGrad.addColorStop(0.5, 'rgba(48,28,160,0.25)');
-  hGrad.addColorStop(1,   'rgba(113,50,202,0.35)');
+  hGrad.addColorStop(0,   '#6a5cd6');
+  hGrad.addColorStop(0.5, '#7c6fe0');
+  hGrad.addColorStop(1,   '#6a5cd6');
   ctx.fillStyle = hGrad;
   ctx.fillRect(0, 0, CARD_W, HEADER_H);
 
   // header border bottom
-  const hbGrad = ctx.createLinearGradient(0,0,CARD_W,0);
-  hbGrad.addColorStop(0,   'transparent');
-  hbGrad.addColorStop(0.2, '#7132CA');
-  hbGrad.addColorStop(0.8, '#7132CA');
-  hbGrad.addColorStop(1,   'transparent');
-  ctx.strokeStyle = hbGrad;
+  ctx.strokeStyle = '#5a4fbe';
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0,HEADER_H); ctx.lineTo(CARD_W,HEADER_H); ctx.stroke();
 
-  // ── TYP LOGO (top-left watermark) ──
+  // ── TYP LOGO (top-left watermark, white on purple header) ──
   if (typLogoImg) {
     const lh = 56;
     const lw = typLogoImg.width * (lh / typLogoImg.height);
     ctx.save();
-    ctx.globalAlpha = 0.92;
+    ctx.globalAlpha = 0.95;
     ctx.filter = 'brightness(0) invert(1)';
     ctx.drawImage(typLogoImg, 18, 10, lw, lh);
     ctx.restore();
@@ -7678,18 +7669,18 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // ── TITLE ──
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#d4b8ff';
+  ctx.fillStyle = '#ffffff';
   ctx.font = '700 11px Inter, Arial';
   ctx.letterSpacing = '0.2em';
   ctx.fillText('INTER COLLEGE TOURNAMENT', CARD_W/2, 36);
   ctx.letterSpacing = '0';
 
-  ctx.fillStyle = 'rgba(164,120,255,0.5)';
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.font = '500 10px Inter, Arial';
   ctx.fillText(dayLabel + '  •  ' + new Date().toLocaleDateString('en-BD',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(), CARD_W/2, 56);
 
   // divider line under title
-  ctx.strokeStyle = 'rgba(113,50,202,0.4)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(CARD_W/2-160,66); ctx.lineTo(CARD_W/2+160,66); ctx.stroke();
 
@@ -7701,9 +7692,9 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, logoSize/2, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(113,50,202,0.18)';
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(113,50,202,0.6)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
@@ -7719,7 +7710,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // ── TEAM NAMES ──
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#ede8ff';
+  ctx.fillStyle = '#ffffff';
   ctx.font = '700 15px Inter, Arial';
   const homeNameLines = wrapTextCanvas(ctx, (homeTeam.name||'HOME').toUpperCase(), 130);
   homeNameLines.forEach((ln, i) => ctx.fillText(ln, 290, logoY + 16 + i*18));
@@ -7733,36 +7724,34 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const sbX = CARD_W/2 - sbW/2;
   const sbY = logoY + 8;
   roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 10);
-  const sbGrad = ctx.createLinearGradient(sbX,sbY,sbX+sbW,sbY);
-  sbGrad.addColorStop(0,'#4B1FA0'); sbGrad.addColorStop(1,'#7132CA');
-  ctx.fillStyle = sbGrad; ctx.fill();
-  ctx.strokeStyle = 'rgba(164,120,255,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#5a4fbe';
   ctx.font = '800 28px Inter, Arial';
   ctx.fillText(`${homeWins}   ${awayWins}`, CARD_W/2, sbY + 34);
   // small divider
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.fillStyle = 'rgba(124,111,224,0.25)';
   ctx.fillRect(CARD_W/2-1, sbY+8, 2, sbH-16);
 
   // ── COLUMN HEADERS ──
   const colY = HEADER_H + SCORE_ROW_H;
-  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  ctx.fillStyle = '#ede9f8';
   ctx.fillRect(0, HEADER_H + SCORE_ROW_H - ROW_H, CARD_W, ROW_H);
-  ctx.strokeStyle = 'rgba(113,50,202,0.3)';
+  ctx.strokeStyle = 'rgba(124,111,224,0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(0,HEADER_H+SCORE_ROW_H-ROW_H); ctx.lineTo(CARD_W,HEADER_H+SCORE_ROW_H-ROW_H); ctx.stroke();
 
   ctx.font = '700 10px Inter, Arial';
-  ctx.fillStyle = '#a374e8';
+  ctx.fillStyle = '#5a4fbe';
   const colHY = HEADER_H + SCORE_ROW_H - ROW_H/2 + 4;
   ctx.textAlign = 'left';  ctx.fillText('HOME PLAYER', 56, colHY);
   ctx.textAlign = 'center'; ctx.fillText('SCORE', CARD_W/2, colHY);
   ctx.textAlign = 'right';  ctx.fillText('AWAY PLAYER', CARD_W - 56, colHY);
 
   // score row team total bg
-  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  ctx.fillStyle = '#f9f8fd';
   ctx.fillRect(0, HEADER_H, CARD_W, SCORE_ROW_H - ROW_H);
 
   // ── BOUT ROWS ──
@@ -7774,20 +7763,16 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
     // row bg
     if (isMVP) {
-      const mvpGrad = ctx.createLinearGradient(0, ry, CARD_W, ry);
-      mvpGrad.addColorStop(0,   'rgba(212,175,55,0.18)');
-      mvpGrad.addColorStop(0.5, 'rgba(255,215,0,0.10)');
-      mvpGrad.addColorStop(1,   'rgba(212,175,55,0.18)');
-      ctx.fillStyle = mvpGrad;
+      ctx.fillStyle = '#fdf6e3';
     } else if (idx % 2 === 0) {
-      ctx.fillStyle = 'rgba(255,255,255,0.025)';
+      ctx.fillStyle = '#f9f8fd';
     } else {
-      ctx.fillStyle = 'transparent';
+      ctx.fillStyle = '#ffffff';
     }
     ctx.fillRect(0, ry, CARD_W, ROW_H);
 
     // row border bottom
-    ctx.strokeStyle = 'rgba(113,50,202,0.12)';
+    ctx.strokeStyle = 'rgba(124,111,224,0.12)';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0,ry+ROW_H); ctx.lineTo(CARD_W,ry+ROW_H); ctx.stroke();
 
@@ -7796,20 +7781,20 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     const avCY = ry + ROW_H/2;
     // home avatar
     ctx.beginPath(); ctx.arc(30, avCY, avR, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(113,50,202,0.22)'; ctx.fill();
-    ctx.strokeStyle = isMVP && m.player1===mvpName ? '#d4af37' : 'rgba(113,50,202,0.3)';
+    ctx.fillStyle = 'rgba(124,111,224,0.12)'; ctx.fill();
+    ctx.strokeStyle = isMVP && m.player1===mvpName ? '#c9a84c' : 'rgba(124,111,224,0.35)';
     ctx.lineWidth = 1.5; ctx.stroke();
     ctx.font = '10px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(200,180,255,0.7)'; ctx.fillText('👤', 30, avCY);
+    ctx.fillStyle='rgba(90,79,190,0.6)'; ctx.fillText('👤', 30, avCY);
     ctx.textBaseline='alphabetic';
 
     // away avatar
     ctx.beginPath(); ctx.arc(CARD_W-30, avCY, avR, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(113,50,202,0.22)'; ctx.fill();
-    ctx.strokeStyle = isMVP && m.player2===mvpName ? '#d4af37' : 'rgba(113,50,202,0.3)';
+    ctx.fillStyle = 'rgba(124,111,224,0.12)'; ctx.fill();
+    ctx.strokeStyle = isMVP && m.player2===mvpName ? '#c9a84c' : 'rgba(124,111,224,0.35)';
     ctx.lineWidth = 1.5; ctx.stroke();
     ctx.font = '10px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(200,180,255,0.7)'; ctx.fillText('👤', CARD_W-30, avCY);
+    ctx.fillStyle='rgba(90,79,190,0.6)'; ctx.fillText('👤', CARD_W-30, avCY);
     ctx.textBaseline='alphabetic';
 
     const textY = ry + ROW_H/2 + 5;
@@ -7817,10 +7802,10 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     // home player name
     ctx.textAlign = 'left';
     if (isMVP && m.player1 === mvpName) {
-      ctx.fillStyle = '#FFD700';
+      ctx.fillStyle = '#a07830';
       ctx.font = '700 13px Inter, Arial';
     } else {
-      ctx.fillStyle = hs > as_ ? '#ede8ff' : 'rgba(200,180,255,0.6)';
+      ctx.fillStyle = hs > as_ ? '#0f0c1e' : 'rgba(15,12,30,0.45)';
       ctx.font = hs > as_ ? '700 13px Inter, Arial' : '400 13px Inter, Arial';
     }
     ctx.fillText((m.player1||'—').toUpperCase(), 56, textY);
@@ -7828,10 +7813,10 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     // away player name
     ctx.textAlign = 'right';
     if (isMVP && m.player2 === mvpName) {
-      ctx.fillStyle = '#FFD700';
+      ctx.fillStyle = '#a07830';
       ctx.font = '700 13px Inter, Arial';
     } else {
-      ctx.fillStyle = as_ > hs ? '#ede8ff' : 'rgba(200,180,255,0.6)';
+      ctx.fillStyle = as_ > hs ? '#0f0c1e' : 'rgba(15,12,30,0.45)';
       ctx.font = as_ > hs ? '700 13px Inter, Arial' : '400 13px Inter, Arial';
     }
     ctx.fillText((m.player2||'—').toUpperCase(), CARD_W-56, textY);
@@ -7840,20 +7825,20 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.textAlign = 'center';
     ctx.font = '700 16px Inter, Arial';
     // home score
-    ctx.fillStyle = hs > as_ ? '#ffffff' : 'rgba(200,180,255,0.55)';
+    ctx.fillStyle = hs > as_ ? '#5a4fbe' : 'rgba(15,12,30,0.4)';
     ctx.fillText(String(hs), CARD_W/2 - 20, textY);
     // separator
-    ctx.fillStyle = 'rgba(164,120,255,0.4)';
+    ctx.fillStyle = 'rgba(124,111,224,0.35)';
     ctx.fillText('|', CARD_W/2, textY);
     // away score
-    ctx.fillStyle = as_ > hs ? '#ffffff' : 'rgba(200,180,255,0.55)';
+    ctx.fillStyle = as_ > hs ? '#5a4fbe' : 'rgba(15,12,30,0.4)';
     ctx.fillText(String(as_), CARD_W/2 + 20, textY);
 
     // MVP star badge
     if (isMVP) {
       const mvpX = isMVP && m.player1===mvpName ? CARD_W/2 - 65 : CARD_W/2 + 65;
       ctx.font = '700 9px Inter, Arial';
-      ctx.fillStyle = '#FFD700';
+      ctx.fillStyle = '#a07830';
       ctx.textAlign = 'center';
       ctx.fillText('★ MVP', mvpX, textY - 12);
     }
@@ -7861,15 +7846,15 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // ── FOOTER ──
   const footerY = CARD_H - FOOTER_H;
-  ctx.strokeStyle = 'rgba(113,50,202,0.3)';
+  ctx.strokeStyle = 'rgba(124,111,224,0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(0,footerY); ctx.lineTo(CARD_W,footerY); ctx.stroke();
 
-  ctx.fillStyle = 'rgba(113,50,202,0.08)';
+  ctx.fillStyle = '#ede9f8';
   ctx.fillRect(0, footerY, CARD_W, FOOTER_H);
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(164,120,255,0.6)';
+  ctx.fillStyle = 'rgba(90,79,190,0.7)';
   ctx.font = '600 10px Inter, Arial';
   ctx.fillText('SPONSORED BY COBEG BD  •  WWW.COBEGBD.COM', CARD_W/2, footerY + 28);
 
