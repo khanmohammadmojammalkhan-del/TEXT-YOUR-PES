@@ -7593,6 +7593,9 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     else if (as_ > hs) awayWins++;
     else draws++;
   });
+  // 3-1-0 point system: win=3, draw=1, loss=0
+  const homePoints = (homeWins * 3) + (draws * 1);
+  const awayPoints = (awayWins * 3) + (draws * 1);
   const homeTotal = matches.reduce((s,m)=>s+(parseInt(m.homeScore)||0),0);
   const awayTotal = matches.reduce((s,m)=>s+(parseInt(m.awayScore)||0),0);
 
@@ -7634,6 +7637,11 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   });
 
   // ── BACKGROUND (off-white theme matching website) ──
+  // Rounded outer corners for the whole card
+  ctx.save();
+  roundRectCanvas(ctx, 0, 0, CARD_W, CARD_H, 18);
+  ctx.clip();
+
   ctx.fillStyle = '#f5f4fb';
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
@@ -7643,17 +7651,38 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   for (let x = 0; x < CARD_W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CARD_H); ctx.stroke(); }
   for (let y = 0; y < CARD_H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CARD_W,y); ctx.stroke(); }
 
-  // ── HEADER BG ──
-  const hGrad = ctx.createLinearGradient(0,0,CARD_W,0);
-  hGrad.addColorStop(0,   '#6a5cd6');
-  hGrad.addColorStop(0.5, '#7c6fe0');
-  hGrad.addColorStop(1,   '#6a5cd6');
+  // ── HEADER BG (premium diagonal gradient with depth) ──
+  const hGrad = ctx.createLinearGradient(0,0,CARD_W,HEADER_H);
+  hGrad.addColorStop(0,    '#5a4fbe');
+  hGrad.addColorStop(0.45, '#7c6fe0');
+  hGrad.addColorStop(0.55, '#8a7ef0');
+  hGrad.addColorStop(1,    '#5a4fbe');
   ctx.fillStyle = hGrad;
   ctx.fillRect(0, 0, CARD_W, HEADER_H);
 
-  // header border bottom
-  ctx.strokeStyle = '#5a4fbe';
-  ctx.lineWidth = 2;
+  // decorative glow circles for depth
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(CARD_W - 60, -20, 130, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-30, HEADER_H + 10, 100, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // header bottom: gold accent line + soft shadow fade
+  const fadeGrad = ctx.createLinearGradient(0, HEADER_H-10, 0, HEADER_H);
+  fadeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  fadeGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
+  ctx.fillStyle = fadeGrad;
+  ctx.fillRect(0, HEADER_H-10, CARD_W, 10);
+
+  const accentGrad = ctx.createLinearGradient(0,0,CARD_W,0);
+  accentGrad.addColorStop(0,   'transparent');
+  accentGrad.addColorStop(0.15,'#c9a84c');
+  accentGrad.addColorStop(0.5, '#e0c878');
+  accentGrad.addColorStop(0.85,'#c9a84c');
+  accentGrad.addColorStop(1,   'transparent');
+  ctx.strokeStyle = accentGrad;
+  ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,HEADER_H); ctx.lineTo(CARD_W,HEADER_H); ctx.stroke();
 
   // ── TYP LOGO (top-left watermark, white on purple header) ──
@@ -7684,20 +7713,24 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(CARD_W/2-160,66); ctx.lineTo(CARD_W/2+160,66); ctx.stroke();
 
-  // ── TEAM LOGOS (emoji as placeholder) ──
+  // ── TEAM LOGOS (emoji as placeholder, with depth shadow) ──
   const logoSize = 64;
   const logoY = 82;
-  // home logo circle
   const drawLogoCircle = (cx, cy, emoji, logoUrl) => {
     ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 3;
     ctx.beginPath();
     ctx.arc(cx, cy, logoSize/2, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
     ctx.restore();
+    ctx.beginPath();
+    ctx.arc(cx, cy, logoSize/2, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
     ctx.font = `${logoSize*0.45}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -7719,21 +7752,35 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const awayNameLines = wrapTextCanvas(ctx, (awayTeam.name||'AWAY').toUpperCase(), 130);
   awayNameLines.forEach((ln, i) => ctx.fillText(ln, CARD_W-290, logoY + 16 + i*18));
 
-  // ── SCORE BADGE ──
-  const sbW = 110, sbH = 48;
+  // ── SCORE BADGE (premium with shadow & gold ring) ──
+  const sbW = 116, sbH = 52;
   const sbX = CARD_W/2 - sbW/2;
-  const sbY = logoY + 8;
-  roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 10);
+  const sbY = logoY + 6;
+
+  // shadow
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.25)';
+  ctx.shadowBlur = 14;
+  ctx.shadowOffsetY = 4;
+  roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 12);
   ctx.fillStyle = '#ffffff'; ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.restore();
+
+  roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 12);
+  ctx.strokeStyle = '#c9a84c'; ctx.lineWidth = 2; ctx.stroke();
 
   ctx.textAlign = 'center';
   ctx.fillStyle = '#5a4fbe';
-  ctx.font = '800 28px Inter, Arial';
-  ctx.fillText(`${homeWins}   ${awayWins}`, CARD_W/2, sbY + 34);
+  ctx.font = '800 27px Inter, Arial';
+  ctx.fillText(`${homePoints}  -  ${awayPoints}`, CARD_W/2, sbY + 33);
+  ctx.font = '700 8px Inter, Arial';
+  ctx.letterSpacing = '0.15em';
+  ctx.fillStyle = '#a07830';
+  ctx.fillText('POINTS', CARD_W/2, sbY + sbH - 6);
+  ctx.letterSpacing = '0';
   // small divider
-  ctx.fillStyle = 'rgba(124,111,224,0.25)';
-  ctx.fillRect(CARD_W/2-1, sbY+8, 2, sbH-16);
+  ctx.fillStyle = 'rgba(124,111,224,0.2)';
+  ctx.fillRect(CARD_W/2-1, sbY+10, 2, sbH-22);
 
   // ── COLUMN HEADERS ──
   const colY = HEADER_H + SCORE_ROW_H;
@@ -7857,6 +7904,14 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.fillStyle = 'rgba(90,79,190,0.7)';
   ctx.font = '600 10px Inter, Arial';
   ctx.fillText('SPONSORED BY COBEG BD  •  WWW.COBEGBD.COM', CARD_W/2, footerY + 28);
+
+  ctx.restore(); // end rounded-corner clip
+
+  // outer border for polished card edge
+  roundRectCanvas(ctx, 1, 1, CARD_W-2, CARD_H-2, 18);
+  ctx.strokeStyle = 'rgba(124,111,224,0.25)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
   // ── DOWNLOAD ──
   const link = document.createElement('a');
