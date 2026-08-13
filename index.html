@@ -155,6 +155,28 @@ body::before {
     radial-gradient(ellipse 50% 40% at 85% 90%, rgba(201,168,76,0.07) 0%, transparent 55%);
 }
 
+/* spiderweb decorative pattern (corner accent) */
+body::after {
+  content:'';
+  position:fixed;
+  top:-140px;
+  right:-140px;
+  width:620px;
+  height:620px;
+  z-index:0;
+  pointer-events:none;
+  opacity:0.10;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900' viewBox='0 0 900 900'%3E%3Cg fill='none' stroke='%237c6fe0' stroke-width='1.3'%3E%3Cline x1='450.0' y1='450.0' x2='895.0' y2='450.0'/%3E%3Cline x1='450.0' y1='450.0' x2='835.4' y2='672.5'/%3E%3Cline x1='450.0' y1='450.0' x2='672.5' y2='835.4'/%3E%3Cline x1='450.0' y1='450.0' x2='450.0' y2='895.0'/%3E%3Cline x1='450.0' y1='450.0' x2='227.5' y2='835.4'/%3E%3Cline x1='450.0' y1='450.0' x2='64.6' y2='672.5'/%3E%3Cline x1='450.0' y1='450.0' x2='5.0' y2='450.0'/%3E%3Cline x1='450.0' y1='450.0' x2='64.6' y2='227.5'/%3E%3Cline x1='450.0' y1='450.0' x2='227.5' y2='64.6'/%3E%3Cline x1='450.0' y1='450.0' x2='450.0' y2='5.0'/%3E%3Cline x1='450.0' y1='450.0' x2='672.5' y2='64.6'/%3E%3Cline x1='450.0' y1='450.0' x2='835.4' y2='227.5'/%3E%3Cpath d='M513.6,450.0 Q512.9,466.8 505.1,481.8 Q496.0,496.0 481.8,505.1 Q466.8,512.9 450.0,513.6 Q433.2,512.9 418.2,505.1 Q404.0,496.0 394.9,481.8 Q387.1,466.8 386.4,450.0 Q387.1,433.2 394.9,418.2 Q404.0,404.0 418.2,394.9 Q433.2,387.1 450.0,386.4 Q466.8,387.1 481.8,394.9 Q496.0,404.0 505.1,418.2 Q512.9,433.2 513.6,450.0 '/%3E%3Cpath d='M577.1,450.0 Q575.7,483.7 560.1,513.6 Q542.1,542.1 513.6,560.1 Q483.7,575.7 450.0,577.1 Q416.3,575.7 386.4,560.1 Q357.9,542.1 339.9,513.6 Q324.3,483.7 322.9,450.0 Q324.3,416.3 339.9,386.4 Q357.9,357.9 386.4,339.9 Q416.3,324.3 450.0,322.9 Q483.7,324.3 513.6,339.9 Q542.1,357.9 560.1,386.4 Q575.7,416.3 577.1,450.0 '/%3E%3Cpath d='M640.7,450.0 Q638.6,500.5 615.2,545.4 Q588.1,588.1 545.4,615.2 Q500.5,638.6 450.0,640.7 Q399.5,638.6 354.6,615.2 Q311.9,588.1 284.8,545.4 Q261.4,500.5 259.3,450.0 Q261.4,399.5 284.8,354.6 Q311.9,311.9 354.6,284.8 Q399.5,261.4 450.0,259.3 Q500.5,261.4 545.4,284.8 Q588.1,311.9 615.2,354.6 Q638.6,399.5 640.7,450.0 '/%3E%3Cpath d='M704.3,450.0 Q701.5,517.4 670.2,577.1 Q634.1,634.1 577.1,670.2 Q517.4,701.5 450.0,704.3 Q382.6,701.5 322.9,670.2 Q265.9,634.1 229.8,577.1 Q198.5,517.4 195.7,450.0 Q198.5,382.6 229.8,322.9 Q265.9,265.9 322.9,229.8 Q382.6,198.5 450.0,195.7 Q517.4,198.5 577.1,229.8 Q634.1,265.9 670.2,322.9 Q701.5,382.6 704.3,450.0 '/%3E%3Cpath d='M767.9,450.0 Q764.4,534.2 725.3,608.9 Q680.1,680.1 608.9,725.3 Q534.2,764.4 450.0,767.9 Q365.8,764.4 291.1,725.3 Q219.9,680.1 174.7,608.9 Q135.6,534.2 132.1,450.0 Q135.6,365.8 174.7,291.1 Q219.9,219.9 291.1,174.7 Q365.8,135.6 450.0,132.1 Q534.2,135.6 608.9,174.7 Q680.1,219.9 725.3,291.1 Q764.4,365.8 767.9,450.0 '/%3E%3Cpath d='M831.4,450.0 Q827.2,551.1 780.3,640.7 Q726.2,726.2 640.7,780.3 Q551.1,827.2 450.0,831.4 Q348.9,827.2 259.3,780.3 Q173.8,726.2 119.7,640.7 Q72.8,551.1 68.6,450.0 Q72.8,348.9 119.7,259.3 Q173.8,173.8 259.3,119.7 Q348.9,72.8 450.0,68.6 Q551.1,72.8 640.7,119.7 Q726.2,173.8 780.3,259.3 Q827.2,348.9 831.4,450.0 '/%3E%3Cpath d='M895.0,450.0 Q890.1,567.9 835.4,672.5 Q772.2,772.2 672.5,835.4 Q567.9,890.1 450.0,895.0 Q332.1,890.1 227.5,835.4 Q127.8,772.2 64.6,672.5 Q9.9,567.9 5.0,450.0 Q9.9,332.1 64.6,227.5 Q127.8,127.8 227.5,64.6 Q332.1,9.9 450.0,5.0 Q567.9,9.9 672.5,64.6 Q772.2,127.8 835.4,227.5 Q890.1,332.1 895.0,450.0 '/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-size:contain;
+}
+
+[data-theme="light"] body::after { opacity:0.07; }
+
+@media (max-width:768px) {
+  body::after { width:340px; height:340px; top:-90px; right:-90px; }
+}
+
 /* ── FOOTBALL FIELD PATTERN (HOME PAGE ONLY) ── */
 #page-home .hero {
   position: relative;
@@ -496,6 +518,26 @@ nav {
   .bd-nominees-grid { grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:9px; padding:0 12px; }
   .bd-nom-avatar { width:46px; height:46px; }
   .bd-header h1 { font-size:1.1rem; }
+}
+
+/* ── TYP ADMINS GALLERY ── */
+.typ-admins-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:12px; max-width:900px; margin:0 auto; padding:0 16px; }
+.typ-admin-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 12px; text-align:center; transition:all .15s; }
+.typ-admin-card:hover { border-color:rgba(124,111,224,0.5); transform:translateY(-2px); }
+.typ-admin-avatar { width:64px; height:64px; border-radius:50%; background:var(--bg2); border:2px solid var(--border); margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:24px; overflow:hidden; }
+.typ-admin-name { font-weight:700; font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.typ-admin-role { font-size:10.5px; color:var(--text3); margin:2px 0 12px; }
+.typ-admin-links { display:flex; gap:8px; justify-content:center; }
+.typ-admin-link { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; text-decoration:none; border:1px solid; transition:transform .15s; }
+.typ-admin-link:hover { transform:scale(1.08); }
+.typ-admin-link.fb { background:rgba(24,119,242,0.12); border-color:#1877f2; color:#1877f2; }
+.typ-admin-link.wa { background:rgba(37,211,102,0.12); border-color:#25d366; color:#25d366; }
+.typ-admin-mgmt-card { background:var(--card); border:1px solid var(--border); border-radius:11px; padding:14px 18px; margin-bottom:10px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.typ-admin-mgmt-avatar { width:44px; height:44px; border-radius:50%; background:var(--bg2); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:18px; overflow:hidden; flex-shrink:0; }
+
+@media (max-width:600px) {
+  .typ-admins-grid { grid-template-columns:repeat(auto-fill, minmax(108px,1fr)); gap:9px; padding:0 12px; }
+  .typ-admin-avatar { width:52px; height:52px; }
 }
 
 /* ── BUTTONS ── */
@@ -1429,12 +1471,12 @@ if (document.readyState === 'loading') {
     </div>
   </div>
 
-  <!-- RECENT MATCH RESULTS -->
+  <!-- TYP ADMINS GALLERY -->
   <div class="section" style="padding-top:0;position:relative;overflow:hidden">
-    <div class="section-title">⚽ Recent Results</div>
-    <div class="section-sub">// সর্বশেষ match results</div>
-    <div id="homeRecentMatches">
-      <div style="text-align:center;padding:30px;color:var(--text3)"><span class="spinner"></span></div>
+    <div class="section-title">🛡️ TYP Admins</div>
+    <div class="section-sub">// আমাদের admin team এর সাথে সরাসরি যোগাযোগ করো</div>
+    <div id="homeAdminsGallery" class="typ-admins-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text3)"><span class="spinner"></span></div>
     </div>
   </div>
 
@@ -2578,6 +2620,7 @@ if (document.readyState === 'loading') {
         <div class="admin-tab" onclick="switchAdminTab('uidchange')">🆔 UID/Device Change <span id="pendingUidChangeCount" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></div>
         <div class="admin-tab" onclick="switchAdminTab('aiqa')">🤖 AI Bot <span id="aiqaUnansweredCount" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none">0</span></div>
         <div class="admin-tab" onclick="switchAdminTab('ballondor')">🏆 Ballon d'Or</div>
+        <div class="admin-tab" onclick="switchAdminTab('typadmins')">🛡️ TYP Admins</div>
       </div>
 
       <!-- PLAYERS TAB -->
@@ -3193,6 +3236,53 @@ if (document.readyState === 'loading') {
     </div>
     <div style="font-size:11.5px;color:var(--text3);margin-bottom:10px">⚠️ একই Device Fingerprint বারবার দেখা গেলে সেগুলো লাল রঙে হাইলাইট করা হয়েছে — সেটা fake vote হওয়ার সম্ভাবনা থাকে।</div>
     <div id="bdaVoteList" style="display:flex;flex-direction:column;gap:8px">
+      <div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN TYP ADMINS GALLERY SECTION -->
+<div class="admin-section" id="adminTab-typadmins">
+  <div style="max-width:600px">
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">🛡️ TYP Admins Gallery</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:18px">Home page-এ দেখানো admin cards manage করো — photo, name, Facebook link, WhatsApp number।</div>
+
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:16px" id="typAdminFormTitle">➕ নতুন Admin যোগ করো</div>
+      <input type="hidden" id="typAdminEditId">
+      <div class="avatar-upload" style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div class="typ-admin-mgmt-avatar" style="width:60px;height:60px;font-size:24px;cursor:pointer" id="typAdminAvatarPreview" onclick="document.getElementById('typAdminAvatarInput').click()">🛡️</div>
+        <div>
+          <p style="font-size:12.5px;color:var(--text2);margin:0 0 2px">Click করে photo upload করো</p>
+          <span style="color:var(--text3);font-size:10px">Max 2MB • JPG, PNG</span>
+        </div>
+      </div>
+      <input type="file" id="typAdminAvatarInput" accept="image/*" style="display:none" onchange="previewTypAdminAvatar(this)">
+
+      <div class="form-group">
+        <label class="form-label">Admin Name</label>
+        <input type="text" class="form-input" id="typAdminName" placeholder="Admin এর নাম">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Facebook Profile/Page Link</label>
+        <input type="text" class="form-input" id="typAdminFbLink" placeholder="https://facebook.com/username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">WhatsApp Number (country code সহ)</label>
+        <input type="text" class="form-input" id="typAdminWaNumber" placeholder="e.g. 8801XXXXXXXXX">
+      </div>
+
+      <div class="alert alert-error" id="typAdminError"></div>
+      <div class="alert alert-success" id="typAdminSuccess"></div>
+
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <button class="btn btn-gold" style="flex:1" onclick="saveTypAdmin()">💾 Save করো</button>
+        <button class="btn btn-outline" style="flex:1;display:none" id="typAdminCancelBtn" onclick="resetTypAdminForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div style="font-size:15px;font-weight:700;color:var(--text2);margin-bottom:14px;border-top:1px solid var(--border);padding-top:18px">📋 সব Admin — <span id="typAdminCount">0</span></div>
+    <div id="typAdminsList">
       <div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div>
     </div>
   </div>
@@ -6265,7 +6355,7 @@ const TRN_DB = 'https://typ-championship-default-rtdb.firebaseio.com';
 // 🏠 HOME PAGE DATA
 // ════════════════════════════════════════
 async function loadHomePageData() {
-  loadHomeRecentMatches();
+  loadHomeAdminsGallery();
   loadHomeStats();
   loadHomeLiveMatchday();
   loadHomeNotice();
@@ -6307,6 +6397,7 @@ window.switchAdminTab = function(tab) {
   }
   if (tab === 'tournament') loadTrnAdminTeams();
   if (tab === 'aiqa' && typeof loadAdminAiQa === 'function') loadAdminAiQa();
+  if (tab === 'typadmins' && typeof loadTypAdminsAdminList === 'function') loadTypAdminsAdminList();
 };
 
 window.homeSearchPlayer = function(q) {
@@ -6679,65 +6770,179 @@ function stopHomeCarousel() {
   if (_homeCarouselTimer) { clearInterval(_homeCarouselTimer); _homeCarouselTimer = null; }
 }
 
-async function loadHomeRecentMatches() {
-  const container = document.getElementById('homeRecentMatches');
+// ════════════════════════════════════════
+// 🛡️ TYP ADMINS GALLERY (Home)
+// ════════════════════════════════════════
+async function loadHomeAdminsGallery() {
+  const container = document.getElementById('homeAdminsGallery');
   try {
-    // Use cache if available (5 min TTL)
-    const now = Date.now();
-    const CACHE_TTL = 5 * 60 * 1000;
-    let matches = [];
-    if (window._matchesCache && window._matchesCacheTime && (now - window._matchesCacheTime) < CACHE_TTL) {
-      matches = window._matchesCache;
-    } else {
-      const res = await fetch('https://typ-championship-default-rtdb.firebaseio.com/matches.json');
-      const data = await res.json();
-      matches = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
-      window._matchesCache = matches;
-      window._matchesCacheTime = now;
-    }
-    if (!matches.length) {
-      container.innerHTML = '<div class="card" style="text-align:center;padding:30px;color:var(--text3)">এখনো কোনো match নেই।</div>';
+    const snap = await window._get(window._ref(window._db, 'typAdmins'));
+    const data = snap.val();
+    const admins = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
+    window._typAdminsCache = admins;
+
+    if (!admins.length) {
+      container.innerHTML = '<div class="card" style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text3)">এখনো কোনো admin যোগ করা হয়নি।</div>';
       return;
     }
-    matches.sort((a,b) => (b.addedAt||b.date||'').localeCompare(a.addedAt||a.date||''));
-    const recent = matches.filter(m => m.status === 'completed').slice(0, 5);
+    admins.sort((a,b) => (a.order||0) - (b.order||0));
 
-    if (!recent.length) {
-      container.innerHTML = '<div class="card" style="text-align:center;padding:30px;color:var(--text3)">কোনো completed match নেই।</div>';
-      return;
-    }
-
-    const isAdmin = !!window._isAdminSession;
-    container.innerHTML = recent.map(m => {
-      const hs = parseInt(m.home_score)||0, as_ = parseInt(m.away_score)||0;
-      const winSide = hs > as_ ? 'home' : hs < as_ ? 'away' : 'draw';
-      return `<div class="card" style="margin-bottom:10px;padding:14px 18px;display:flex;align-items:center;gap:12px">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;text-align:right;flex:1;color:${winSide==='home'?'var(--cyan)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.home_team||'—'}</div>
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 14px;text-align:center;flex-shrink:0">
-              <div style="font-family:'Inter',sans-serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1">${hs} - ${as_}</div>
-              <div style="font-size:9px;color:var(--green);font-family:'Inter',sans-serif">FT</div>
-            </div>
-            <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:700;text-align:left;flex:1;color:${winSide==='away'?'var(--cyan)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.away_team||'—'}</div>
-          </div>
-          <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px">${m.tournament||''}${m.round?' • '+m.round:''} • ${m.date||''}</div>
+    container.innerHTML = admins.map(a => {
+      const avatar = a.photoUrl ? `<img src="${a.photoUrl}" style="width:100%;height:100%;object-fit:cover">` : '🛡️';
+      return `<div class="typ-admin-card">
+        <div class="typ-admin-avatar">${avatar}</div>
+        <div class="typ-admin-name">${a.name||'—'}</div>
+        <div class="typ-admin-role">TYP Admin</div>
+        <div class="typ-admin-links">
+          ${a.fbLink ? `<a class="typ-admin-link fb" href="${a.fbLink}" target="_blank" rel="noopener" title="Facebook">📘</a>` : ''}
+          ${a.waNumber ? `<a class="typ-admin-link wa" href="https://wa.me/${(a.waNumber+'').replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" title="WhatsApp">💬</a>` : ''}
         </div>
-        ${isAdmin ? `<button onclick="deleteMatchFromHome('${m.id}')" style="background:rgba(255,71,87,0.1);border:1px solid var(--red);color:var(--red);padding:6px 10px;border-radius:6px;font-size:13px;cursor:pointer;flex-shrink:0" title="Delete">🗑️</button>` : ''}
       </div>`;
     }).join('');
   } catch(e) {
-    container.innerHTML = '<div class="card" style="text-align:center;padding:30px;color:var(--red)">Data load হয়নি।</div>';
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red)">Data load হয়নি।</div>';
   }
 }
 
-window.deleteMatchFromHome = async function(id) {
-  if (!confirm('এই match delete করবে?')) return;
-  await window._set(window._ref(window._db, `matches/${id}`), null);
-  loadHomeRecentMatches();
-  // Admin panel list ও update করো
-  if (typeof loadAdminMatches === 'function') loadAdminMatches();
+// ════════════════════════════════════════
+// 🛡️ TYP ADMINS GALLERY (Admin Panel Management)
+// ════════════════════════════════════════
+window._typAdminUploadedPhoto = null;
+
+window.previewTypAdminAvatar = async function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2*1024*1024) { alert('File size 2MB এর বেশি।'); return; }
+
+  const preview = document.getElementById('typAdminAvatarPreview');
+  const reader = new FileReader();
+  reader.onload = e => { preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`; };
+  reader.readAsDataURL(file);
+
+  try {
+    preview.style.opacity = '0.6';
+    const url = await uploadToImgBB(file);
+    window._typAdminUploadedPhoto = url;
+    preview.style.opacity = '1';
+  } catch(e) {
+    alert('❌ Photo upload হয়নি।');
+    window._typAdminUploadedPhoto = null;
+    preview.style.opacity = '1';
+  }
 };
+
+window.resetTypAdminForm = function() {
+  document.getElementById('typAdminEditId').value = '';
+  document.getElementById('typAdminName').value = '';
+  document.getElementById('typAdminFbLink').value = '';
+  document.getElementById('typAdminWaNumber').value = '';
+  document.getElementById('typAdminAvatarPreview').innerHTML = '🛡️';
+  document.getElementById('typAdminFormTitle').textContent = '➕ নতুন Admin যোগ করো';
+  document.getElementById('typAdminCancelBtn').style.display = 'none';
+  document.getElementById('typAdminError').classList.remove('show');
+  document.getElementById('typAdminSuccess').classList.remove('show');
+  window._typAdminUploadedPhoto = null;
+};
+
+window.saveTypAdmin = async function() {
+  const errEl = document.getElementById('typAdminError');
+  const okEl = document.getElementById('typAdminSuccess');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  const id = document.getElementById('typAdminEditId').value.trim();
+  const name = document.getElementById('typAdminName').value.trim();
+  const fbLink = document.getElementById('typAdminFbLink').value.trim();
+  const waNumber = document.getElementById('typAdminWaNumber').value.trim();
+
+  if (!name) { errEl.textContent = '❌ Admin এর নাম দিতে হবে।'; errEl.classList.add('show'); return; }
+
+  try {
+    if (id) {
+      const existing = (window._typAdminsCache||[]).find(a => a.id === id) || {};
+      const payload = {
+        name, fbLink, waNumber,
+        photoUrl: window._typAdminUploadedPhoto || existing.photoUrl || '',
+        order: existing.order != null ? existing.order : Date.now()
+      };
+      await window._set(window._ref(window._db, `typAdmins/${id}`), payload);
+    } else {
+      const newRef = window._push(window._ref(window._db, 'typAdmins'));
+      await window._set(newRef, {
+        name, fbLink, waNumber,
+        photoUrl: window._typAdminUploadedPhoto || '',
+        order: Date.now(),
+        addedAt: new Date().toISOString()
+      });
+    }
+    okEl.textContent = '✅ Save হয়ে গেছে!';
+    okEl.classList.add('show');
+    resetTypAdminForm();
+    loadTypAdminsAdminList();
+    loadHomeAdminsGallery();
+  } catch(e) {
+    errEl.textContent = '❌ Error: ' + e.message;
+    errEl.classList.add('show');
+  }
+};
+
+window.editTypAdmin = function(id) {
+  const a = (window._typAdminsCache||[]).find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('typAdminEditId').value = id;
+  document.getElementById('typAdminName').value = a.name || '';
+  document.getElementById('typAdminFbLink').value = a.fbLink || '';
+  document.getElementById('typAdminWaNumber').value = a.waNumber || '';
+  document.getElementById('typAdminAvatarPreview').innerHTML = a.photoUrl ? `<img src="${a.photoUrl}" style="width:100%;height:100%;object-fit:cover">` : '🛡️';
+  document.getElementById('typAdminFormTitle').textContent = '✏️ Admin Edit করো';
+  document.getElementById('typAdminCancelBtn').style.display = 'block';
+  window._typAdminUploadedPhoto = null;
+  document.getElementById('typAdminName').scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+window.deleteTypAdmin = async function(id) {
+  if (!confirm('এই admin delete করবে?')) return;
+  await window._set(window._ref(window._db, `typAdmins/${id}`), null);
+  loadTypAdminsAdminList();
+  loadHomeAdminsGallery();
+};
+
+async function loadTypAdminsAdminList() {
+  const container = document.getElementById('typAdminsList');
+  const countEl = document.getElementById('typAdminCount');
+  try {
+    const snap = await window._get(window._ref(window._db, 'typAdmins'));
+    const data = snap.val();
+    const admins = data ? Object.entries(data).map(([id, val]) => ({ id, ...val })) : [];
+    window._typAdminsCache = admins;
+    admins.sort((a,b) => (a.order||0) - (b.order||0));
+    countEl.textContent = admins.length;
+
+    if (!admins.length) {
+      container.innerHTML = '<div style="color:var(--text3);font-size:13px">এখনো কোনো admin যোগ করা হয়নি।</div>';
+      return;
+    }
+
+    container.innerHTML = admins.map(a => {
+      const avatar = a.photoUrl ? `<img src="${a.photoUrl}" style="width:100%;height:100%;object-fit:cover">` : '🛡️';
+      return `<div class="typ-admin-mgmt-card">
+        <div class="typ-admin-mgmt-avatar">${avatar}</div>
+        <div style="flex:1;min-width:150px">
+          <div style="font-weight:700;font-size:14px;color:var(--text)">${a.name||'—'}</div>
+          <div style="font-size:11.5px;color:var(--text3);margin-top:2px">
+            ${a.fbLink ? `📘 ${wrapPlain(a.fbLink)}` : ''}${a.fbLink && a.waNumber ? ' • ' : ''}${a.waNumber ? `💬 ${a.waNumber}` : ''}
+            ${!a.fbLink && !a.waNumber ? 'কোনো link যোগ করা হয়নি' : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="padding:6px 14px;font-size:12px" onclick="editTypAdmin('${a.id}')">✏️ Edit</button>
+          <button class="btn" style="background:rgba(255,71,87,0.1);border:1px solid var(--red);color:var(--red);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer" onclick="deleteTypAdmin('${a.id}')">🗑️ Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--red);font-size:13px">Data load হয়নি।</div>';
+  }
+}
 
 // ════════════════════════════════════════
 // 🔍 PUBLIC PROFILE + HOME SEARCH
