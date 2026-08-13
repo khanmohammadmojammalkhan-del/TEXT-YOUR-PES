@@ -4611,6 +4611,7 @@ window.switchAdminTab = function(tab) {
   if (tab === 'seasonstats') ssmInit();
   if (tab === 'boutdraw') bdInit();
   if (tab === 'ballondor') bdaInit();
+  if (tab === 'typadmins' && typeof loadTypAdminsAdminList === 'function') loadTypAdminsAdminList();
 };
 
 // ══════════════════════════════════════════
