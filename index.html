@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TYP Championship</title>
+
+<!-- ── PWA: manifest + icons + theme color ── -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#05050A">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TYP Championship">
 <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Libre+Caslon+Text:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -2035,6 +2044,21 @@ if (document.readyState === 'loading') {
     <div class="pp-section">
       <div class="pp-section-title">📈 Performance Trend</div>
       <div id="ppPerfGraph"></div>
+    </div>
+
+    <!-- Tournament/Competitive Match History -->
+    <div class="pp-section">
+      <div class="pp-section-title">🏆 Match History</div>
+      <div id="ppMhFilters" style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="nav-btn active" onclick="filterPpMatchHistory('all', this)" style="font-size:11px;padding:5px 12px">All</button>
+        <button class="nav-btn" onclick="filterPpMatchHistory('W', this)" style="font-size:11px;padding:5px 12px">Wins</button>
+        <button class="nav-btn" onclick="filterPpMatchHistory('D', this)" style="font-size:11px;padding:5px 12px">Draws</button>
+        <button class="nav-btn" onclick="filterPpMatchHistory('L', this)" style="font-size:11px;padding:5px 12px">Losses</button>
+      </div>
+      <div id="ppMatchHistory"><div style="text-align:center;color:var(--text3);font-size:13px;padding:12px"><span class="spinner"></span></div></div>
+      <div id="ppMhMoreWrap" style="text-align:center;margin-top:10px;display:none">
+        <button class="nav-btn" onclick="ppMatchHistoryShowMore()" style="font-size:11px;padding:6px 16px">আরও দেখাও ▾</button>
+      </div>
     </div>
 
     <!-- Friendly Stats -->
@@ -7599,6 +7623,26 @@ window.openPublicProfile = async function(uid) {
     }
   }
 
+  // ── MATCH-BY-MATCH HISTORY (tournament/competitive) ──
+  {
+    const pName2 = p.name;
+    const historyRows = allMatchesForProfile
+      .filter(mx => (mx.home_team === pName2 || mx.away_team === pName2) && mx.status === 'completed')
+      .sort((a,b) => (b.addedAt||b.date||'').localeCompare(a.addedAt||a.date||''))
+      .map(mx => {
+        const isHome = mx.home_team === pName2;
+        const myS = parseInt(isHome ? mx.home_score : mx.away_score) || 0;
+        const oppS = parseInt(isHome ? mx.away_score : mx.home_score) || 0;
+        const oppN = isHome ? mx.away_team : mx.home_team;
+        const res2 = myS > oppS ? 'W' : myS < oppS ? 'L' : 'D';
+        return { oppN, myS, oppS, res2, date: mx.date || '', tournament: mx.tournament || '', round: mx.round || '' };
+      });
+    window._ppMhAll = historyRows;
+    window._ppMhFilter = 'all';
+    window._ppMhShown = 15;
+    ppRenderMatchHistory();
+  }
+
   window._ppCurrentPlayer = p;
   window._ppCurrentStats = { m, w, d, l, goals, mvp, score, wp, ga: p.goalsAgainst||0 };
 
@@ -7693,6 +7737,56 @@ window.openPublicProfile = async function(uid) {
   } catch(e) {
     flContainer.innerHTML = '<div style="color:var(--red);font-size:13px;padding:10px">Error loading.</div>';
   }
+};
+
+// ══════════════════════════════════════════
+// MATCH-BY-MATCH HISTORY (profile page)
+// ══════════════════════════════════════════
+function ppRenderMatchHistory() {
+  const box = document.getElementById('ppMatchHistory');
+  const moreWrap = document.getElementById('ppMhMoreWrap');
+  if (!box) return;
+  const all = window._ppMhAll || [];
+  const filt = window._ppMhFilter || 'all';
+  const rows = filt === 'all' ? all : all.filter(r => r.res2 === filt);
+
+  if (!rows.length) {
+    box.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:13px;padding:12px">কোনো ম্যাচ পাওয়া যায়নি।</div>';
+    moreWrap.style.display = 'none';
+    return;
+  }
+
+  const shown = Math.min(window._ppMhShown || 15, rows.length);
+  const visible = rows.slice(0, shown);
+
+  box.innerHTML = visible.map(r => {
+    const rc = r.res2 === 'W' ? 'var(--green)' : r.res2 === 'L' ? 'var(--red)' : 'var(--yellow)';
+    const tagLine = [r.tournament, r.round].filter(Boolean).join(' • ');
+    return `<div class="pp-fl-row">
+      <div style="color:var(--text3);font-size:11px;flex-shrink:0;min-width:64px">${r.date || '—'}</div>
+      <div style="text-align:center;flex:1;padding:0 8px;min-width:0">
+        ${tagLine ? `<div style="font-size:9px;color:var(--text3);letter-spacing:0.04em;margin-bottom:2px">${tagLine}</div>` : ''}
+        <span style="color:var(--text2)">vs ${r.oppN || '—'}</span><br>
+        <span class="pp-num" style="font-size:16px;color:var(--tier-b)">${r.myS} - ${r.oppS}</span>
+      </div>
+      <div class="pp-fl-result" style="background:${rc}">${r.res2}</div>
+    </div>`;
+  }).join('');
+
+  moreWrap.style.display = shown < rows.length ? 'block' : 'none';
+}
+
+window.filterPpMatchHistory = function(type, btn) {
+  window._ppMhFilter = type;
+  window._ppMhShown = 15;
+  document.querySelectorAll('#ppMhFilters .nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ppRenderMatchHistory();
+};
+
+window.ppMatchHistoryShowMore = function() {
+  window._ppMhShown = (window._ppMhShown || 15) + 15;
+  ppRenderMatchHistory();
 };
 
 // ══════════════════════════════════════════
@@ -11814,6 +11908,47 @@ window.aiqaSaveCustomFaq = aiqaSaveCustomFaq;
 window.aiqaDeleteCustomFaq = aiqaDeleteCustomFaq;
 window.aiqaDeleteUnanswered = aiqaDeleteUnanswered;
 window.aiqaUseAsFaq = aiqaUseAsFaq;
+</script>
+
+<!-- ══════════ PWA: install button + service worker ══════════ -->
+<button id="pwaInstallBtn" onclick="pwaTriggerInstall()" style="display:none;position:fixed;right:16px;bottom:84px;z-index:9999;background:var(--primary,#00E5FF);color:#05050A;border:none;border-radius:24px;padding:10px 18px;font-size:13px;font-weight:800;box-shadow:0 4px 16px rgba(0,0,0,0.35);cursor:pointer;font-family:'Libre Caslon Text',sans-serif">📲 Install App</button>
+<script>
+(function() {
+  let deferredPwaPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPwaPrompt = e;
+    const btn = document.getElementById('pwaInstallBtn');
+    if (btn) btn.style.display = 'inline-flex';
+  });
+
+  window.pwaTriggerInstall = async function() {
+    const btn = document.getElementById('pwaInstallBtn');
+    if (!deferredPwaPrompt) return;
+    if (btn) btn.style.display = 'none';
+    deferredPwaPrompt.prompt();
+    try { await deferredPwaPrompt.userChoice; } catch (e) {}
+    deferredPwaPrompt = null;
+  };
+
+  window.addEventListener('appinstalled', () => {
+    const btn = document.getElementById('pwaInstallBtn');
+    if (btn) btn.style.display = 'none';
+    deferredPwaPrompt = null;
+  });
+
+  // Register the service worker (app-shell caching + offline load).
+  // NOTE: sw.js MUST be uploaded alongside this HTML file on the same
+  // host/origin — a service worker cannot be inlined or loaded from a
+  // data: URI, this is a browser security requirement.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .catch((err) => console.warn('Service worker registration failed:', err));
+    });
+  }
+})();
 </script>
 </body>
 </html>
