@@ -2446,24 +2446,37 @@ if (document.readyState === 'loading') {
   <div class="trn-content active" id="trntab-standings">
     <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div style="font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-        <span style="border-left:3px solid var(--green);padding-left:6px;margin-right:12px">Top 4 → Semi-Final</span>
+        <span style="border-left:3px solid var(--green);padding-left:6px;margin-right:12px">Top 2 প্রতি Group → Semi-Final</span>
       </div>
       <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="loadTournamentStandings()">🔄 Refresh</button>
     </div>
 
-    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
-      <table class="standings-table" id="trnStandingsTable">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;font-family:'Libre Caslon Text',sans-serif">🅰️ Group A</div>
+    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:22px">
+      <table class="standings-table" id="trnStandingsTableA">
         <thead>
           <tr><th>#</th><th>TEAM</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th class="pts-col">PTS</th></tr>
         </thead>
-        <tbody id="trnStandingsBody">
+        <tbody id="trnStandingsBodyA">
+          <tr><td colspan="10" style="padding:40px;color:var(--text3);text-align:center"><span class="spinner"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;font-family:'Libre Caslon Text',sans-serif">🅱️ Group B</div>
+    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+      <table class="standings-table" id="trnStandingsTableB">
+        <thead>
+          <tr><th>#</th><th>TEAM</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th class="pts-col">PTS</th></tr>
+        </thead>
+        <tbody id="trnStandingsBodyB">
           <tr><td colspan="10" style="padding:40px;color:var(--text3);text-align:center"><span class="spinner"></span></td></tr>
         </tbody>
       </table>
     </div>
 
     <div style="margin-top:16px;font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-      * Single round-robin table — Top 4 team সরাসরি Semi-Final এ যাবে (1st vs 4th, 2nd vs 3rd)। Double round-robin — প্রতি team প্রতিপক্ষের সাথে ২ বার খেলবে (home ও away)।
+      * ২টা group (A ও B), প্রতি group এ ৪টা team, double round-robin (home ও away)। প্রতি group থেকে Top 2 team সরাসরি Semi-Final এ যাবে (A1 vs B2, B1 vs A2)।
     </div>
   </div>
 
@@ -2494,7 +2507,7 @@ if (document.readyState === 'loading') {
 
   <!-- KNOCKOUT TAB -->
   <div class="trn-content" id="trntab-knockout">
-    <div style="margin-bottom:16px;font-size:13px;color:var(--text3)">Top 4 teams from league stage qualify for Semi-Finals.</div>
+    <div style="margin-bottom:16px;font-size:13px;color:var(--text3)">Top 2 teams from each group (A ও B) qualify for Semi-Finals — মোট 4 team।</div>
     <div id="trnKnockoutWrap">
       <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
     </div>
@@ -3675,13 +3688,13 @@ if (document.readyState === 'loading') {
       <button class="btn btn-outline" onclick="loadTrnAdminTeams()" style="padding:9px 20px;font-size:13px">🔄 Load Teams</button>
       <button class="btn btn-outline" onclick="openCreateTeamModal()" style="padding:9px 20px;font-size:13px">➕ Create New Team</button>
       <button class="btn" onclick="confirmRegenerateFixtures()" style="padding:9px 20px;font-size:13px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🔄 Regenerate Fixtures</button>
-      <button class="btn" onclick="fixStartersTo9()" style="padding:9px 20px;font-size:13px;background:rgba(251,191,36,0.1);border:1px solid var(--gold);color:var(--gold)">🔧 Fix Starters (8→9)</button>
+      <button class="btn" onclick="fixStartersTo9()" style="padding:9px 20px;font-size:13px;background:rgba(251,191,36,0.1);border:1px solid var(--gold);color:var(--gold)">🔧 Fix Starters (→7)</button>
     </div>
   </div>
 
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">⚽ Enter Match Results</div>
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Select a matchday to enter bout results. প্রতিটা matchday = 4 matches × 9 bout (double round-robin)।</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Select a matchday to enter bout results. প্রতিটা matchday = 4 matches × 7 bout (double round-robin)।</p>
     <div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
       <select class="form-input" id="trnMatchdaySelect" style="flex:1;min-width:200px" onchange="loadMatchdayForEntry()">
         <option value="">-- Select Matchday --</option>
@@ -3706,7 +3719,7 @@ if (document.readyState === 'loading') {
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Set Semi-Final & Final matches.</p>
     <div id="trnKnockoutAdminArea"></div>
     <button class="btn btn-outline" onclick="loadKnockoutAdmin()" style="padding:9px 20px;font-size:13px;margin-top:10px">🔄 Load Knockout</button>
-    <button class="btn" onclick="autoSetSemis()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set from Top 4</button>
+    <button class="btn" onclick="autoSetSemis()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set from Top 2/Group</button>
   </div>
 </div>
 
@@ -3747,7 +3760,7 @@ if (document.readyState === 'loading') {
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Select Players (9 starters + 3 subs = 12 max)</label>
+      <label class="form-label">Select Players (7 starters + 2 subs = 9 max)</label>
       <input type="text" class="form-input" id="playerPickSearch" placeholder="🔍 Search player..." oninput="filterPlayerPick()" style="margin-bottom:8px">
       <div class="player-pick-list" id="playerPickList"></div>
       <div style="margin-top:8px;font-size:12px;color:var(--cyan)" id="playerPickCount">0 selected</div>
@@ -3793,7 +3806,7 @@ if (document.readyState === 'loading') {
     <input type="hidden" id="adminEditUid">
 
     <div class="avatar-upload">
-      <div class="avatar-preview" id="adminEditAvatarPreview" onclick="document.getElementById('adminEditAvatarInput').click()">🎮</div>
+      <div class="avatar-preview" id="adminEditAvatarPreview" onclick="document.getElementById('adminEditAvatarInput').click()" style="width:96px;height:96px;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;background:var(--card2);border:2px solid var(--border)">🎮</div>
       <div class="avatar-info">
         <p>Click করে photo change করো</p>
         <span style="color:var(--text3);font-size:10px;">Max 2MB • JPG, PNG</span>
@@ -3859,7 +3872,7 @@ if (document.readyState === 'loading') {
     <div class="modal-title">➕ Add New Player</div>
 
     <div class="avatar-upload">
-      <div class="avatar-preview" id="addPlayerAvatarPreview" onclick="document.getElementById('addPlayerAvatarInput').click()">🎮</div>
+      <div class="avatar-preview" id="addPlayerAvatarPreview" onclick="document.getElementById('addPlayerAvatarInput').click()" style="width:96px;height:96px;flex-shrink:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;background:var(--card2);border:2px solid var(--border)">🎮</div>
       <div class="avatar-info">
         <p>Profile Photo (optional)</p>
         <span style="color:var(--text3);font-size:10px;">Max 2MB • JPG, PNG</span>
@@ -4919,7 +4932,7 @@ window.previewAdminEditAvatar = async function(input) {
 
   const reader = new FileReader();
   reader.onload = e => {
-    document.getElementById('adminEditAvatarPreview').innerHTML = `<img src="${e.target.result}">`;
+    document.getElementById('adminEditAvatarPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
   };
   reader.readAsDataURL(file);
 
@@ -4929,7 +4942,8 @@ window.previewAdminEditAvatar = async function(input) {
     window._adminEditAvatarUrl = url;
     document.getElementById('adminEditAvatarPreview').style.opacity = '1';
   } catch(e) {
-    alert('❌ Photo upload হয়নি।');
+    console.error('adminEditAvatar upload failed:', e);
+    alert('❌ Photo upload হয়নি: ' + e.message);
     window._adminEditAvatarUrl = null;
     document.getElementById('adminEditAvatarPreview').style.opacity = '1';
   }
@@ -5520,7 +5534,7 @@ window.openAdminEditProfile = function(uid) {
   document.getElementById('adminEditClub').value = p.club || '';
   document.getElementById('adminEditDistrict').value = p.district || '';
   const prev = document.getElementById('adminEditAvatarPreview');
-  prev.innerHTML = p.avatarUrl ? `<img src="${p.avatarUrl}">` : '🎮';
+  prev.innerHTML = p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮';
   window._adminEditAvatarUrl = p.avatarUrl || null;
   document.getElementById('adminEditError').classList.remove('show');
   document.getElementById('adminEditSuccess').classList.remove('show');
@@ -5597,7 +5611,7 @@ window.previewAddPlayerAvatar = async function(input) {
   if (file.size > 2*1024*1024) { alert('File size 2MB এর বেশি।'); return; }
   const reader = new FileReader();
   reader.onload = e => {
-    document.getElementById('addPlayerAvatarPreview').innerHTML = `<img src="${e.target.result}">`;
+    document.getElementById('addPlayerAvatarPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
   };
   reader.readAsDataURL(file);
   try {
@@ -5606,7 +5620,8 @@ window.previewAddPlayerAvatar = async function(input) {
     window._addPlayerAvatarUrl = url;
     document.getElementById('addPlayerAvatarPreview').style.opacity = '1';
   } catch(e) {
-    alert('❌ Photo upload হয়নি।');
+    console.error('addPlayerAvatar upload failed:', e);
+    alert('❌ Photo upload হয়নি: ' + e.message);
     window._addPlayerAvatarUrl = null;
     document.getElementById('addPlayerAvatarPreview').style.opacity = '1';
   }
@@ -8586,17 +8601,26 @@ function renderGroupTable(tbodyId, standings, qualCount) {
 }
 
 window.loadTournamentStandings = async function() {
-  const bodyEl = document.getElementById('trnStandingsBody');
-  if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--text3)"><span class="spinner"></span></td></tr>';
+  const bodyElA = document.getElementById('trnStandingsBodyA');
+  const bodyElB = document.getElementById('trnStandingsBodyB');
+  if (bodyElA) bodyElA.innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--text3)"><span class="spinner"></span></td></tr>';
+  if (bodyElB) bodyElB.innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--text3)"><span class="spinner"></span></td></tr>';
   try {
     await fetchTrnData();
     if (!trnTeamsCache.length) {
-      if (bodyEl) bodyEl.innerHTML = '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--text3)">কোনো team নেই।</td></tr>';
+      const emptyRow = '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--text3)">কোনো team নেই।</td></tr>';
+      if (bodyElA) bodyElA.innerHTML = emptyRow;
+      if (bodyElB) bodyElB.innerHTML = emptyRow;
       return;
     }
-    renderGroupTable('trnStandingsBody', calcStandings(trnTeamsCache, trnMatchesCache), 4);
+    const groupATeams = trnTeamsCache.filter(t => (t.group||'A') === 'A');
+    const groupBTeams = trnTeamsCache.filter(t => (t.group||'B') === 'B');
+    renderGroupTable('trnStandingsBodyA', calcStandings(groupATeams, trnMatchesCache), 2);
+    renderGroupTable('trnStandingsBodyB', calcStandings(groupBTeams, trnMatchesCache), 2);
   } catch(e) {
-    if (bodyEl) bodyEl.innerHTML = `<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--red)">❌ ${e.message}</td></tr>`;
+    const errRow = `<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--red)">❌ ${e.message}</td></tr>`;
+    if (bodyElA) bodyElA.innerHTML = errRow;
+    if (bodyElB) bodyElB.innerHTML = errRow;
   }
 };
 // ── TEAMS PAGE ──
@@ -8875,7 +8899,7 @@ function renderAdminTeamsList() {
       </div>
       <div style="flex:1">
         <div style="font-weight:700;font-size:14px;color:var(--text)">${safeName}</div>
-        <div style="font-size:12px;color:var(--text3)">👑 ${t.manager||'—'} • ${(t.players||[]).filter(p=>p&&p.isStarter).length}/8 starters · ${(t.players||[]).filter(p=>p&&!p.isStarter).length}/3 subs</div>
+        <div style="font-size:12px;color:var(--text3)">👑 ${t.manager||'—'} • ${(t.players||[]).filter(p=>p&&p.isStarter).length}/7 starters · ${(t.players||[]).filter(p=>p&&!p.isStarter).length}/2 subs</div>
       </div>
       <button class="btn-admin-edit" onclick="openEditTeamModal('${t.id}')">✏️ Edit</button>
       <button class="btn-admin-del" onclick="deleteTeam('${t.id}','${safeNameAttr}')">🗑️</button>
@@ -8972,7 +8996,7 @@ window.togglePlayerPick = function(uid, el) {
   const idx = _playerPickSelected.indexOf(uid);
   const cb = el.querySelector('input[type=checkbox]');
   if (idx === -1) {
-    if (_playerPickSelected.length >= 12) { alert('Maximum 12 players (9 starters + 3 subs)।'); return; }
+    if (_playerPickSelected.length >= 9) { alert('Maximum 9 players (7 starters + 2 subs)।'); return; }
     _playerPickSelected.push(uid);
     el.classList.add('selected'); if(cb) cb.checked = true;
   } else {
@@ -8984,7 +9008,7 @@ window.togglePlayerPick = function(uid, el) {
 
 function updatePlayerPickCount() {
   const el = document.getElementById('playerPickCount');
-  if (el) el.textContent = `${_playerPickSelected.length} selected (${Math.min(_playerPickSelected.length,9)} starters + ${Math.max(0,_playerPickSelected.length-9)} subs)`;
+  if (el) el.textContent = `${_playerPickSelected.length} selected (${Math.min(_playerPickSelected.length,7)} starters + ${Math.max(0,_playerPickSelected.length-7)} subs)`;
 }
 
 window.previewTeamLogo = function(input) {
@@ -9011,7 +9035,7 @@ window.saveTeam = async function() {
   const allUsers = window._trnAllUsers || [];
   const players = _playerPickSelected.map((uid, i) => {
     const u = allUsers.find(u => u.uid === uid) || {};
-    return { uid, name: u.name || '—', isStarter: i < 8 };
+    return { uid, name: u.name || '—', isStarter: i < 7 };
   });
 
   const teamId = document.getElementById('editTeamId').value;
@@ -9096,7 +9120,7 @@ window.deleteTeam = async function(id, name) {
 
 // ── Auto-generate Round Robin Fixtures ──
 // Group A/B double round robin: 4 teams each group, 6 matchdays per group
-// Each matchday = 4 matches (2 GRP-A + 2 GRP-B) × 9 x 1v1 bouts
+// Each matchday = 4 matches (2 GRP-A + 2 GRP-B) × 7 x 1v1 bouts
 async function generateFixtures() {
   const teams = trnTeamsCache;
   if (teams.length !== 8) { alert('ঠিক 8টা team লাগবে fixture generate করতে।'); return; }
@@ -9138,9 +9162,9 @@ async function generateFixtures() {
 
   // Helper to push bouts for a match
   function pushBouts(t1, t2, matchdayNum, matchIdx, group) {
-    const t1S = (t1.players||[]).filter(p=>p.isStarter).slice(0,9);
-    const t2S = (t2.players||[]).filter(p=>p.isStarter).slice(0,9);
-    const bouts = Math.min(t1S.length, t2S.length, 9);
+    const t1S = (t1.players||[]).filter(p=>p.isStarter).slice(0,7);
+    const t2S = (t2.players||[]).filter(p=>p.isStarter).slice(0,7);
+    const bouts = Math.min(t1S.length, t2S.length, 7);
     const matchdayLabel = `Matchday ${matchdayNum} — GRP-${group} Match ${matchIdx+1}: ${t1.name} vs ${t2.name}`;
     for (let k = 0; k < bouts; k++) {
       allFixtures.push({
@@ -9193,9 +9217,9 @@ window.confirmRegenerateFixtures = async function() {
   loadTrnMatchdays();
 };
 
-// ── Admin: One-click fix — promote each team's players so first 9 (existing order) become starters ──
+// ── Admin: One-click fix — promote each team's players so first 7 (existing order) become starters ──
 window.fixStartersTo9 = async function() {
-  if (!confirm('সব টিমের প্লেয়ার লিস্ট চেক করে প্রথম ৯ জনকে starter বানিয়ে দেওয়া হবে (আগের ক্রম অনুযায়ী)। Continue?')) return;
+  if (!confirm('সব টিমের প্লেয়ার লিস্ট চেক করে প্রথম ৭ জনকে starter বানিয়ে দেওয়া হবে (আগের ক্রম অনুযায়ী)। Continue?')) return;
 
   const res = await fetch(`${TRN_DB}/tournament/teams.json`);
   const data = await res.json() || {};
@@ -9210,10 +9234,10 @@ window.fixStartersTo9 = async function() {
     const players = team.players || [];
     if (!players.length) { skippedCount++; continue; }
 
-    const alreadyNine = players.filter(p => p.isStarter).length === Math.min(players.length, 8);
-    const updatedPlayers = players.map((p, i) => ({ ...p, isStarter: i < 8 }));
+    const alreadySeven = players.filter(p => p.isStarter).length === Math.min(players.length, 7);
+    const updatedPlayers = players.map((p, i) => ({ ...p, isStarter: i < 7 }));
 
-    if (alreadyNine && JSON.stringify(updatedPlayers) === JSON.stringify(players)) { skippedCount++; continue; }
+    if (alreadySeven && JSON.stringify(updatedPlayers) === JSON.stringify(players)) { skippedCount++; continue; }
 
     const patchRes = await fetch(`${TRN_DB}/tournament/teams/${teamId}.json`, {
       method: 'PATCH',
@@ -9223,7 +9247,7 @@ window.fixStartersTo9 = async function() {
     await new Promise(r => setTimeout(r, 150)); // Firebase-কে একটু breathing room দেওয়া
   }
 
-  alert(`✅ Fix সম্পন্ন!\n${fixedCount}টা team আপডেট হয়েছে, ${skippedCount}টা আগে থেকেই ঠিক ছিল।\n\nএখন "🔄 Regenerate Fixtures" বাটনে চাপ দাও — তাহলে সব ম্যাচে 9/9 bout দেখাবে।`);
+  alert(`✅ Fix সম্পন্ন!\n${fixedCount}টা team আপডেট হয়েছে, ${skippedCount}টা আগে থেকেই ঠিক ছিল।\n\nএখন "🔄 Regenerate Fixtures" বাটনে চাপ দাও — তাহলে সব ম্যাচে 7/7 bout দেখাবে।`);
 
   await loadTrnAdminTeams();
 };
@@ -9793,19 +9817,23 @@ window.saveKnockout = async function() {
 
 window.autoSetSemis = async function() {
   await fetchTrnData();
-  const standings = calcStandings(trnTeamsCache, trnMatchesCache);
-  if (standings.length < 4) { alert('কমপক্ষে ৪টা team-এর data লাগবে standings থেকে।'); return; }
-  const top4 = standings.slice(0, 4);
-  // 1st vs 4th, 2nd vs 3rd
+  const groupATeams = trnTeamsCache.filter(t => (t.group||'A') === 'A');
+  const groupBTeams = trnTeamsCache.filter(t => (t.group||'B') === 'B');
+  const standingsA = calcStandings(groupATeams, trnMatchesCache);
+  const standingsB = calcStandings(groupBTeams, trnMatchesCache);
+  if (standingsA.length < 2 || standingsB.length < 2) { alert('প্রতি group থেকে কমপক্ষে ২টা team-এর data লাগবে standings থেকে।'); return; }
+  const [a1, a2] = standingsA;
+  const [b1, b2] = standingsB;
+  // Cross-group pairing: Group A winner vs Group B runner-up, Group B winner vs Group A runner-up
   const payload = {
-    semi1: { team1: top4[0].id, team2: top4[3].id, score1: null, score2: null, status: 'pending' },
-    semi2: { team1: top4[1].id, team2: top4[2].id, score1: null, score2: null, status: 'pending' },
+    semi1: { team1: a1.id, team2: b2.id, score1: null, score2: null, status: 'pending' },
+    semi2: { team1: b1.id, team2: a2.id, score1: null, score2: null, status: 'pending' },
     final: trnKnockoutCache.final || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
     champion: trnKnockoutCache.champion || '',
     updatedAt: new Date().toISOString()
   };
   await fetch(`${TRN_DB}/tournament/knockout.json`, { method: 'PUT', body: JSON.stringify(payload) });
-  alert(`✅ Semi-finals set!\nSF1: ${top4[0].name} vs ${top4[3].name}\nSF2: ${top4[1].name} vs ${top4[2].name}`);
+  alert(`✅ Semi-finals set!\nSF1: ${a1.name} (A1) vs ${b2.name} (B2)\nSF2: ${b1.name} (B1) vs ${a2.name} (A2)`);
   loadKnockoutAdmin();
 };
 
@@ -11399,7 +11427,7 @@ const TYP_FAQ = [
   },
   {
     keywords: ['tournament', 'টুর্নামেন্ট', 'গ্রুপ এ', 'গ্রুপ বি', 'group', 'knockout', 'নকআউট', 'কাপ'],
-    answer: 'Tournament-এ সব দল একটাই টেবিলে double round-robin ম্যাচ খেলে, এরপর Top 4 দল Semi-Final এ যায় (1st vs 4th, 2nd vs 3rd), তারপর Final হয়ে চ্যাম্পিয়ন নির্ধারিত হয়। প্রতিটা ম্যাচের রেজাল্ট কার্ড PNG আকারে ডাউনলোড করা যায়।'
+    answer: 'Tournament-এ ২টা Group (A ও B) থাকে, প্রতি group এ ৪টা দল, double round-robin ম্যাচ খেলে (প্রতি ম্যাচ 7v7 bout)। প্রতি group থেকে Top 2 দল Semi-Final এ যায় (A1 vs B2, B1 vs A2), তারপর Final হয়ে চ্যাম্পিয়ন নির্ধারিত হয়। প্রতিটা ম্যাচের রেজাল্ট কার্ড PNG আকারে ডাউনলোড করা যায়।'
   },
   {
     keywords: ['বিরোধ', 'dispute', 'ভুল ফলাফল', 'complain', 'অভিযোগ', 'রিপোর্ট'],
