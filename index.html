@@ -2984,6 +2984,7 @@ if (document.readyState === 'loading') {
         <div class="admin-tab" onclick="switchAdminTab('seasonstats')">📅 Season Stats</div>
         <div class="admin-tab" onclick="switchAdminTab('resultmgmt')">📤 Result Requests <span id="pendingResultCount" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></div>
         <div class="admin-tab" onclick="switchAdminTab('tournament')">🏟️ Tournament</div>
+        <div class="admin-tab" onclick="switchAdminTab('matchdayctrl')">🗓️ Matchday Control</div>
         <div class="admin-tab" onclick="switchAdminTab('notice')">📢 Notice</div>
         <div class="admin-tab" onclick="switchAdminTab('boutdraw')">🎲 Bout Draw</div>
         <div class="admin-tab" onclick="switchAdminTab('uidchange')">🆔 UID/Device Change <span id="pendingUidChangeCount" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></div>
@@ -3723,6 +3724,16 @@ if (document.readyState === 'loading') {
   </div>
 </div>
 
+<!-- ══════════════ MATCHDAY CONTROL (ADMIN) ══════════════ -->
+<div class="admin-section" id="adminTab-matchdayctrl">
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">🗓️ Matchday Control</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতিটা matchup-এর জন্য lineup submission unlock/lock করো, deadline সেট করো, এবং lineup জমা হওয়ার পর "Start Matchday" চেপে draw + fixture তৈরি করো।</p>
+    <button class="btn btn-outline" onclick="loadMatchdayControlList()" style="padding:9px 20px;font-size:13px;margin-bottom:14px">🔄 Load Matchups</button>
+    <div id="mdcList"><div style="text-align:center;padding:40px;color:var(--text3)">"Load Matchups" চাপুন।</div></div>
+  </div>
+</div>
+
 <!-- CREATE/EDIT TEAM MODAL -->
 <div class="modal-overlay" id="createTeamModal">
   <div class="modal-box" style="max-width:600px;max-height:90vh;overflow-y:auto">
@@ -3735,6 +3746,10 @@ if (document.readyState === 'loading') {
     <div class="form-group">
       <label class="form-label">Manager / Captain Name</label>
       <input type="text" class="form-input" id="newTeamManager" placeholder="e.g. Faisal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Manager Panel Password</label>
+      <input type="text" class="form-input" id="newTeamManagerPass" placeholder="এই টিমের Manager Panel-এ ঢুকতে যে password লাগবে">
     </div>
     <div class="form-group">
       <label class="form-label">Team Emoji / Icon</label>
@@ -3770,6 +3785,53 @@ if (document.readyState === 'loading') {
       <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('createTeamModal').classList.remove('show')">Cancel</button>
     </div>
     <div id="createTeamError" style="margin-top:10px;font-size:13px;color:var(--red)"></div>
+  </div>
+</div>
+
+<!-- MANAGER LOGIN MODAL -->
+<div class="modal-overlay" id="managerLoginModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-title">👔 Manager Panel Login</div>
+    <input type="hidden" id="mgrLoginTeamId">
+    <div id="mgrLoginTeamName" style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px"></div>
+    <div class="form-group">
+      <label class="form-label">Team Password</label>
+      <input type="password" class="form-input" id="mgrLoginPass" placeholder="Password দিন" onkeydown="if(event.key==='Enter')managerLoginSubmit()">
+    </div>
+    <div id="mgrLoginError" style="font-size:13px;color:var(--red);margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="managerLoginSubmit()">🔓 Login</button>
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('managerLoginModal').classList.remove('show')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGER PANEL MODAL -->
+<div class="modal-overlay" id="managerPanelModal">
+  <div class="modal-box" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="modal-title" id="mgrPanelTitle" style="margin-bottom:0">👔 Manager Panel</div>
+      <button class="btn btn-outline" onclick="document.getElementById('managerPanelModal').classList.remove('show')" style="padding:6px 12px;font-size:12px">✕ Close</button>
+    </div>
+    <div id="mgrPanelBody"></div>
+  </div>
+</div>
+
+<!-- PLAYER CHANGE (SUB/SWAP) MODAL -->
+<div class="modal-overlay" id="playerChangeModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-title">🔁 Change Player</div>
+    <input type="hidden" id="pcKey"><input type="hidden" id="pcMatchId"><input type="hidden" id="pcSide"><input type="hidden" id="pcRole">
+    <div id="pcInfo" style="font-size:12px;color:var(--text3);margin-bottom:10px"></div>
+    <div class="form-group">
+      <label class="form-label">নতুন Player বাছাই করো</label>
+      <select class="form-input" id="pcPlayerSelect"></select>
+    </div>
+    <div id="pcError" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="pcConfirm()">✅ Confirm Change</button>
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('playerChangeModal').classList.remove('show')">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -6769,6 +6831,7 @@ window.switchAdminTab = function(tab) {
     }).catch(()=>{});
   }
   if (tab === 'tournament') loadTrnAdminTeams();
+  if (tab === 'matchdayctrl' && typeof loadMatchdayControlList === 'function') loadMatchdayControlList();
   if (tab === 'aiqa' && typeof loadAdminAiQa === 'function') loadAdminAiQa();
   if (tab === 'typadmins' && typeof loadTypAdminsAdminList === 'function') loadTypAdminsAdminList();
 };
@@ -8655,11 +8718,12 @@ window.loadTrnTeams = async function() {
       return `<div class="team-card">
         <div class="team-card-header">
           <div class="team-badge" style="width:44px;height:44px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg3);flex-shrink:0">${t.logo ? `<img src="${t.logo}" style="width:100%;height:100%;object-fit:cover">` : (t.emoji||'🏟️')}</div>
-          <div>
+          <div style="flex:1">
             <div class="team-name">${t.name}</div>
             <div class="team-manager">👑 ${t.manager || '—'}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:3px;font-family:'Libre Caslon Text',sans-serif">${players.length} players</div>
           </div>
+          <button class="btn btn-outline" onclick="openManagerLogin('${t.id}')" style="padding:7px 12px;font-size:11px;white-space:nowrap">👔 Manager Panel</button>
         </div>
         <div class="team-players-list">
           ${players.length ? allRows : '<div style="color:var(--text3);font-size:13px;padding:10px">No players assigned.</div>'}
@@ -8920,6 +8984,7 @@ window.openCreateTeamModal = async function() {
   document.getElementById('editTeamId').value = '';
   document.getElementById('newTeamName').value = '';
   document.getElementById('newTeamManager').value = '';
+  document.getElementById('newTeamManagerPass').value = '';
   document.getElementById('newTeamEmoji').value = '🏟️';
   document.getElementById('teamLogoUrl').value = '';
   document.getElementById('teamLogoPreview').innerHTML = '🏟️';
@@ -8938,6 +9003,7 @@ window.openEditTeamModal = async function(teamId) {
   document.getElementById('editTeamId').value = teamId;
   document.getElementById('newTeamName').value = t.name || '';
   document.getElementById('newTeamManager').value = t.manager || '';
+  document.getElementById('newTeamManagerPass').value = t.managerPassword || '';
   document.getElementById('newTeamEmoji').value = t.emoji || '🏟️';
   document.getElementById('newTeamGroup').value = t.group || 'A';
   document.getElementById('teamLogoUrl').value = t.logo || '';
@@ -9026,6 +9092,7 @@ window.previewTeamLogo = function(input) {
 window.saveTeam = async function() {
   const name = document.getElementById('newTeamName').value.trim();
   const manager = document.getElementById('newTeamManager').value.trim();
+  const managerPassword = document.getElementById('newTeamManagerPass').value.trim();
   const emoji = document.getElementById('newTeamEmoji').value.trim() || '🏟️';
   const group = document.getElementById('newTeamGroup')?.value || 'A';
   const errEl = document.getElementById('createTeamError');
@@ -9075,7 +9142,7 @@ window.saveTeam = async function() {
     errEl.textContent = '';
   }
 
-  const payload = { name, manager, emoji, group, players, updatedAt: new Date().toISOString() };
+  const payload = { name, manager, managerPassword, emoji, group, players, updatedAt: new Date().toISOString() };
   if (logoUrl) payload.logo = logoUrl;
 
   if (teamId) {
@@ -9251,6 +9318,433 @@ window.fixStartersTo9 = async function() {
 
   await loadTrnAdminTeams();
 };
+
+// ══════════════════════════════════════════
+// 🗓️ MATCHDAY CONTROL (Manager Panel + Admin)
+// ══════════════════════════════════════════
+// A "matchup" key groups the 7 pre-generated bout records that belong to one
+// team-vs-team fixture on a given day (boutNumber 1-3 = Deadline1 3v3, 4-7 = Deadline2 4v4).
+function mdcMatchdayKey(m) { return `${m.day}_${m.homeTeam}_${m.awayTeam}`; }
+
+// ── ADMIN: Matchday Control list ──
+window.loadMatchdayControlList = async function() {
+  const container = document.getElementById('mdcList');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)"><span class="spinner"></span></div>';
+  try {
+    await fetchTrnData();
+    const [ctrlRes, lineupRes] = await Promise.all([
+      fetch(`${TRN_DB}/tournament/matchdayControl.json`),
+      fetch(`${TRN_DB}/tournament/matchdayLineups.json`)
+    ]);
+    window._mdcCtrl = await ctrlRes.json() || {};
+    window._mdcLineups = await lineupRes.json() || {};
+
+    const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
+    const groups = {};
+    trnMatchesCache.forEach(m => {
+      const key = mdcMatchdayKey(m);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(m);
+    });
+    const keys = Object.keys(groups).sort((a, b) => {
+      const da = parseInt(a.split('_')[0]) || 0, db = parseInt(b.split('_')[0]) || 0;
+      return da - db;
+    });
+    if (!keys.length) {
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">কোনো matchup পাওয়া যায়নি — আগে Fixtures generate করো।</div>';
+      return;
+    }
+    container.innerHTML = keys.map(key => mdcRenderCard(key, groups[key], teamMap)).join('');
+  } catch (e) {
+    container.innerHTML = `<div style="color:var(--red);padding:30px;text-align:center">❌ ${e.message}</div>`;
+  }
+};
+
+function mdcRenderCard(key, bouts, teamMap) {
+  bouts = bouts.slice().sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+  const first = bouts[0];
+  const ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
+  const ctrl = (window._mdcCtrl || {})[key] || { status: 'locked', deadline1: '', deadline2: '' };
+  const lineups = (window._mdcLineups || {})[key] || {};
+  const homeOk = lineups[first.homeTeam] && lineups[first.homeTeam].deadline1 && lineups[first.homeTeam].deadline2;
+  const awayOk = lineups[first.awayTeam] && lineups[first.awayTeam].deadline1 && lineups[first.awayTeam].deadline2;
+  const statusColors = { locked: 'var(--text3)', lineup_open: 'var(--gold)', lineup_locked: 'var(--red)', drawn: 'var(--green)' };
+  const statusLabels = { locked: '🔒 Locked', lineup_open: '🟢 Lineup Open', lineup_locked: '🟡 Lineup Locked', drawn: '✅ Drawn' };
+
+  return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+      <div style="font-weight:700;font-size:14px;color:var(--text)">${ht.emoji || '🏟️'} ${ht.name || '—'} <span style="color:var(--text3);font-weight:400">vs</span> ${at.name || '—'} ${at.emoji || '🏟️'}</div>
+      <div style="font-size:11px;font-weight:700;color:${statusColors[ctrl.status] || 'var(--text3)'}">${statusLabels[ctrl.status] || ctrl.status}</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Day ${first.day} • Group ${first.group || '—'} • ${bouts.length} bouts</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="font-size:10px">Deadline 1 (3v3)</label>
+        <input type="datetime-local" class="form-input" id="mdc-dl1-${key}" value="${ctrl.deadline1 || ''}" style="font-size:12px;padding:7px 8px">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="font-size:10px">Deadline 2 (4v4)</label>
+        <input type="datetime-local" class="form-input" id="mdc-dl2-${key}" value="${ctrl.deadline2 || ''}" style="font-size:12px;padding:7px 8px">
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Lineup: ${ht.name || 'Home'} ${homeOk ? '✅' : '❌'} • ${at.name || 'Away'} ${awayOk ? '✅' : '❌'}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="mdcSaveControl('${key}')" style="padding:7px 14px;font-size:11px">💾 Save Deadlines</button>
+      <button class="btn" onclick="mdcSetStatus('${key}','lineup_open')" style="padding:7px 14px;font-size:11px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🔓 Unlock Lineup</button>
+      <button class="btn" onclick="mdcSetStatus('${key}','lineup_locked')" style="padding:7px 14px;font-size:11px;background:rgba(248,113,113,0.1);border:1px solid var(--red);color:var(--red)">🔒 Lock Lineup</button>
+      <button class="btn btn-gold" onclick="mdcStartMatchday('${key}')" style="padding:7px 14px;font-size:11px">🎲 Start Matchday</button>
+      ${ctrl.status === 'drawn' ? `<button class="btn btn-outline" onclick="mdcShowFixture('${key}')" style="padding:7px 14px;font-size:11px">📋 Fixture / Sub-Swap</button>` : ''}
+    </div>
+    <div id="mdc-fixture-${key}" style="margin-top:10px"></div>
+  </div>`;
+}
+
+window.mdcSaveControl = async function(key) {
+  const dl1 = document.getElementById(`mdc-dl1-${key}`).value;
+  const dl2 = document.getElementById(`mdc-dl2-${key}`).value;
+  const existing = (window._mdcCtrl || {})[key] || {};
+  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ deadline1: dl1, deadline2: dl2, status: existing.status || 'locked' }) });
+  alert('✅ Deadline সেভ হয়েছে!');
+  loadMatchdayControlList();
+};
+
+window.mdcSetStatus = async function(key, status) {
+  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  loadMatchdayControlList();
+};
+
+window.mdcStartMatchday = async function(key) {
+  const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+  if (!bouts.length) { alert('❌ কোনো bout পাওয়া যায়নি।'); return; }
+  const first = bouts[0];
+  const homeId = first.homeTeam, awayId = first.awayTeam;
+  const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
+  const ht = teamMap[homeId] || {}, at = teamMap[awayId] || {};
+
+  const [lineupRes, lastRes] = await Promise.all([
+    fetch(`${TRN_DB}/tournament/matchdayLineups/${key}.json`),
+    fetch(`${TRN_DB}/tournament/lastLineup.json`)
+  ]);
+  const lineups = await lineupRes.json() || {};
+  const lastAll = await lastRes.json() || {};
+
+  const homeLU = lineups[homeId] || lastAll[homeId];
+  const awayLU = lineups[awayId] || lastAll[awayId];
+
+  if (!homeLU || !awayLU || !homeLU.deadline1 || !homeLU.deadline2 || !awayLU.deadline1 || !awayLU.deadline2) {
+    alert(`❌ Lineup অসম্পূর্ণ।\n${ht.name || 'Home'}: ${homeLU ? 'পাওয়া গেছে' : 'নেই'}\n${at.name || 'Away'}: ${awayLU ? 'পাওয়া গেছে' : 'নেই'}\n\nদুই টিমের manager-কেই lineup submit করতে হবে, নাহলে আগের matchday-র lineup fallback হিসেবে থাকতে হবে।`);
+    return;
+  }
+  if (!confirm(`🎲 ${ht.name} vs ${at.name} — Draw করা হবে?\n\nDeadline1 (3v3) ও Deadline2 (4v4) দুই দলের lineup থেকে random pairing হয়ে fixture তৈরি হবে।`)) return;
+
+  const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const homeD1 = shuffle(homeLU.deadline1), awayD1 = shuffle(awayLU.deadline1);
+  const homeD2 = shuffle(homeLU.deadline2), awayD2 = shuffle(awayLU.deadline2);
+  const pairing = [...homeD1.map((uid, i) => ({ h: uid, a: awayD1[i] })), ...homeD2.map((uid, i) => ({ h: uid, a: awayD2[i] }))];
+
+  const userMap = {}; (await getAllUsers()).forEach(u => userMap[u.uid] = u);
+
+  for (let i = 0; i < bouts.length && i < pairing.length; i++) {
+    const b = bouts[i], pr = pairing[i];
+    const p1 = userMap[pr.h] || {}, p2 = userMap[pr.a] || {};
+    await fetch(`${TRN_DB}/tournament/matches/${b.id}.json`, {
+      method: 'PATCH', body: JSON.stringify({
+        player1uid: pr.h, player1: p1.name || '—',
+        player2uid: pr.a, player2: p2.name || '—'
+      })
+    });
+  }
+
+  await fetch(`${TRN_DB}/tournament/lastLineup/${homeId}.json`, { method: 'PUT', body: JSON.stringify(homeLU) });
+  await fetch(`${TRN_DB}/tournament/lastLineup/${awayId}.json`, { method: 'PUT', body: JSON.stringify(awayLU) });
+  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'drawn' }) });
+
+  alert('✅ Draw সম্পন্ন! Fixture তৈরি হয়ে গেছে।');
+  await fetchTrnData();
+  loadMatchdayControlList();
+};
+
+window.mdcShowFixture = async function(key) {
+  const el = document.getElementById(`mdc-fixture-${key}`);
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:14px"><span class="spinner"></span></div>';
+  await fetchTrnData();
+  const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+  el.innerHTML = renderFixtureBlock(key, bouts, 'both');
+};
+
+// Shared by admin (allowSide='both') and manager (allowSide='home'|'away')
+function renderFixtureBlock(key, bouts, allowSide) {
+  if (!bouts.length) return '<div style="color:var(--text3);font-size:12px">কোনো bout নেই।</div>';
+  const changeFn = allowSide === 'both' ? 'mdcChangePlayer' : 'mgrChangePlayer';
+  const rows = bouts.map((b, i) => {
+    const dl = i < 3 ? '1st DL' : '2nd DL';
+    const showHome = allowSide === 'both' || allowSide === 'home';
+    const showAway = allowSide === 'both' || allowSide === 'away';
+    const homeBtn = showHome ? `<button class="btn btn-outline" onclick="${changeFn}('${key}','${b.id}','home')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    const awayBtn = showAway ? `<button class="btn btn-outline" onclick="${changeFn}('${key}','${b.id}','away')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--text3);min-width:52px;font-size:10px">${dl} #${i + 1}</span>
+      <span style="flex:1">${b.player1 || '—'}</span>${homeBtn}
+      <span style="color:var(--text3);padding:0 4px">vs</span>
+      ${awayBtn}<span style="flex:1;text-align:right">${b.player2 || '—'}</span>
+    </div>`;
+  }).join('');
+  return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    ${rows}
+    <button class="btn btn-outline" onclick="mdcCopyFixtureText('${key}')" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>
+  </div>`;
+}
+
+window.mdcCopyFixtureText = async function(key) {
+  const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+  if (!bouts.length) { alert('❌ কোনো bout নেই।'); return; }
+  const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
+  const first = bouts[0], ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
+  let text = `🏆 TYP Championship — Day ${first.day}\n${ht.emoji || '🏟️'} ${ht.name || '—'}  🆚  ${at.name || '—'} ${at.emoji || '🏟️'}\n\n`;
+  text += `🕚 1st Deadline (3v3):\n`;
+  bouts.slice(0, 3).forEach((b, i) => { text += `${i + 1}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
+  text += `\n🕛 2nd Deadline (4v4):\n`;
+  bouts.slice(3, 7).forEach((b, i) => { text += `${i + 4}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
+  } catch (e) {
+    prompt('Copy করতে সমস্যা হলে ম্যানুয়ালি সিলেক্ট করে কপি করো:', text);
+  }
+};
+
+// ── Sub/Swap: shared change-player flow ──
+window.mdcChangePlayer = function(key, matchId, side) { openPlayerChangeModal(key, matchId, side, 'admin'); };
+window.mgrChangePlayer = function(key, matchId, side) { openPlayerChangeModal(key, matchId, side, window._mgrTeamId); };
+
+function openPlayerChangeModal(key, matchId, side, role) {
+  const m = trnMatchesCache.find(x => x.id === matchId);
+  if (!m) return;
+  const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
+  const teamId = side === 'home' ? m.homeTeam : m.awayTeam;
+  const team = teamMap[teamId] || {};
+  document.getElementById('pcKey').value = key;
+  document.getElementById('pcMatchId').value = matchId;
+  document.getElementById('pcSide').value = side;
+  document.getElementById('pcRole').value = role;
+  document.getElementById('pcError').textContent = '';
+  const currentUid = side === 'home' ? m.player1uid : m.player2uid;
+  const currentName = side === 'home' ? m.player1 : m.player2;
+  document.getElementById('pcInfo').textContent = `${team.name || 'Team'} — এখন খেলছে: ${currentName || '—'}`;
+  const sel = document.getElementById('pcPlayerSelect');
+  sel.innerHTML = (team.players || []).map(p => `<option value="${p.uid}" ${p.uid === currentUid ? 'selected' : ''}>${p.name}</option>`).join('');
+  document.getElementById('playerChangeModal').classList.add('show');
+}
+
+window.pcConfirm = async function() {
+  const key = document.getElementById('pcKey').value;
+  const matchId = document.getElementById('pcMatchId').value;
+  const side = document.getElementById('pcSide').value;
+  const role = document.getElementById('pcRole').value; // 'admin' or a teamId
+  const newUid = document.getElementById('pcPlayerSelect').value;
+  const errEl = document.getElementById('pcError');
+  const m = trnMatchesCache.find(x => x.id === matchId);
+  if (!m || !newUid) return;
+  const teamId = side === 'home' ? m.homeTeam : m.awayTeam;
+  const oldUid = side === 'home' ? m.player1uid : m.player2uid;
+  if (newUid === oldUid) { errEl.textContent = 'একই player — কোনো পরিবর্তন হয়নি।'; return; }
+
+  const teamBouts = trnMatchesCache.filter(x => mdcMatchdayKey(x) === key && (x.homeTeam === teamId || x.awayTeam === teamId));
+  let swapWithMatch = null, swapWithSide = null;
+  teamBouts.forEach(x => {
+    if (x.id === matchId) return;
+    if (x.homeTeam === teamId && x.player1uid === newUid) { swapWithMatch = x; swapWithSide = 'home'; }
+    if (x.awayTeam === teamId && x.player2uid === newUid) { swapWithMatch = x; swapWithSide = 'away'; }
+  });
+  const isSwap = !!swapWithMatch;
+  const isAdmin = role === 'admin';
+
+  if (!isAdmin) {
+    const subsRes = await fetch(`${TRN_DB}/tournament/matchdaySubs/${key}/${teamId}.json`);
+    const subsData = await subsRes.json() || { subsUsed: 0, swapsUsed: 0 };
+    if (isSwap && (subsData.swapsUsed || 0) >= 2) { errEl.textContent = '❌ 2টা Swap Card ব্যবহার হয়ে গেছে।'; return; }
+    if (!isSwap && (subsData.subsUsed || 0) >= 2) { errEl.textContent = '❌ 2টা Substitution Card ব্যবহার হয়ে গেছে।'; return; }
+    const upd = isSwap ? { swapsUsed: (subsData.swapsUsed || 0) + 1 } : { subsUsed: (subsData.subsUsed || 0) + 1 };
+    await fetch(`${TRN_DB}/tournament/matchdaySubs/${key}/${teamId}.json`, { method: 'PATCH', body: JSON.stringify(upd) });
+  }
+
+  const userMap = {}; (await getAllUsers()).forEach(u => userMap[u.uid] = u);
+  const newName = (userMap[newUid] || {}).name || '—';
+  const oldName = (userMap[oldUid] || {}).name || '—';
+
+  const field = side === 'home' ? 'player1uid' : 'player2uid';
+  const nameField = side === 'home' ? 'player1' : 'player2';
+  await fetch(`${TRN_DB}/tournament/matches/${matchId}.json`, { method: 'PATCH', body: JSON.stringify({ [field]: newUid, [nameField]: newName }) });
+
+  if (isSwap && swapWithMatch) {
+    const swField = swapWithSide === 'home' ? 'player1uid' : 'player2uid';
+    const swNameField = swapWithSide === 'home' ? 'player1' : 'player2';
+    await fetch(`${TRN_DB}/tournament/matches/${swapWithMatch.id}.json`, { method: 'PATCH', body: JSON.stringify({ [swField]: oldUid, [swNameField]: oldName }) });
+  }
+
+  document.getElementById('playerChangeModal').classList.remove('show');
+  alert(`✅ ${isSwap ? 'Swap' : 'Substitution'} সম্পন্ন! ${oldName} → ${newName}`);
+  await fetchTrnData();
+  if (isAdmin) { loadMatchdayControlList(); } else { mgrRenderFixtureView(key); }
+};
+
+// ══════════════════════════════════════════
+// 👔 MANAGER PANEL (per-team)
+// ══════════════════════════════════════════
+window._mgrTeamId = null;
+window._mgrTeam = null;
+window._mgrLineupDraft = { deadline1: [], deadline2: [] };
+
+window.openManagerLogin = function(teamId) {
+  const t = (trnTeamsCache || []).find(x => x.id === teamId);
+  document.getElementById('mgrLoginTeamId').value = teamId;
+  document.getElementById('mgrLoginTeamName').textContent = t ? `${t.emoji || '🏟️'} ${t.name}` : '';
+  document.getElementById('mgrLoginPass').value = '';
+  document.getElementById('mgrLoginError').textContent = '';
+  document.getElementById('managerLoginModal').classList.add('show');
+};
+
+window.managerLoginSubmit = async function() {
+  const teamId = document.getElementById('mgrLoginTeamId').value;
+  const pass = document.getElementById('mgrLoginPass').value;
+  const errEl = document.getElementById('mgrLoginError');
+  errEl.textContent = '';
+  try {
+    const res = await fetch(`${TRN_DB}/tournament/teams/${teamId}.json`);
+    const team = await res.json();
+    if (!team) { errEl.textContent = '❌ Team পাওয়া যায়নি।'; return; }
+    if (!team.managerPassword) { errEl.textContent = '❌ এই টিমের জন্য এখনো password সেট করা হয়নি — Admin-কে জানাও।'; return; }
+    if (pass !== team.managerPassword) { errEl.textContent = '❌ ভুল Password।'; return; }
+    document.getElementById('managerLoginModal').classList.remove('show');
+    mgrOpenPanel(teamId, { id: teamId, ...team });
+  } catch (e) {
+    errEl.textContent = '❌ ' + e.message;
+  }
+};
+
+async function mgrOpenPanel(teamId, team) {
+  window._mgrTeamId = teamId;
+  window._mgrTeam = team;
+  document.getElementById('mgrPanelTitle').textContent = `👔 ${team.name} — Manager Panel`;
+  document.getElementById('managerPanelModal').classList.add('show');
+  await mgrRenderMatchdayList();
+}
+
+window.mgrRenderMatchdayList = async function() {
+  const body = document.getElementById('mgrPanelBody');
+  body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
+  await fetchTrnData();
+  const teamId = window._mgrTeamId;
+  const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
+  const myMatches = trnMatchesCache.filter(m => m.homeTeam === teamId || m.awayTeam === teamId);
+  const groups = {};
+  myMatches.forEach(m => { const k = mdcMatchdayKey(m); if (!groups[k]) groups[k] = []; groups[k].push(m); });
+  const keys = Object.keys(groups).sort((a, b) => { const da = parseInt(a.split('_')[0]) || 0, db = parseInt(b.split('_')[0]) || 0; return da - db; });
+  if (!keys.length) { body.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)">কোনো matchday নেই।</div>'; return; }
+
+  const [ctrlRes, lineupRes] = await Promise.all([
+    fetch(`${TRN_DB}/tournament/matchdayControl.json`),
+    fetch(`${TRN_DB}/tournament/matchdayLineups.json`)
+  ]);
+  const ctrlAll = await ctrlRes.json() || {};
+  const lineupAll = await lineupRes.json() || {};
+  window._mgrCtrlAll = ctrlAll;
+  window._mgrLineupAll = lineupAll;
+
+  const statusLabels = { locked: '🔒 Locked', lineup_open: '🟢 Lineup Open — Submit করো', lineup_locked: '🟡 Lineup Locked', drawn: '✅ Drawn — Fixture দেখো' };
+
+  body.innerHTML = keys.map(key => {
+    const bouts = groups[key];
+    const first = bouts[0];
+    const oppId = first.homeTeam === teamId ? first.awayTeam : first.homeTeam;
+    const opp = teamMap[oppId] || {};
+    const ctrl = ctrlAll[key] || { status: 'locked' };
+    const myLineup = (lineupAll[key] || {})[teamId];
+    const submitted = myLineup && myLineup.deadline1 && myLineup.deadline2;
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;font-size:13px;color:var(--text)">Day ${first.day} — vs ${opp.name || '—'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${statusLabels[ctrl.status] || ctrl.status}${submitted ? ' • ✅ Lineup জমা দেওয়া হয়েছে' : (ctrl.status === 'lineup_open' ? ' • ❌ এখনো জমা দেওয়া হয়নি' : '')}</div>
+      </div>
+      ${ctrl.status === 'lineup_open' ? `<button class="btn btn-gold" onclick="mgrOpenLineupEditor('${key}')" style="padding:7px 14px;font-size:11px">📋 Lineup দাও</button>` : ''}
+      ${ctrl.status === 'drawn' ? `<button class="btn btn-outline" onclick="mgrRenderFixtureView('${key}')" style="padding:7px 14px;font-size:11px">🆚 Fixture দেখো</button>` : ''}
+    </div>`;
+  }).join('');
+};
+
+window.mgrOpenLineupEditor = function(key) {
+  const teamId = window._mgrTeamId;
+  const team = window._mgrTeam;
+  const existing = ((window._mgrLineupAll || {})[key] || {})[teamId] || { deadline1: [], deadline2: [] };
+  window._mgrLineupDraft = { deadline1: [...(existing.deadline1 || [])], deadline2: [...(existing.deadline2 || [])] };
+  const body = document.getElementById('mgrPanelBody');
+  const roster = team.players || [];
+  body.innerHTML = `
+    <button class="btn btn-outline" onclick="mgrRenderMatchdayList()" style="padding:6px 12px;font-size:11px;margin-bottom:12px">← ফিরে যাও</button>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕚 Deadline 1 — 3v3 (৩ জন বাছাই করো)</div>
+    <div id="mgrD1List" style="margin-bottom:16px"></div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕛 Deadline 2 — 4v4 (৪ জন বাছাই করো)</div>
+    <div id="mgrD2List" style="margin-bottom:16px"></div>
+    <div id="mgrLineupError" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <button class="btn btn-gold" onclick="mgrSubmitLineup('${key}')" style="padding:10px 20px;width:100%">💾 Lineup জমা দাও</button>
+  `;
+  mgrRenderLineupPickers(roster);
+};
+
+function mgrRenderLineupPickers(roster) {
+  const render = (containerId, field, max) => {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = roster.map(p => {
+      const sel = window._mgrLineupDraft[field].includes(p.uid);
+      return `<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${sel ? 'var(--primary)' : 'var(--border)'};border-radius:7px;margin-bottom:5px;cursor:pointer;background:${sel ? 'rgba(99,102,241,0.08)' : 'transparent'}" onclick="mgrTogglePick(event,'${field}','${p.uid}',${max})">
+        <input type="checkbox" ${sel ? 'checked' : ''} style="pointer-events:none">
+        <span style="font-size:13px">${p.name}</span>
+      </label>`;
+    }).join('');
+  };
+  render('mgrD1List', 'deadline1', 3);
+  render('mgrD2List', 'deadline2', 4);
+}
+
+window.mgrTogglePick = function(ev, field, uid, max) {
+  ev.preventDefault();
+  const arr = window._mgrLineupDraft[field];
+  const idx = arr.indexOf(uid);
+  if (idx === -1) {
+    if (arr.length >= max) { alert(`❌ সর্বোচ্চ ${max} জন বাছাই করা যাবে।`); return; }
+    arr.push(uid);
+  } else { arr.splice(idx, 1); }
+  mgrRenderLineupPickers(window._mgrTeam.players || []);
+};
+
+window.mgrSubmitLineup = async function(key) {
+  const errEl = document.getElementById('mgrLineupError');
+  const { deadline1, deadline2 } = window._mgrLineupDraft;
+  if (deadline1.length !== 3) { errEl.textContent = '❌ Deadline 1-এর জন্য ঠিক ৩ জন বাছাই করো।'; return; }
+  if (deadline2.length !== 4) { errEl.textContent = '❌ Deadline 2-এর জন্য ঠিক ৪ জন বাছাই করো।'; return; }
+  const teamId = window._mgrTeamId;
+  await fetch(`${TRN_DB}/tournament/matchdayLineups/${key}/${teamId}.json`, {
+    method: 'PUT', body: JSON.stringify({ deadline1, deadline2, submittedAt1: new Date().toISOString(), submittedAt2: new Date().toISOString() })
+  });
+  alert('✅ Lineup জমা হয়েছে!');
+  mgrRenderMatchdayList();
+};
+
+window.mgrRenderFixtureView = async function(key) {
+  const body = document.getElementById('mgrPanelBody');
+  body.innerHTML = '<div style="text-align:center;padding:20px"><span class="spinner"></span></div>';
+  await fetchTrnData();
+  const teamId = window._mgrTeamId;
+  const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+  if (!bouts.length) { body.innerHTML = '<div style="color:var(--text3);padding:20px">কোনো bout নেই।</div>'; return; }
+  const side = bouts[0].homeTeam === teamId ? 'home' : 'away';
+  body.innerHTML = `<button class="btn btn-outline" onclick="mgrRenderMatchdayList()" style="padding:6px 12px;font-size:11px;margin-bottom:12px">← ফিরে যাও</button>` +
+    renderFixtureBlock(key, bouts, side);
+};
+
 
 // ── Admin: Load Matchdays for Entry ──
 window.loadTrnMatchdays = async function() {
