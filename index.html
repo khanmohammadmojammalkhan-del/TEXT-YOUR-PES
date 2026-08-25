@@ -1157,6 +1157,8 @@ select.form-input option { background: var(--card); color: var(--text); }
 .friendly-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; overflow-x:auto; }
 .friendly-tab { padding:11px 18px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text3); font-family:'Libre Caslon Text',sans-serif; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; transition:all 0.15s; margin-bottom:-1px; }
 .friendly-tab.active { color:var(--text); border-bottom-color:var(--accent); }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -6982,31 +6984,51 @@ async function loadHomeLiveMatchday() {
       const total = mdMatches.length;
       const hasResults = played_count > 0;
 
-      html += `<div onclick="openPublicMatchDetail(${currentDay},'${mdMatches[0].homeTeam}','${mdMatches[0].awayTeam}')" style="cursor:pointer;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-weight:600;letter-spacing:1px">MATCHDAY ${md} &nbsp;·&nbsp; ${played_count}/${total} bouts</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <div style="flex:1;text-align:center">
-            <div style="width:52px;height:52px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;margin:0 auto 6px">
-              ${home.logo ? `<img src="${home.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:9px">` : (home.emoji||'🏟️')}
-            </div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${home.name||'—'}</div>
-            <div style="font-size:11px;color:var(--text3)">${home.manager||''}</div>
+      const allDone = hasResults && played_count === total;
+      const statusDot = allDone
+        ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span> <span style="color:var(--green)">সম্পন্ন</span>`
+        : hasResults
+        ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--yellow);display:inline-block;animation:pulse 1.5s infinite"></span> <span style="color:var(--yellow)">চলছে</span>`
+        : `<span style="width:6px;height:6px;border-radius:50%;background:var(--text3);display:inline-block"></span> <span style="color:var(--text3)">Upcoming</span>`;
+
+      html += `<div onclick="openPublicMatchDetail(${currentDay},'${mdMatches[0].homeTeam}','${mdMatches[0].awayTeam}')"
+        style="cursor:pointer;position:relative;background:linear-gradient(180deg,var(--card2) 0%,var(--card) 100%);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(201,168,76,0.15)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
+        <div style="height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan))"></div>
+        <div style="padding:14px 16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1.5px;font-family:'Libre Caslon Text',monospace;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);padding:3px 10px;border-radius:20px">MATCHDAY ${md}</span>
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;gap:5px">${statusDot}</span>
           </div>
-          <div style="text-align:center;min-width:80px">
-            ${hasResults
-              ? `<div style="font-size:28px;font-weight:900;font-family:'Libre Caslon Text',monospace;color:var(--cyan)">${homePoints} <span style="color:var(--text3);font-size:18px">–</span> ${awayPoints}</div>
-                 <div style="font-size:10px;color:var(--text3);margin-top:2px">points</div>`
-              : `<div style="font-size:20px;color:var(--text3)">vs</div>`}
-          </div>
-          <div style="flex:1;text-align:center">
-            <div style="width:52px;height:52px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;margin:0 auto 6px">
-              ${away.logo ? `<img src="${away.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:9px">` : (away.emoji||'🏟️')}
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="flex:1;text-align:center;min-width:0">
+              <div style="width:56px;height:56px;border-radius:14px;border:1.5px solid ${hasResults && homePoints>awayPoints ? 'var(--gold)' : 'var(--border)'};background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;margin:0 auto 8px;box-shadow:${hasResults && homePoints>awayPoints ? '0 0 14px rgba(201,168,76,0.35)' : 'none'}">
+                ${home.logo ? `<img src="${home.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : (home.emoji||'🏟️')}
+              </div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${home.name||'—'}</div>
+              <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${home.manager||''}</div>
             </div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${away.name||'—'}</div>
-            <div style="font-size:11px;color:var(--text3)">${away.manager||''}</div>
+            <div style="text-align:center;min-width:70px;flex-shrink:0">
+              ${hasResults
+                ? `<div style="font-size:30px;font-weight:900;font-family:'Libre Caslon Text',monospace;background:linear-gradient(120deg,var(--gold),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${homePoints}<span style="color:var(--text3);font-size:16px;-webkit-text-fill-color:var(--text3)">–</span>${awayPoints}</div>
+                   <div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:1px">POINTS</div>`
+                : `<div style="font-size:11px;color:var(--text3);font-weight:800;letter-spacing:2px;font-family:'Libre Caslon Text',monospace;border:1px solid var(--border);border-radius:10px;padding:8px 10px">VS</div>`}
+            </div>
+            <div style="flex:1;text-align:center;min-width:0">
+              <div style="width:56px;height:56px;border-radius:14px;border:1.5px solid ${hasResults && awayPoints>homePoints ? 'var(--gold)' : 'var(--border)'};background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;margin:0 auto 8px;box-shadow:${hasResults && awayPoints>homePoints ? '0 0 14px rgba(201,168,76,0.35)' : 'none'}">
+                ${away.logo ? `<img src="${away.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : (away.emoji||'🏟️')}
+              </div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${away.name||'—'}</div>
+              <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${away.manager||''}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3)">
+            <span>⚽ ${played_count}/${total} bouts</span>
+            <span style="color:var(--border)">•</span>
+            <span style="color:var(--cyan)">👆 Detail + Prediction Vote</span>
           </div>
         </div>
-        <div style="text-align:center;font-size:10px;color:var(--text3);margin-top:8px">👆 বিস্তারিত + Prediction Vote দেখতে চাপো</div>
       </div>`;
     });
 
@@ -7093,15 +7115,29 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
   }
 };
 
+// Josh dekhte fixture text — Messenger e paste korle sundor lagbe emon format.
+// Both admin (Matchday Control) ar public (match detail modal) copy button eita reuse kore.
+function buildJossFixtureText(bouts, ht, at) {
+  if (!bouts.length) return '';
+  const day = bouts[0].day;
+  const mdLabel = (bouts[0].matchday || '').replace(/\s*—.*$/, '').trim() || 'Matchday ?';
+  const circled = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'];
+  const line = '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬';
+  let text = `🏆 TYP CHAMPIONSHIP 🏆\n${line}\n📅 Day ${day}  •  ${mdLabel}\n${line}\n\n`;
+  text += `${ht.emoji || '🏟️'}  ${ht.name || '—'}   🆚   ${at.name || '—'}  ${at.emoji || '🏟️'}\n\n`;
+  text += `🕚 1ST DEADLINE (3v3)\n`;
+  bouts.slice(0, 3).forEach((b, i) => { text += `${circled[i]}  ${b.player1 || '—'}   🆚   ${b.player2 || '—'}\n`; });
+  text += `\n🕛 2ND DEADLINE (4v4)\n`;
+  bouts.slice(3, 7).forEach((b, i) => { text += `${circled[i + 3]}  ${b.player1 || '—'}   🆚   ${b.player2 || '—'}\n`; });
+  text += `\n${line}\n⚡ typ-bd.vercel.app`;
+  return text;
+}
+
 window.pmdCopyFixtureText = async function() {
   const bouts = window._pmdBouts || [];
   const ht = window._pmdHome || {}, at = window._pmdAway || {};
   if (!bouts.length) return;
-  let text = `🏆 TYP Championship — Day ${bouts[0].day}\n${ht.emoji || '🏟️'} ${ht.name || '—'}  🆚  ${at.name || '—'} ${at.emoji || '🏟️'}\n\n`;
-  text += `🕚 1st Deadline (3v3):\n`;
-  bouts.slice(0, 3).forEach((b, i) => { text += `${i + 1}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
-  text += `\n🕛 2nd Deadline (4v4):\n`;
-  bouts.slice(3, 7).forEach((b, i) => { text += `${i + 4}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
+  const text = buildJossFixtureText(bouts, ht, at);
   try {
     await navigator.clipboard.writeText(text);
     alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
@@ -9831,11 +9867,7 @@ window.mdcCopyFixtureText = async function(key) {
   if (!bouts.length) { alert('❌ কোনো bout নেই।'); return; }
   const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
   const first = bouts[0], ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
-  let text = `🏆 TYP Championship — Day ${first.day}\n${ht.emoji || '🏟️'} ${ht.name || '—'}  🆚  ${at.name || '—'} ${at.emoji || '🏟️'}\n\n`;
-  text += `🕚 1st Deadline (3v3):\n`;
-  bouts.slice(0, 3).forEach((b, i) => { text += `${i + 1}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
-  text += `\n🕛 2nd Deadline (4v4):\n`;
-  bouts.slice(3, 7).forEach((b, i) => { text += `${i + 4}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
+  const text = buildJossFixtureText(bouts, ht, at);
   try {
     await navigator.clipboard.writeText(text);
     alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
