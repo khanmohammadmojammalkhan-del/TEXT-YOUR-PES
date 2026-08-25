@@ -3788,6 +3788,15 @@ if (document.readyState === 'loading') {
   </div>
 </div>
 
+<!-- PUBLIC MATCH DETAIL MODAL (fixture view + prediction voting, everyone can see) -->
+<div class="modal-overlay" id="publicMatchModal">
+  <div class="modal-box" style="max-width:480px;max-height:85vh;overflow-y:auto">
+    <div class="modal-title" id="pmdTitle">🆚 Match Detail</div>
+    <div id="pmdBody"><div style="text-align:center;padding:30px"><span class="spinner"></span></div></div>
+    <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="document.getElementById('publicMatchModal').classList.remove('show')">Close</button>
+  </div>
+</div>
+
 <!-- MANAGER LOGIN MODAL -->
 <div class="modal-overlay" id="managerLoginModal">
   <div class="modal-box" style="max-width:380px">
@@ -6973,7 +6982,7 @@ async function loadHomeLiveMatchday() {
       const total = mdMatches.length;
       const hasResults = played_count > 0;
 
-      html += `<div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px">
+      html += `<div onclick="openPublicMatchDetail(${currentDay},'${mdMatches[0].homeTeam}','${mdMatches[0].awayTeam}')" style="cursor:pointer;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-weight:600;letter-spacing:1px">MATCHDAY ${md} &nbsp;·&nbsp; ${played_count}/${total} bouts</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
           <div style="flex:1;text-align:center">
@@ -6997,6 +7006,7 @@ async function loadHomeLiveMatchday() {
             <div style="font-size:11px;color:var(--text3)">${away.manager||''}</div>
           </div>
         </div>
+        <div style="text-align:center;font-size:10px;color:var(--text3);margin-top:8px">👆 বিস্তারিত + Prediction Vote দেখতে চাপো</div>
       </div>`;
     });
 
@@ -7007,6 +7017,178 @@ async function loadHomeLiveMatchday() {
     section.style.display = 'none';
   }
 }
+
+// ══════════════════════════════════════════
+// 🆚 PUBLIC MATCH DETAIL MODAL — je keo (login chara-o) khulte parbe.
+// Fixture (bout list, read-only), "Copy as Text", ar Prediction Voting (kar
+// team jitbe bole vote deya, ek device theke ekbari vote hobe — Ballon d'Or
+// voting-er moto e device-fingerprint diye gate kora).
+// ══════════════════════════════════════════
+function pmdGetDeviceFp() {
+  try {
+    const raw = [
+      navigator.userAgent, navigator.language, screen.width, screen.height,
+      screen.colorDepth, new Date().getTimezoneOffset(),
+      (navigator.hardwareConcurrency || ''), (navigator.deviceMemory || '')
+    ].join('|');
+    let hash = 0;
+    for (let i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0; }
+    return 'fp_' + Math.abs(hash).toString(36);
+  } catch (e) { return 'fp_unknown'; }
+}
+
+window.openPublicMatchDetail = async function(day, homeId, awayId) {
+  const modal = document.getElementById('publicMatchModal');
+  const body = document.getElementById('pmdBody');
+  document.getElementById('pmdTitle').textContent = '🆚 Match Detail';
+  body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
+  modal.classList.add('show');
+
+  try {
+    const [teamsSnap, matchesSnap] = await Promise.all([
+      fetch(`${TRN_DB}/tournament/teams.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/tournament/matches.json`).then(r => r.json())
+    ]);
+    const teams = teamsSnap ? Object.entries(teamsSnap).map(([id,v]) => ({id,...v})) : [];
+    const matches = matchesSnap ? Object.entries(matchesSnap).map(([id,v]) => ({id,...v})) : [];
+    const teamMap = {}; teams.forEach(t => teamMap[t.id] = t);
+    const ht = teamMap[homeId] || { name: 'Home', emoji: '🏟️' };
+    const at = teamMap[awayId] || { name: 'Away', emoji: '🏟️' };
+
+    const bouts = matches.filter(m => m.day === day && m.homeTeam === homeId && m.awayTeam === awayId)
+      .sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+
+    document.getElementById('pmdTitle').textContent = `🆚 ${ht.name || 'Home'} vs ${at.name || 'Away'}`;
+    window._pmdKey = `${day}_${homeId}_${awayId}`;
+    window._pmdBouts = bouts;
+    window._pmdHome = ht;
+    window._pmdAway = at;
+
+    const allDone = bouts.length > 0 && bouts.every(b => b.status === 'completed');
+
+    const boutRows = bouts.length ? bouts.map((b, i) => {
+      const dl = i < 3 ? '1st DL' : '2nd DL';
+      const done = b.status === 'completed';
+      const scoreTxt = done ? `<span style="color:var(--gold);font-weight:700;padding:0 6px">${b.homeScore} – ${b.awayScore}</span>` : `<span style="color:var(--text3);padding:0 6px">vs</span>`;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text3);min-width:52px;font-size:10px">${dl} #${i + 1} ${done ? '✅' : ''}</span>
+        <span style="flex:1">${b.player1 || '—'}</span>
+        ${scoreTxt}
+        <span style="flex:1;text-align:right">${b.player2 || '—'}</span>
+      </div>`;
+    }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো fixture তৈরি হয়নি (lineup submit হলে draw হবে)।</div>';
+
+    body.innerHTML = `
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        ${boutRows}
+        ${bouts.length ? `<button class="btn btn-outline" onclick="pmdCopyFixtureText()" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>` : ''}
+      </div>
+      <div id="pmdPredictionArea"><div style="text-align:center;padding:14px"><span class="spinner"></span></div></div>
+    `;
+
+    await pmdRenderPrediction(allDone);
+  } catch (e) {
+    console.error('Match detail error:', e);
+    body.innerHTML = '<div style="color:var(--red);font-size:13px;text-align:center;padding:20px">❌ Load হয়নি।</div>';
+  }
+};
+
+window.pmdCopyFixtureText = async function() {
+  const bouts = window._pmdBouts || [];
+  const ht = window._pmdHome || {}, at = window._pmdAway || {};
+  if (!bouts.length) return;
+  let text = `🏆 TYP Championship — Day ${bouts[0].day}\n${ht.emoji || '🏟️'} ${ht.name || '—'}  🆚  ${at.name || '—'} ${at.emoji || '🏟️'}\n\n`;
+  text += `🕚 1st Deadline (3v3):\n`;
+  bouts.slice(0, 3).forEach((b, i) => { text += `${i + 1}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
+  text += `\n🕛 2nd Deadline (4v4):\n`;
+  bouts.slice(3, 7).forEach((b, i) => { text += `${i + 4}. ${b.player1 || '—'} vs ${b.player2 || '—'}\n`; });
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
+  } catch (e) {
+    prompt('Copy করতে সমস্যা হলে ম্যানুয়ালি সিলেক্ট করে কপি করো:', text);
+  }
+};
+
+async function pmdRenderPrediction(matchDone) {
+  const area = document.getElementById('pmdPredictionArea');
+  if (!area) return;
+  const key = window._pmdKey;
+  const ht = window._pmdHome || {}, at = window._pmdAway || {};
+  const fp = pmdGetDeviceFp();
+
+  const res = await fetch(`${TRN_DB}/tournament/matchPredictions/${key}.json`);
+  const data = (await res.json()) || {};
+  const votes = Object.values(data);
+  const homeVotes = votes.filter(v => v.pick === 'home').length;
+  const awayVotes = votes.filter(v => v.pick === 'away').length;
+  const total = homeVotes + awayVotes;
+  const homePct = total ? Math.round((homeVotes / total) * 100) : 0;
+  const awayPct = total ? 100 - homePct : 0;
+  const alreadyVoted = !!data[fp];
+
+  const resultBars = `
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-align:center">🗳️ ${total} জন vote দিয়েছে</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <span style="width:70px;font-size:11px;font-weight:700;text-align:right">${ht.name||'Home'}</span>
+      <div style="flex:1;background:var(--bg3);border-radius:6px;height:16px;overflow:hidden">
+        <div style="width:${homePct}%;background:var(--cyan);height:100%"></div>
+      </div>
+      <span style="width:36px;font-size:11px;font-weight:700">${homePct}%</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="width:70px;font-size:11px;font-weight:700;text-align:right">${at.name||'Away'}</span>
+      <div style="flex:1;background:var(--bg3);border-radius:6px;height:16px;overflow:hidden">
+        <div style="width:${awayPct}%;background:var(--gold);height:100%"></div>
+      </div>
+      <span style="width:36px;font-size:11px;font-weight:700">${awayPct}%</span>
+    </div>`;
+
+  if (matchDone) {
+    area.innerHTML = `<div style="border-top:1px solid var(--border);padding-top:12px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">🗳️ Prediction Result</div>
+      ${resultBars}
+    </div>`;
+    return;
+  }
+
+  if (alreadyVoted) {
+    area.innerHTML = `<div style="border-top:1px solid var(--border);padding-top:12px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px">🗳️ তুমি vote দিয়েছো ✅</div>
+      ${resultBars}
+    </div>`;
+    return;
+  }
+
+  area.innerHTML = `<div style="border-top:1px solid var(--border);padding-top:12px">
+    <div style="font-size:12px;font-weight:700;margin-bottom:10px;text-align:center">🗳️ কে জিতবে বলে মনে হয়?</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" style="flex:1;padding:10px" onclick="pmdSubmitVote('home')">${ht.emoji||'🏟️'} ${ht.name||'Home'}</button>
+      <button class="btn btn-outline" style="flex:1;padding:10px" onclick="pmdSubmitVote('away')">${at.emoji||'🏟️'} ${at.name||'Away'}</button>
+    </div>
+    <div id="pmdVoteStatus" style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center"></div>
+  </div>`;
+}
+
+window.pmdSubmitVote = async function(pick) {
+  const key = window._pmdKey;
+  const fp = pmdGetDeviceFp();
+  const statusEl = document.getElementById('pmdVoteStatus');
+  if (statusEl) statusEl.textContent = '⏳ ভোট জমা হচ্ছে...';
+  try {
+    // ekbar ekhono check kori (kew jodi dui tab e ek shathe vote dey)
+    const check = await fetch(`${TRN_DB}/tournament/matchPredictions/${key}/${fp}.json`);
+    const existing = await check.json();
+    if (existing) { await pmdRenderPrediction(false); return; }
+
+    await fetch(`${TRN_DB}/tournament/matchPredictions/${key}/${fp}.json`, {
+      method: 'PUT', body: JSON.stringify({ pick, ts: Date.now() })
+    });
+    await pmdRenderPrediction(false);
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ Vote জমা হয়নি, আবার চেষ্টা করো।';
+  }
+};
 
 async function loadRecordsPage() {
   const box = document.getElementById('typRecordsFull');
@@ -8985,6 +9167,7 @@ window.openCreateTeamModal = async function() {
   document.getElementById('newTeamName').value = '';
   document.getElementById('newTeamManager').value = '';
   document.getElementById('newTeamManagerPass').value = '';
+  document.getElementById('newTeamManagerPass').placeholder = 'এই টিমের Manager Panel-এ ঢুকতে যে password লাগবে';
   document.getElementById('newTeamEmoji').value = '🏟️';
   document.getElementById('teamLogoUrl').value = '';
   document.getElementById('teamLogoPreview').innerHTML = '🏟️';
@@ -9003,7 +9186,10 @@ window.openEditTeamModal = async function(teamId) {
   document.getElementById('editTeamId').value = teamId;
   document.getElementById('newTeamName').value = t.name || '';
   document.getElementById('newTeamManager').value = t.manager || '';
-  document.getElementById('newTeamManagerPass').value = t.managerPassword || '';
+  document.getElementById('newTeamManagerPass').value = '';
+  document.getElementById('newTeamManagerPass').placeholder = t.managerPassword
+    ? 'বর্তমান password সেট করা আছে — বদলাতে চাইলে নতুন pass দিন, নাহলে ফাঁকা রাখুন'
+    : 'এই টিমের Manager Panel-এ ঢুকতে যে password লাগবে';
   document.getElementById('newTeamEmoji').value = t.emoji || '🏟️';
   document.getElementById('newTeamGroup').value = t.group || 'A';
   document.getElementById('teamLogoUrl').value = t.logo || '';
@@ -9089,10 +9275,32 @@ window.previewTeamLogo = function(input) {
   reader.readAsDataURL(file);
 }
 
+// Manager password gulo plaintext e Firebase e rakhi na — SHA-256 hash kore rakhi.
+// (Legacy: age jei team gulor password plaintext e save hoyeche, oigulo admin ekbar
+// re-save korle automatically hash hoye jabe. login check-e fallback ache purono
+// plaintext-er jonno, tai kaw locked-out hobe na.)
+window.typHashPassword = async function(text) {
+  const enc = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
 window.saveTeam = async function() {
   const name = document.getElementById('newTeamName').value.trim();
   const manager = document.getElementById('newTeamManager').value.trim();
-  const managerPassword = document.getElementById('newTeamManagerPass').value.trim();
+  const teamIdForPass = document.getElementById('editTeamId').value;
+  const rawManagerPass = document.getElementById('newTeamManagerPass').value.trim();
+  let managerPassword;
+  if (rawManagerPass) {
+    // notun/changed password dile hash kore save hobe
+    managerPassword = await window.typHashPassword(rawManagerPass);
+  } else if (teamIdForPass) {
+    // field fanka rakhle ager password (hash) e thakbe, mische jabe na
+    const existingTeam = (trnTeamsCache || []).find(x => x.id === teamIdForPass);
+    managerPassword = existingTeam ? (existingTeam.managerPassword || '') : '';
+  } else {
+    managerPassword = '';
+  }
   const emoji = document.getElementById('newTeamEmoji').value.trim() || '🏟️';
   const group = document.getElementById('newTeamGroup')?.value || 'A';
   const errEl = document.getElementById('createTeamError');
@@ -9475,27 +9683,148 @@ window.mdcShowFixture = async function(key) {
 };
 
 // Shared by admin (allowSide='both') and manager (allowSide='home'|'away')
+// admin view-e (allowSide==='both') score input-o thake, jate matchday control theke
+// shorashori result save kora jay — tournament section er score entry-r moto e
+// player profile (matches/wins/draws/losses/goals) auto update hoy.
 function renderFixtureBlock(key, bouts, allowSide) {
   if (!bouts.length) return '<div style="color:var(--text3);font-size:12px">কোনো bout নেই।</div>';
-  const changeFn = allowSide === 'both' ? 'mdcChangePlayer' : 'mgrChangePlayer';
+  const isAdminView = allowSide === 'both';
+  const showScoreInputs = isAdminView;
+  const doneCount = bouts.filter(b => b.status === 'completed').length;
   const rows = bouts.map((b, i) => {
     const dl = i < 3 ? '1st DL' : '2nd DL';
-    const showHome = allowSide === 'both' || allowSide === 'home';
-    const showAway = allowSide === 'both' || allowSide === 'away';
-    const homeBtn = showHome ? `<button class="btn btn-outline" onclick="${changeFn}('${key}','${b.id}','home')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
-    const awayBtn = showAway ? `<button class="btn btn-outline" onclick="${changeFn}('${key}','${b.id}','away')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    // shudhu admin (isAdminView) sub/swap korte parbe — manager der jonno button dekhabe na
+    const homeBtn = isAdminView ? `<button class="btn btn-outline" onclick="mdcChangePlayer('${key}','${b.id}','home')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    const awayBtn = isAdminView ? `<button class="btn btn-outline" onclick="mdcChangePlayer('${key}','${b.id}','away')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    const done = b.status === 'completed';
+    const scoreBlock = showScoreInputs ? `
+      <input type="number" min="0" max="99" value="${done ? (b.homeScore ?? '') : ''}" placeholder="0"
+        class="form-input mdc-score-home" data-id="${b.id}"
+        style="width:38px;text-align:center;padding:5px 2px;font-size:13px;font-weight:700">
+      <span style="color:var(--text3);font-weight:700;font-size:11px">—</span>
+      <input type="number" min="0" max="99" value="${done ? (b.awayScore ?? '') : ''}" placeholder="0"
+        class="form-input mdc-score-away" data-id="${b.id}"
+        style="width:38px;text-align:center;padding:5px 2px;font-size:13px;font-weight:700">
+    ` : '';
     return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
-      <span style="color:var(--text3);min-width:52px;font-size:10px">${dl} #${i + 1}</span>
+      <span style="color:var(--text3);min-width:52px;font-size:10px">${dl} #${i + 1} ${done ? '✅' : ''}</span>
       <span style="flex:1">${b.player1 || '—'}</span>${homeBtn}
-      <span style="color:var(--text3);padding:0 4px">vs</span>
+      ${scoreBlock || '<span style="color:var(--text3);padding:0 4px">vs</span>'}
       ${awayBtn}<span style="flex:1;text-align:right">${b.player2 || '—'}</span>
     </div>`;
   }).join('');
+  const saveBtn = showScoreInputs ? `
+    <button class="btn btn-gold" onclick="mdcSaveBoutResults('${key}')" style="margin-top:10px;padding:8px 14px;font-size:12px;width:100%">✅ Save Match Result</button>
+    <div id="mdc-save-status-${key}" style="font-size:11px;color:var(--green);margin-top:6px;text-align:center"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:2px;text-align:center">${doneCount}/${bouts.length} bouts completed</div>
+    <button class="btn btn-outline" onclick="mdcDownloadMatchupCard('${key}')" style="margin-top:8px;padding:7px 14px;font-size:11px;width:100%;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--secondary);color:var(--secondary)">📸 Download Match Card</button>
+  ` : '';
   return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
     ${rows}
+    ${saveBtn}
     <button class="btn btn-outline" onclick="mdcCopyFixtureText('${key}')" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>
   </div>`;
 }
+
+// Matchday Control theke matchup result card (image) download — tournament section-er
+// "Export Matchup Card" er moto e, same _renderResultCard reuse kore.
+// Save korar age (live DOM input theke) ebong save korar por (cached score theke) — dutai kaj korbe.
+window.mdcDownloadMatchupCard = async function(key) {
+  const baseBouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+  if (!baseBouts.length) { alert('❌ কোনো bout পাওয়া যায়নি।'); return; }
+
+  const matches = baseBouts.map(m => {
+    const homeInp = document.querySelector(`#mdc-fixture-${key} .mdc-score-home[data-id="${m.id}"]`);
+    const awayInp = document.querySelector(`#mdc-fixture-${key} .mdc-score-away[data-id="${m.id}"]`);
+    const hs = homeInp && homeInp.value !== '' ? parseInt(homeInp.value) : (m.homeScore ?? null);
+    const as_ = awayInp && awayInp.value !== '' ? parseInt(awayInp.value) : (m.awayScore ?? null);
+    return { ...m, homeScore: hs, awayScore: as_ };
+  }).filter(m => m.homeScore !== null && m.awayScore !== null && !isNaN(m.homeScore) && !isNaN(m.awayScore));
+
+  if (!matches.length) { alert('⚠️ এই matchup-এ কোনো bout-এ score বসানো হয়নি।'); return; }
+
+  const teamMap = {}; trnTeamsCache.forEach(t => { teamMap[t.id] = t; });
+  const sampleM = matches[0];
+  const homeTeam = teamMap[sampleM.homeTeam] || { name: 'HOME', emoji: '🏟️' };
+  const awayTeam = teamMap[sampleM.awayTeam] || { name: 'AWAY', emoji: '🏟️' };
+  const dayVal = sampleM.matchday || 'Matchday ?';
+
+  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: `${homeTeam.name || 'Home'}-vs-${awayTeam.name || 'Away'}` });
+};
+
+// Matchday Control theke shorashori bout score save — tournament/matches update kore
+// ebong player profile stats (matches/wins/draws/losses/goalsFor) auto add hoy,
+// thik "Tournament" section-er score entry-r moto e (double-count avoid kora hoy
+// already-completed bout gulor jonno).
+window.mdcSaveBoutResults = async function(key) {
+  const statusEl = document.getElementById(`mdc-save-status-${key}`);
+  if (statusEl) statusEl.textContent = '⏳ Saving...';
+
+  const homeInputs = document.querySelectorAll(`#mdc-fixture-${key} .mdc-score-home`);
+  const allUsers = await getAllUsers();
+  const userMap = {};
+  allUsers.forEach(u => { userMap[u.uid] = u; });
+
+  const statDelta = {};
+  const ensureDelta = (uid) => {
+    if (!statDelta[uid]) statDelta[uid] = { matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0 };
+  };
+
+  let saved = 0, profilesUpdated = 0;
+
+  for (const inp of homeInputs) {
+    const id = inp.dataset.id;
+    const hs = inp.value.trim();
+    const awayInp = document.querySelector(`#mdc-fixture-${key} .mdc-score-away[data-id="${id}"]`);
+    const as_ = awayInp ? awayInp.value.trim() : '';
+    if (hs === '' || as_ === '') continue;
+
+    const homeScore = parseInt(hs);
+    const awayScore = parseInt(as_);
+    const bout = trnMatchesCache.find(m => m.id === id);
+    if (!bout) continue;
+    const alreadySaved = bout.status === 'completed';
+    const p1uid = bout.player1uid, p2uid = bout.player2uid;
+
+    await fetch(`${TRN_DB}/tournament/matches/${id}.json`, {
+      method: 'PATCH',
+      body: JSON.stringify({ homeScore, awayScore, status: 'completed', updatedAt: new Date().toISOString() })
+    });
+
+    if (!alreadySaved && p1uid && p2uid && userMap[p1uid] && userMap[p2uid]) {
+      ensureDelta(p1uid); ensureDelta(p2uid);
+      statDelta[p1uid].matches += 1; statDelta[p2uid].matches += 1;
+      statDelta[p1uid].goalsFor += homeScore; statDelta[p2uid].goalsFor += awayScore;
+      if (homeScore > awayScore) { statDelta[p1uid].wins += 1; statDelta[p2uid].losses += 1; }
+      else if (awayScore > homeScore) { statDelta[p2uid].wins += 1; statDelta[p1uid].losses += 1; }
+      else { statDelta[p1uid].draws += 1; statDelta[p2uid].draws += 1; }
+    }
+    saved++;
+  }
+
+  for (const [uid, delta] of Object.entries(statDelta)) {
+    const base = userMap[uid];
+    if (!base) continue;
+    const updated = {
+      matches: (base.matches || 0) + delta.matches,
+      wins: (base.wins || 0) + delta.wins,
+      draws: (base.draws || 0) + delta.draws,
+      losses: (base.losses || 0) + delta.losses,
+      goalsFor: (base.goalsFor || 0) + delta.goalsFor,
+    };
+    await fetch(`${TRN_DB}/users/${uid}.json`, { method: 'PATCH', body: JSON.stringify(updated) });
+    profilesUpdated++;
+  }
+
+  window._allUsersCache = [];
+  await fetchTrnData();
+  await mdcShowFixture(key);
+  const newStatusEl = document.getElementById(`mdc-save-status-${key}`);
+  if (newStatusEl) {
+    newStatusEl.textContent = `✅ ${saved} bout saved! 👤 ${profilesUpdated} profile updated.`;
+    setTimeout(() => { if (newStatusEl) newStatusEl.textContent = ''; }, 5000);
+  }
+};
 
 window.mdcCopyFixtureText = async function(key) {
   const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
@@ -9616,7 +9945,13 @@ window.managerLoginSubmit = async function() {
     const team = await res.json();
     if (!team) { errEl.textContent = '❌ Team পাওয়া যায়নি।'; return; }
     if (!team.managerPassword) { errEl.textContent = '❌ এই টিমের জন্য এখনো password সেট করা হয়নি — Admin-কে জানাও।'; return; }
-    if (pass !== team.managerPassword) { errEl.textContent = '❌ ভুল Password।'; return; }
+    // notun hash-kora password check kori, purono plaintext-e save howa password-eo
+    // fallback dei (jotokkhon na admin oi team-er pass ekbar re-save kore)
+    const enteredHash = await window.typHashPassword(pass);
+    if (pass !== team.managerPassword && enteredHash !== team.managerPassword) {
+      errEl.textContent = '❌ ভুল Password।';
+      return;
+    }
     document.getElementById('managerLoginModal').classList.remove('show');
     mgrOpenPanel(teamId, { id: teamId, ...team });
   } catch (e) {
