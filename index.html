@@ -3692,6 +3692,7 @@ if (document.readyState === 'loading') {
       <button class="btn btn-outline" onclick="openCreateTeamModal()" style="padding:9px 20px;font-size:13px">➕ Create New Team</button>
       <button class="btn" onclick="confirmRegenerateFixtures()" style="padding:9px 20px;font-size:13px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🔄 Regenerate Fixtures</button>
       <button class="btn" onclick="fixStartersTo9()" style="padding:9px 20px;font-size:13px;background:rgba(251,191,36,0.1);border:1px solid var(--gold);color:var(--gold)">🔧 Fix Starters (→7)</button>
+      <button class="btn" onclick="confirmClearTestLineups()" style="padding:9px 20px;font-size:13px;background:rgba(248,113,113,0.1);border:1px solid var(--red);color:var(--red)">🧹 Clear Test Lineups &amp; Draw</button>
     </div>
   </div>
 
@@ -3824,7 +3825,33 @@ if (document.readyState === 'loading') {
       <div class="modal-title" id="mgrPanelTitle" style="margin-bottom:0">👔 Manager Panel</div>
       <button class="btn btn-outline" onclick="document.getElementById('managerPanelModal').classList.remove('show')" style="padding:6px 12px;font-size:12px">✕ Close</button>
     </div>
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px">
+      <button class="nav-btn active" id="mgrTabMatchdays" onclick="mgrSwitchTab('matchdays')" style="padding:9px 16px;font-size:12px">📅 Matchdays</button>
+      <button class="nav-btn" id="mgrTabSquad" onclick="mgrSwitchTab('squad')" style="padding:9px 16px;font-size:12px">👥 Squad — UID/Device</button>
+    </div>
     <div id="mgrPanelBody"></div>
+  </div>
+</div>
+
+<!-- MANAGER: SUBMIT PLAYER UID/DEVICE MODAL -->
+<div class="modal-overlay" id="mgrUidSubmitModal">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-title" id="mgrUidSubmitTitle">🆔 UID/Device যোগ করো</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px">এই তথ্য Admin approve করলে player-এর profile-এ auto যোগ হয়ে যাবে।</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Game UID</label>
+      <input type="text" class="form-input" id="mgrUidInput" placeholder="e.g. 123456789012" style="width:100%">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Device Name</label>
+      <input type="text" class="form-input" id="mgrDeviceInput" placeholder="e.g. Samsung A54 / iPhone 13" style="width:100%">
+    </div>
+    <div id="mgrUidSubmitError" style="color:var(--red);font-size:12px;margin-bottom:8px"></div>
+    <div id="mgrUidSubmitSuccess" style="color:var(--green);font-size:12px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('mgrUidSubmitModal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-gold" style="flex:1" onclick="mgrSubmitUidDeviceAppeal()">✅ Submit করো</button>
+    </div>
   </div>
 </div>
 
@@ -6598,6 +6625,7 @@ window.loadUidChangeAppeals = async function() {
             <div style="font-size:11px;color:var(--text3);margin-top:2px">📅 ${new Date(r.createdAt||Date.now()).toLocaleDateString()} • 🕐 ${new Date(r.createdAt||Date.now()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
           </div>
           <span style="font-size:12px;font-weight:700;color:${statusColor};padding:3px 10px;border-radius:20px;border:1px solid ${statusColor};background:${statusColor}22">${statusLabel}</span>
+          ${r.source === 'manager' ? `<span style="font-size:10px;font-weight:700;color:var(--secondary);padding:3px 8px;border-radius:20px;border:1px solid var(--secondary);background:rgba(124,58,237,0.1)">👔 Manager Submitted</span>` : ''}
         </div>
         ${r.oldUid || r.newUid ? `<div style="font-size:12px;color:var(--text2)">🆔 UID: <span style="color:var(--text3)">${r.oldUid||'—'}</span> ➜ <span style="color:var(--yellow);font-weight:600">${r.newUid||'—'}</span>${r.uidChangeReason ? `<br><span style="color:var(--text3)">কারণ: ${r.uidChangeReason}</span>` : ''}</div>` : ''}
         ${r.oldDevice || r.newDevice ? `<div style="font-size:12px;color:var(--text2)">📱 Device: <span style="color:var(--text3)">${r.oldDevice||'—'}</span> ➜ <span style="color:var(--cyan);font-weight:600">${r.newDevice||'—'}</span>${r.deviceChangeReason ? `<br><span style="color:var(--text3)">কারণ: ${r.deviceChangeReason}</span>` : ''}</div>` : ''}
@@ -6618,10 +6646,21 @@ window.loadUidChangeAppeals = async function() {
 
 window.updateUidChangeStatus = async function(id, status) {
   const note = document.getElementById('uidAdminNote_' + id)?.value.trim() || '';
+  const r = (window._uidAppealsCache || []).find(x => x.id === id);
   await fetch(`${UIDCHG_DB}/uidDeviceAppeals/${id}.json`, {
     method: 'PATCH',
     body: JSON.stringify({ status, adminNote: note, processedAt: new Date().toISOString() })
   });
+  // Approve korle player-er profile (users/{uid}) e UID/Device auto-save hoye jay — r.newUid/r.newDevice
+  // jeta thakbe shetai update hobe, khali thakle oi field chhuye dekha hobe na (purono value thakbe).
+  if (status === 'approved' && r && r.playerUid) {
+    const profileUpdate = {};
+    if (r.newUid) profileUpdate.gameUid = r.newUid;
+    if (r.newDevice) profileUpdate.deviceName = r.newDevice;
+    if (Object.keys(profileUpdate).length) {
+      await fetch(`${UIDCHG_DB}/users/${r.playerUid}.json`, { method: 'PATCH', body: JSON.stringify(profileUpdate) });
+    }
+  }
   loadUidChangeAppeals();
 };
 
@@ -7067,21 +7106,29 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
   modal.classList.add('show');
 
   try {
-    const [teamsSnap, matchesSnap] = await Promise.all([
+    const key = `${day}_${homeId}_${awayId}`;
+    const [teamsSnap, matchesSnap, ctrlSnap] = await Promise.all([
       fetch(`${TRN_DB}/tournament/teams.json`).then(r => r.json()),
-      fetch(`${TRN_DB}/tournament/matches.json`).then(r => r.json())
+      fetch(`${TRN_DB}/tournament/matches.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`).then(r => r.json())
     ]);
     const teams = teamsSnap ? Object.entries(teamsSnap).map(([id,v]) => ({id,...v})) : [];
-    const matches = matchesSnap ? Object.entries(matchesSnap).map(([id,v]) => ({id,...v})) : [];
+    const allMatches = matchesSnap ? Object.entries(matchesSnap).map(([id,v]) => ({id,...v})) : [];
     const teamMap = {}; teams.forEach(t => teamMap[t.id] = t);
     const ht = teamMap[homeId] || { name: 'Home', emoji: '🏟️' };
     const at = teamMap[awayId] || { name: 'Away', emoji: '🏟️' };
 
-    const bouts = matches.filter(m => m.day === day && m.homeTeam === homeId && m.awayTeam === awayId)
-      .sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+    // Tournament setup-e default squad order diye shob bout record age theke e toiri hoye jay,
+    // kintu shetake real fixture bola jabe na — jotokkhon na matchdayControl status 'drawn' hoy
+    // (mane submitted lineup theke random pairing hoye gyeche). Tai `.length` na dekhe status check kori.
+    const isDrawn = ctrlSnap && ctrlSnap.status === 'drawn';
+    const bouts = isDrawn
+      ? allMatches.filter(m => m.day === day && m.homeTeam === homeId && m.awayTeam === awayId)
+          .sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0))
+      : [];
 
     document.getElementById('pmdTitle').textContent = `🆚 ${ht.name || 'Home'} vs ${at.name || 'Away'}`;
-    window._pmdKey = `${day}_${homeId}_${awayId}`;
+    window._pmdKey = key;
     window._pmdBouts = bouts;
     window._pmdHome = ht;
     window._pmdAway = at;
@@ -7098,7 +7145,7 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
         ${scoreTxt}
         <span style="flex:1;text-align:right">${b.player2 || '—'}</span>
       </div>`;
-    }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো fixture তৈরি হয়নি (lineup submit হলে draw হবে)।</div>';
+    }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো fixture draw হয়নি — দুই দলের manager lineup submit করলে ও deadline শেষ হলে admin draw করবে।</div>';
 
     body.innerHTML = `
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
@@ -9528,6 +9575,27 @@ window.confirmRegenerateFixtures = async function() {
   loadTrnMatchdays();
 };
 
+// Test er jonno manager panel diye submit kora lineup + matchday draw status shob clear kore dey.
+// tournament/matchdayLineups (submitted lineup), tournament/matchdayControl (locked/lineup_open/
+// lineup_locked/drawn status), ar tournament/lastLineup (fallback cache) — tinta node e delete hoy.
+// NOTE: eita bout er player1/player2 assignment (draw-er result) reset kore na — shetar jonno
+// "🔄 Regenerate Fixtures" alada theke chapte hobe (mane matches node fresh kore rebuild hoy).
+window.confirmClearTestLineups = async function() {
+  if (!confirm('🧹 সব team-এর submitted lineup, matchday draw status (locked/drawn ইত্যাদি), আর fallback lineup cache মুছে যাবে।\n\nএইটা শুধু lineup/draw status মুছবে — match score/result কিছু মুছবে না। Player assignment (draw) ফেরত আনতে এর সাথে "🔄 Regenerate Fixtures"-ও চাপতে হবে।\n\nContinue?')) return;
+  try {
+    await Promise.all([
+      fetch(`${TRN_DB}/tournament/matchdayLineups.json`, { method: 'DELETE' }),
+      fetch(`${TRN_DB}/tournament/matchdayControl.json`, { method: 'DELETE' }),
+      fetch(`${TRN_DB}/tournament/lastLineup.json`, { method: 'DELETE' })
+    ]);
+    alert('✅ Test lineup + draw status মুছে গেছে। এখন সবাই আবার fresh ভাবে lineup submit করতে পারবে।\n\nযদি bout-এর player assignment (draw করা player) ও আগের অবস্থায় ফেরাতে চাও, "🔄 Regenerate Fixtures" বাটনেও চাপ দাও।');
+    await fetchTrnData();
+    loadMatchdayControlList();
+  } catch (e) {
+    alert('❌ Clear করতে সমস্যা হয়েছে: ' + e.message);
+  }
+};
+
 // ── Admin: One-click fix — promote each team's players so first 7 (existing order) become starters ──
 window.fixStartersTo9 = async function() {
   if (!confirm('সব টিমের প্লেয়ার লিস্ট চেক করে প্রথম ৭ জনকে starter বানিয়ে দেওয়া হবে (আগের ক্রম অনুযায়ী)। Continue?')) return;
@@ -9996,8 +10064,79 @@ async function mgrOpenPanel(teamId, team) {
   window._mgrTeam = team;
   document.getElementById('mgrPanelTitle').textContent = `👔 ${team.name} — Manager Panel`;
   document.getElementById('managerPanelModal').classList.add('show');
-  await mgrRenderMatchdayList();
+  mgrSwitchTab('matchdays');
 }
+
+window.mgrSwitchTab = function(tab) {
+  document.getElementById('mgrTabMatchdays').classList.toggle('active', tab === 'matchdays');
+  document.getElementById('mgrTabSquad').classList.toggle('active', tab === 'squad');
+  if (tab === 'squad') mgrRenderSquadList();
+  else mgrRenderMatchdayList();
+};
+
+// Manager nijer team-er shob player dekhbe, click korle UID/Device submit modal khulbe.
+window.mgrRenderSquadList = async function() {
+  const body = document.getElementById('mgrPanelBody');
+  body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
+  const team = window._mgrTeam;
+  const players = (team.players || []);
+  if (!players.length) { body.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)">কোনো player নেই।</div>'; return; }
+
+  const usersRes = await fetch(`${TRN_DB}/users.json`);
+  const usersData = await usersRes.json() || {};
+
+  body.innerHTML = `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">প্লেয়ারে ক্লিক করে তার Game UID / Device Name যোগ করো — Admin approve করলে profile-এ save হয়ে যাবে।</div>` +
+    players.map((p, i) => {
+      const u = usersData[p.uid] || {};
+      return `<div onclick="mgrOpenUidSubmit('${p.uid}','${(p.name||u.name||'—').replace(/'/g,"\\'")}')" class="team-player-row" style="cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'">
+        <div class="team-player-num">${i + 1}</div>
+        <div class="team-player-avatar">${u.avatarUrl ? `<img src="${u.avatarUrl}">` : '🎮'}</div>
+        <div style="flex:1;font-size:13px;color:var(--text)">${p.name || u.name || '—'}</div>
+        <div style="font-size:16px;color:var(--text3)">🆔</div>
+      </div>`;
+    }).join('');
+};
+
+window._mgrUidTargetPlayer = null;
+window.mgrOpenUidSubmit = function(uid, name) {
+  window._mgrUidTargetPlayer = { uid, name };
+  document.getElementById('mgrUidSubmitTitle').textContent = `🆔 ${name} — UID/Device যোগ করো`;
+  document.getElementById('mgrUidInput').value = '';
+  document.getElementById('mgrDeviceInput').value = '';
+  document.getElementById('mgrUidSubmitError').textContent = '';
+  document.getElementById('mgrUidSubmitSuccess').textContent = '';
+  document.getElementById('mgrUidSubmitModal').classList.add('show');
+};
+
+window.mgrSubmitUidDeviceAppeal = async function() {
+  const errEl = document.getElementById('mgrUidSubmitError');
+  const sucEl = document.getElementById('mgrUidSubmitSuccess');
+  errEl.textContent = ''; sucEl.textContent = '';
+  const uidVal = document.getElementById('mgrUidInput').value.trim();
+  const deviceVal = document.getElementById('mgrDeviceInput').value.trim();
+  if (!uidVal && !deviceVal) { errEl.textContent = '❌ অন্তত UID অথবা Device Name দাও।'; return; }
+  const player = window._mgrUidTargetPlayer;
+  const team = window._mgrTeam;
+  if (!player) { errEl.textContent = '❌ Player পাওয়া যায়নি।'; return; }
+
+  const appealData = {
+    playerUid: player.uid, playerName: player.name || '—',
+    teamName: team?.name || '',
+    oldUid: '', newUid: uidVal, uidChangeReason: uidVal ? 'Manager কর্তৃক যোগ করা (নতুন)' : '',
+    oldDevice: '', newDevice: deviceVal, deviceChangeReason: deviceVal ? 'Manager কর্তৃক যোগ করা (নতুন)' : '',
+    source: 'manager', submittedByTeam: team?.name || '',
+    status: 'pending', createdAt: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(`${UIDCHG_DB}/uidDeviceAppeals.json`, { method: 'POST', body: JSON.stringify(appealData) });
+    if (!res.ok) throw new Error('save failed');
+    sucEl.textContent = '✅ Submit হয়েছে! Admin approve করলে profile-এ যোগ হয়ে যাবে।';
+    setTimeout(() => { document.getElementById('mgrUidSubmitModal').classList.remove('show'); }, 1800);
+  } catch (e) {
+    errEl.textContent = '❌ Submit করতে সমস্যা হয়েছে। আবার চেষ্টা করো।';
+  }
+};
 
 window.mgrRenderMatchdayList = async function() {
   const body = document.getElementById('mgrPanelBody');
@@ -10985,50 +11124,52 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   roundRectCanvas(ctx, 0, 0, CARD_W, CARD_H, 18);
   ctx.clip();
 
-  ctx.fillStyle = '#f5faf7';
+  // ── BACKGROUND (dark theme matching website: near-black navy) ──
+  ctx.fillStyle = '#0A0A12';
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  // subtle grid lines
-  ctx.strokeStyle = 'rgba(15,128,90,0.05)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < CARD_W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CARD_H); ctx.stroke(); }
-  for (let y = 0; y < CARD_H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CARD_W,y); ctx.stroke(); }
+  // subtle cyan dot-grid (echoes the site's turf/hex backdrop)
+  ctx.fillStyle = 'rgba(0,229,255,0.05)';
+  for (let x = 20; x < CARD_W; x += 40) {
+    for (let y = 20; y < CARD_H; y += 40) { ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill(); }
+  }
 
-  // ── HEADER BG (premium diagonal gradient with depth) ──
+  // ── HEADER BG (deep charcoal with gold/cyan glow, like the player-card cover) ──
   const hGrad = ctx.createLinearGradient(0,0,CARD_W,HEADER_H);
-  hGrad.addColorStop(0,    '#0f5132');
-  hGrad.addColorStop(0.45, '#15805a');
-  hGrad.addColorStop(0.55, '#1a9468');
-  hGrad.addColorStop(1,    '#0f5132');
+  hGrad.addColorStop(0,    '#0C0C16');
+  hGrad.addColorStop(0.5,  '#13131f');
+  hGrad.addColorStop(1,    '#0C0C16');
   ctx.fillStyle = hGrad;
   ctx.fillRect(0, 0, CARD_W, HEADER_H);
 
-  // decorative glow circles for depth
+  // decorative glow circles for depth — gold left, cyan right (site's signature combo)
   ctx.save();
-  ctx.globalAlpha = 0.12;
-  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = '#00E5FF';
   ctx.beginPath(); ctx.arc(CARD_W - 60, -20, 130, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(-30, HEADER_H + 10, 100, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = '#c9a84c';
+  ctx.beginPath(); ctx.arc(-30, HEADER_H + 10, 110, 0, Math.PI*2); ctx.fill();
   ctx.restore();
 
   // header bottom: gold accent line + soft shadow fade
   const fadeGrad = ctx.createLinearGradient(0, HEADER_H-10, 0, HEADER_H);
   fadeGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  fadeGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
+  fadeGrad.addColorStop(1, 'rgba(0,0,0,0.35)');
   ctx.fillStyle = fadeGrad;
   ctx.fillRect(0, HEADER_H-10, CARD_W, 10);
 
   const accentGrad = ctx.createLinearGradient(0,0,CARD_W,0);
   accentGrad.addColorStop(0,   'transparent');
   accentGrad.addColorStop(0.15,'#c9a84c');
-  accentGrad.addColorStop(0.5, '#e0c878');
+  accentGrad.addColorStop(0.5, '#00E5FF');
   accentGrad.addColorStop(0.85,'#c9a84c');
   accentGrad.addColorStop(1,   'transparent');
   ctx.strokeStyle = accentGrad;
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(0,HEADER_H); ctx.lineTo(CARD_W,HEADER_H); ctx.stroke();
 
-  // ── TYP LOGO (top-left watermark, white on green header) ──
+  // ── TYP LOGO (top-left watermark, white on dark header) ──
   if (typLogoImg) {
     const lh = 56;
     const lw = typLogoImg.width * (lh / typLogoImg.height);
@@ -11041,37 +11182,49 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // ── TITLE ──
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#c9a84c';
   ctx.font = '700 11px Inter, Arial';
   ctx.letterSpacing = '0.2em';
   ctx.fillText('TYP AUCTION TOURNAMENT', CARD_W/2, 36);
   ctx.letterSpacing = '0';
 
-  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.fillStyle = 'rgba(248,250,252,0.65)';
   ctx.font = '500 10px Inter, Arial';
   ctx.fillText(dayLabel + '  •  ' + new Date().toLocaleDateString('en-BD',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(), CARD_W/2, 56);
 
   // divider line under title
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(CARD_W/2-160,66); ctx.lineTo(CARD_W/2+160,66); ctx.stroke();
 
   // ── TEAM LOGOS (emoji as placeholder, with depth shadow) ──
   const logoSize = 64;
   const logoY = 82;
-  const drawLogoCircle = (cx, cy, emoji, logoUrl) => {
+  const drawLogoCircle = (cx, cy, emoji, isWinner) => {
+    if (isWinner) {
+      // extra outer glow ring for the winning team — makes the winner unmistakable at a glance
+      ctx.save();
+      ctx.shadowColor = 'rgba(201,168,76,0.7)';
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      ctx.arc(cx, cy, logoSize/2 + 5, 0, Math.PI*2);
+      ctx.strokeStyle = '#c9a84c';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.2)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetY = 3;
+    ctx.shadowColor = 'rgba(0,229,255,0.25)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, logoSize/2, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
     ctx.fill();
     ctx.restore();
     ctx.beginPath();
     ctx.arc(cx, cy, logoSize/2, 0, Math.PI*2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.strokeStyle = 'rgba(201,168,76,0.6)';
     ctx.lineWidth = 2.5;
     ctx.stroke();
     ctx.font = `${logoSize*0.45}px serif`;
@@ -11081,8 +11234,8 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.textBaseline = 'alphabetic';
   };
 
-  drawLogoCircle(220, logoY + logoSize/2, homeTeam.emoji || '🏟️');
-  drawLogoCircle(CARD_W - 220, logoY + logoSize/2, awayTeam.emoji || '🏟️');
+  drawLogoCircle(220, logoY + logoSize/2, homeTeam.emoji || '🏟️', homePoints > awayPoints);
+  drawLogoCircle(CARD_W - 220, logoY + logoSize/2, awayTeam.emoji || '🏟️', awayPoints > homePoints);
 
   // ── SCORE BADGE GEOMETRY (computed early so team names can be constrained to not overlap it) ──
   ctx.font = '800 27px Inter, Arial';
@@ -11119,7 +11272,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     return { lines, fontSize: Math.max(fontSize, minFontSize) };
   };
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#F8FAFC';
   ctx.textAlign = 'left';
   const homeFit = fitTeamNameLines((homeTeam.name||'HOME').toUpperCase(), homeNameMaxWidth);
   ctx.font = `700 ${homeFit.fontSize}px Inter, Arial`;
@@ -11134,21 +11287,39 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const awayStartY = logoY + 16 - (awayFit.lines.length - 1) * awayLineH/2;
   awayFit.lines.forEach((ln, i) => ctx.fillText(ln, awayNameStartX, awayStartY + i*awayLineH));
 
-  // ── SCORE BADGE (premium with shadow & gold ring, dynamic width for any digit count) ──
+  // tiny "WINNER" tag under the winning team's name — instant visual read of who took the matchday
+  if (homePoints !== awayPoints) {
+    ctx.font = '700 8px Inter, Arial';
+    ctx.fillStyle = '#c9a84c';
+    ctx.letterSpacing = '0.1em';
+    if (homePoints > awayPoints) {
+      ctx.textAlign = 'left';
+      ctx.fillText('🏆 WINNER', homeNameStartX, homeStartY + homeFit.lines.length*homeLineH + 3);
+    } else {
+      ctx.textAlign = 'right';
+      ctx.fillText('🏆 WINNER', awayNameStartX, awayStartY + awayFit.lines.length*awayLineH + 3);
+    }
+    ctx.letterSpacing = '0';
+  }
+
+  // ── SCORE BADGE (premium dark card with gold ring + gold-to-cyan gradient digits) ──
 
   // shadow
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.25)';
-  ctx.shadowBlur = 14;
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 16;
   ctx.shadowOffsetY = 4;
   roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 12);
-  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.fillStyle = '#0C0C16'; ctx.fill();
   ctx.restore();
 
   roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 12);
   ctx.strokeStyle = '#c9a84c'; ctx.lineWidth = 2; ctx.stroke();
 
-  ctx.fillStyle = '#0f5132';
+  const scoreGrad = ctx.createLinearGradient(sbX, 0, sbX+sbW, 0);
+  scoreGrad.addColorStop(0, '#c9a84c');
+  scoreGrad.addColorStop(1, '#00E5FF');
+  ctx.fillStyle = scoreGrad;
   ctx.font = '800 27px Inter, Arial';
   ctx.textAlign = 'right';
   ctx.fillText(homeStr, CARD_W/2 - dashW/2 - numGap, sbY + 33);
@@ -11160,30 +11331,32 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.textAlign = 'center';
   ctx.font = '700 8px Inter, Arial';
   ctx.letterSpacing = '0.15em';
-  ctx.fillStyle = '#a07830';
+  ctx.fillStyle = '#c9a84c';
   ctx.fillText('POINTS', CARD_W/2, sbY + sbH - 6);
   ctx.letterSpacing = '0';
   // small divider
-  ctx.fillStyle = 'rgba(15,128,90,0.2)';
+  ctx.fillStyle = 'rgba(0,229,255,0.2)';
   ctx.fillRect(CARD_W/2-1, sbY+10, 2, sbH-22);
 
   // ── COLUMN HEADERS ──
   const colY = HEADER_H + SCORE_ROW_H;
-  ctx.fillStyle = '#e3f3ec';
+  ctx.fillStyle = '#10101C';
   ctx.fillRect(0, HEADER_H + SCORE_ROW_H - ROW_H, CARD_W, ROW_H);
-  ctx.strokeStyle = 'rgba(15,128,90,0.25)';
+  ctx.strokeStyle = 'rgba(0,229,255,0.15)';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(0,HEADER_H+SCORE_ROW_H-ROW_H); ctx.lineTo(CARD_W,HEADER_H+SCORE_ROW_H-ROW_H); ctx.stroke();
 
   ctx.font = '700 10px Inter, Arial';
-  ctx.fillStyle = '#0f5132';
+  ctx.fillStyle = '#c9a84c';
+  ctx.letterSpacing = '0.08em';
   const colHY = HEADER_H + SCORE_ROW_H - ROW_H/2 + 4;
   ctx.textAlign = 'left';  ctx.fillText('HOME PLAYER', 56, colHY);
   ctx.textAlign = 'center'; ctx.fillText('SCORE', CARD_W/2, colHY);
   ctx.textAlign = 'right';  ctx.fillText('AWAY PLAYER', CARD_W - 56, colHY);
+  ctx.letterSpacing = '0';
 
   // score row team total bg
-  ctx.fillStyle = '#f6fbf8';
+  ctx.fillStyle = '#0C0C16';
   ctx.fillRect(0, HEADER_H, CARD_W, SCORE_ROW_H - ROW_H);
 
   // ── BOUT ROWS ──
@@ -11195,16 +11368,31 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
     // row bg
     if (isMVP) {
-      ctx.fillStyle = '#fdf6e3';
+      const mvpGlow = ctx.createLinearGradient(0, 0, CARD_W, 0);
+      mvpGlow.addColorStop(0,    'rgba(201,168,76,0.05)');
+      mvpGlow.addColorStop(0.5,  'rgba(201,168,76,0.24)');
+      mvpGlow.addColorStop(1,    'rgba(201,168,76,0.05)');
+      ctx.fillStyle = mvpGlow;
     } else if (idx % 2 === 0) {
-      ctx.fillStyle = '#f6fbf8';
+      ctx.fillStyle = '#0C0C16';
     } else {
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#10101C';
     }
     ctx.fillRect(0, ry, CARD_W, ROW_H);
 
+    // MVP row: frame it with thin gold top/bottom lines + solid accent bars on both far edges
+    if (isMVP) {
+      ctx.strokeStyle = 'rgba(201,168,76,0.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, ry+0.5); ctx.lineTo(CARD_W, ry+0.5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, ry+ROW_H-0.5); ctx.lineTo(CARD_W, ry+ROW_H-0.5); ctx.stroke();
+      ctx.fillStyle = '#c9a84c';
+      ctx.fillRect(0, ry, 4, ROW_H);
+      ctx.fillRect(CARD_W-4, ry, 4, ROW_H);
+    }
+
     // row border bottom
-    ctx.strokeStyle = 'rgba(15,128,90,0.12)';
+    ctx.strokeStyle = 'rgba(0,229,255,0.08)';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0,ry+ROW_H); ctx.lineTo(CARD_W,ry+ROW_H); ctx.stroke();
 
@@ -11213,20 +11401,20 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     const avCY = ry + ROW_H/2;
     // home avatar
     ctx.beginPath(); ctx.arc(30, avCY, avR, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(15,128,90,0.12)'; ctx.fill();
-    ctx.strokeStyle = isMVP && m.player1===mvpName ? '#c9a84c' : 'rgba(15,128,90,0.35)';
+    ctx.fillStyle = 'rgba(0,229,255,0.08)'; ctx.fill();
+    ctx.strokeStyle = isMVP && m.player1===mvpName ? '#c9a84c' : 'rgba(0,229,255,0.3)';
     ctx.lineWidth = 1.5; ctx.stroke();
     ctx.font = '10px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(15,128,90,0.6)'; ctx.fillText('👤', 30, avCY);
+    ctx.fillStyle='rgba(0,229,255,0.7)'; ctx.fillText('👤', 30, avCY);
     ctx.textBaseline='alphabetic';
 
     // away avatar
     ctx.beginPath(); ctx.arc(CARD_W-30, avCY, avR, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(15,128,90,0.12)'; ctx.fill();
-    ctx.strokeStyle = isMVP && m.player2===mvpName ? '#c9a84c' : 'rgba(15,128,90,0.35)';
+    ctx.fillStyle = 'rgba(0,229,255,0.08)'; ctx.fill();
+    ctx.strokeStyle = isMVP && m.player2===mvpName ? '#c9a84c' : 'rgba(0,229,255,0.3)';
     ctx.lineWidth = 1.5; ctx.stroke();
     ctx.font = '10px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='rgba(15,128,90,0.6)'; ctx.fillText('👤', CARD_W-30, avCY);
+    ctx.fillStyle='rgba(0,229,255,0.7)'; ctx.fillText('👤', CARD_W-30, avCY);
     ctx.textBaseline='alphabetic';
 
     const textY = ry + ROW_H/2 + 5;
@@ -11234,10 +11422,10 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     // home player name
     ctx.textAlign = 'left';
     if (isMVP && m.player1 === mvpName) {
-      ctx.fillStyle = '#a07830';
+      ctx.fillStyle = '#c9a84c';
       ctx.font = '700 13px Inter, Arial';
     } else {
-      ctx.fillStyle = hs > as_ ? '#05050A' : 'rgba(5,5,10,0.45)';
+      ctx.fillStyle = hs > as_ ? '#F8FAFC' : 'rgba(248,250,252,0.4)';
       ctx.font = hs > as_ ? '700 13px Inter, Arial' : '400 13px Inter, Arial';
     }
     ctx.fillText((m.player1||'—').toUpperCase(), 56, textY);
@@ -11245,10 +11433,10 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     // away player name
     ctx.textAlign = 'right';
     if (isMVP && m.player2 === mvpName) {
-      ctx.fillStyle = '#a07830';
+      ctx.fillStyle = '#c9a84c';
       ctx.font = '700 13px Inter, Arial';
     } else {
-      ctx.fillStyle = as_ > hs ? '#05050A' : 'rgba(5,5,10,0.45)';
+      ctx.fillStyle = as_ > hs ? '#F8FAFC' : 'rgba(248,250,252,0.4)';
       ctx.font = as_ > hs ? '700 13px Inter, Arial' : '400 13px Inter, Arial';
     }
     ctx.fillText((m.player2||'—').toUpperCase(), CARD_W-56, textY);
@@ -11257,34 +11445,44 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.textAlign = 'center';
     ctx.font = '700 16px Inter, Arial';
     // home score
-    ctx.fillStyle = hs > as_ ? '#0f5132' : 'rgba(5,5,10,0.4)';
+    ctx.fillStyle = hs > as_ ? '#00E5FF' : 'rgba(148,163,184,0.5)';
     ctx.fillText(String(hs), CARD_W/2 - 20, textY);
     // separator
-    ctx.fillStyle = 'rgba(15,128,90,0.35)';
+    ctx.fillStyle = 'rgba(0,229,255,0.3)';
     ctx.fillText('|', CARD_W/2, textY);
     // away score
-    ctx.fillStyle = as_ > hs ? '#0f5132' : 'rgba(5,5,10,0.4)';
+    ctx.fillStyle = as_ > hs ? '#00E5FF' : 'rgba(148,163,184,0.5)';
     ctx.fillText(String(as_), CARD_W/2 + 20, textY);
 
-    // MVP star badge
+    // MVP badge — gold pill with glow, not just plain text
     if (isMVP) {
       const mvpX = isMVP && m.player1===mvpName ? CARD_W/2 - 65 : CARD_W/2 + 65;
       ctx.font = '700 9px Inter, Arial';
-      ctx.fillStyle = '#a07830';
+      const label = '★ MVP';
+      const tw = ctx.measureText(label).width;
+      const padX = 7, pillH = 15, pillY = textY - 12 - pillH + 3;
+      ctx.save();
+      ctx.shadowColor = 'rgba(201,168,76,0.5)';
+      ctx.shadowBlur = 6;
+      roundRectCanvas(ctx, mvpX - tw/2 - padX, pillY, tw + padX*2, pillH, 7);
+      ctx.fillStyle = '#c9a84c';
+      ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = '#0A0A12';
       ctx.textAlign = 'center';
-      ctx.fillText('★ MVP', mvpX, textY - 12);
+      ctx.fillText(label, mvpX, pillY + pillH - 4);
     }
   });
 
-  // ── FOOTER (clean gold accent strip, no sponsor text) ──
+  // ── FOOTER (dark strip with gold accent, matching site chrome) ──
   const footerY = CARD_H - FOOTER_H;
-  ctx.fillStyle = '#0f5132';
+  ctx.fillStyle = '#0C0C16';
   ctx.fillRect(0, footerY, CARD_W, FOOTER_H);
 
   const footerAccent = ctx.createLinearGradient(0,0,CARD_W,0);
   footerAccent.addColorStop(0,   'transparent');
   footerAccent.addColorStop(0.15,'#c9a84c');
-  footerAccent.addColorStop(0.5, '#e0c878');
+  footerAccent.addColorStop(0.5, '#00E5FF');
   footerAccent.addColorStop(0.85,'#c9a84c');
   footerAccent.addColorStop(1,   'transparent');
   ctx.strokeStyle = footerAccent;
@@ -11292,7 +11490,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.beginPath(); ctx.moveTo(0,footerY); ctx.lineTo(CARD_W,footerY); ctx.stroke();
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillStyle = '#c9a84c';
   ctx.font = '700 9px Inter, Arial';
   ctx.letterSpacing = '0.18em';
   ctx.fillText('TYP CHAMPIONSHIP', CARD_W/2, footerY + FOOTER_H/2 + 4);
@@ -11300,9 +11498,9 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   ctx.restore(); // end rounded-corner clip
 
-  // outer border for polished card edge
+  // outer border for polished card edge (gold glow, matches site's premium accent)
   roundRectCanvas(ctx, 1, 1, CARD_W-2, CARD_H-2, 18);
-  ctx.strokeStyle = 'rgba(15,128,90,0.25)';
+  ctx.strokeStyle = 'rgba(201,168,76,0.4)';
   ctx.lineWidth = 2;
   ctx.stroke();
 
