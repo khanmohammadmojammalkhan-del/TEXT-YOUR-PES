@@ -9750,6 +9750,7 @@ function mdcRenderCard(key, bouts, teamMap) {
       <button class="btn" onclick="mdcSetStatus('${key}','lineup_locked')" style="padding:7px 14px;font-size:11px;background:rgba(248,113,113,0.1);border:1px solid var(--red);color:var(--red)">🔒 Lock Lineup</button>
       <button class="btn btn-gold" onclick="mdcStartMatchday('${key}')" style="padding:7px 14px;font-size:11px">🎲 Start Matchday</button>
       ${ctrl.status === 'drawn' ? `<button class="btn btn-outline" onclick="mdcShowFixture('${key}')" style="padding:7px 14px;font-size:11px">📋 Fixture / Sub-Swap</button>` : ''}
+      <button class="btn" onclick="mdcResetLineup('${key}')" style="padding:7px 14px;font-size:11px;background:rgba(248,113,113,0.08);border:1px solid var(--red);color:var(--red)">🗑️ Reset Lineup (test data মুছো)</button>
     </div>
     <div id="mdc-fixture-${key}" style="margin-top:10px"></div>
   </div>`;
@@ -9766,6 +9767,17 @@ window.mdcSaveControl = async function(key) {
 
 window.mdcSetStatus = async function(key, status) {
   await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  loadMatchdayControlList();
+};
+
+// ── Admin: Reset a matchday's submitted lineups (e.g. after test data) ──
+// Deletes both teams' submitted lineups for this matchday and puts the
+// matchday control status back to 'locked' so managers must resubmit fresh.
+window.mdcResetLineup = async function(key) {
+  if (!confirm('⚠️ এই matchday-এর দুই দলের submitted lineup মুছে দেওয়া হবে এবং status "🔒 Locked"-এ রিসেট হবে।\n\nManager-দের আবার নতুন করে lineup জমা দিতে হবে। Continue?')) return;
+  await fetch(`${TRN_DB}/tournament/matchdayLineups/${key}.json`, { method: 'DELETE' });
+  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'locked' }) });
+  alert('✅ Lineup রিসেট হয়েছে! Manager-রা এখন আর আগের submission দেখবে না।');
   loadMatchdayControlList();
 };
 
@@ -9866,12 +9878,41 @@ function renderFixtureBlock(key, bouts, allowSide) {
     <div style="font-size:10px;color:var(--text3);margin-top:2px;text-align:center">${doneCount}/${bouts.length} bouts completed</div>
     <button class="btn btn-outline" onclick="mdcDownloadMatchupCard('${key}')" style="margin-top:8px;padding:7px 14px;font-size:11px;width:100%;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--secondary);color:var(--secondary)">📸 Download Match Card</button>
   ` : '';
+  const undoDrawBtn = isAdminView ? `
+    <button class="btn" onclick="mdcDeleteFixture('${key}')" style="margin-top:8px;padding:7px 14px;font-size:11px;width:100%;background:rgba(248,113,113,0.08);border:1px solid var(--red);color:var(--red)">🗑️ Delete This Fixture (Undo Draw)</button>
+  ` : '';
   return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
     ${rows}
     ${saveBtn}
     <button class="btn btn-outline" onclick="mdcCopyFixtureText('${key}')" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>
+    ${undoDrawBtn}
   </div>`;
 }
+
+// ── Admin: Undo a draw — clears the drawn player pairing + any entered scores
+// for this matchday's bouts, and reverts matchdayControl status to
+// 'lineup_locked' so the admin can hit "Start Matchday" again to re-draw.
+// The lineups themselves are left intact (use "Reset Lineup" separately if
+// those also need to be cleared).
+window.mdcDeleteFixture = async function(key) {
+  if (!confirm('⚠️ এই matchday-এর drawn fixture (player pairing + স্কোর) মুছে দেওয়া হবে।\n\nLineup ঠিকই থাকবে, শুধু draw/pairing রিসেট হবে — পরে আবার "Start Matchday" চেপে নতুন করে draw করতে পারবে। Continue?')) return;
+  const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key);
+  if (!bouts.length) { alert('❌ কোনো bout পাওয়া যায়নি।'); return; }
+  for (const b of bouts) {
+    await fetch(`${TRN_DB}/tournament/matches/${b.id}.json`, {
+      method: 'PATCH', body: JSON.stringify({
+        player1uid: '', player1: '',
+        player2uid: '', player2: '',
+        homeScore: null, awayScore: null,
+        status: 'pending'
+      })
+    });
+  }
+  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'lineup_locked' }) });
+  alert('✅ Fixture ডিলিট হয়েছে! স্ট্যাটাস "Lineup Locked"-এ ফিরে গেছে।');
+  await fetchTrnData();
+  loadMatchdayControlList();
+};
 
 // Matchday Control theke matchup result card (image) download — tournament section-er
 // "Export Matchup Card" er moto e, same _renderResultCard reuse kore.
