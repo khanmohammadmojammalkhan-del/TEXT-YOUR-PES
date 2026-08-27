@@ -7214,19 +7214,43 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
 
 // Josh dekhte fixture text — Messenger e paste korle sundor lagbe emon format.
 // Both admin (Matchday Control) ar public (match detail modal) copy button eita reuse kore.
-function buildJossFixtureText(bouts, ht, at) {
+// Deadline/Priority/Sub-Swap somoy shob match-e same thake (fixed), tai eguলo static —
+// kono calculation hoy na, shudhu team/player naam ar match no bosano hoy.
+function buildJossFixtureText(bouts, ht, at, matchNo, seasonLabel) {
   if (!bouts.length) return '';
-  const day = bouts[0].day;
-  const mdLabel = (bouts[0].matchday || '').replace(/\s*—.*$/, '').trim() || 'Matchday ?';
-  const circled = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'];
-  const line = '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬';
-  let text = `🏆 TYP CHAMPIONSHIP 🏆\n${line}\n📅 Day ${day}  •  ${mdLabel}\n${line}\n\n`;
-  text += `${ht.emoji || '🏟️'}  ${ht.name || '—'}   🆚   ${at.name || '—'}  ${at.emoji || '🏟️'}\n\n`;
-  text += `🕚 1ST DEADLINE (3v3)\n`;
-  bouts.slice(0, 3).forEach((b, i) => { text += `${circled[i]}  ${b.player1 || '—'}   🆚   ${b.player2 || '—'}\n`; });
-  text += `\n🕛 2ND DEADLINE (4v4)\n`;
-  bouts.slice(3, 7).forEach((b, i) => { text += `${circled[i + 3]}  ${b.player1 || '—'}   🆚   ${b.player2 || '—'}\n`; });
-  text += `\n${line}\n⚡ typ-bd.vercel.app`;
+  const keycap = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
+  const boxLine = '━━━━━━━━━━━━━━━━━━';
+  const boutLine = (b, i) => `${keycap[i]}  ${b.player1 || '—'}   🆚   ${b.player2 || '—'}`;
+
+  let text = `╔═════════════\n`;
+  text += `𝐓𝐘𝐏 𝐁𝐈𝐃 𝐓𝐎𝐔𝐑𝐍𝐀𝐌𝐄𝐍𝐓\n`;
+  text += `🛡️🔰 SEASON ${seasonLabel || '?'}🔰🛡️\n`;
+  text += `🎯 [Match no ${matchNo}] 🎯\n`;
+  text += `⚔️ MATCH FIXTURE ⚔️\n`;
+  text += `${ht.name || 'TEAM 1'} 🆚 ${at.name || 'TEAM 2'}\n`;
+  text += `╚═════════════\n`;
+
+  text += `${boxLine}\n`;
+  text += `⏲️ 𝗟𝗮𝘁𝗲 𝗡𝗶𝗴𝗵𝘁 - 12:00 AM\n`;
+  text += `⏳ Priority Time (11:45-12:00 AM)\n`;
+  text += `🔄 SUB SWAP Deadline : (11:44:59 PM)\n`;
+  text += `${boxLine}\n`;
+  bouts.slice(0, 3).forEach((b, i) => { text += `${boutLine(b, i)}\n`; });
+
+  text += `${boxLine}\n`;
+  text += `⏲️ 𝗟𝗮𝘁𝗲 𝗡𝗶𝗴𝗵𝘁 - 01:00 AM\n`;
+  text += `⏳ Priority Time (12:45-01:00 AM)\n`;
+  text += `🔄 SUB SWAP Deadline : (12:44:59 AM)\n`;
+  text += `${boxLine}\n`;
+  bouts.slice(3, 7).forEach((b, i) => { text += `${boutLine(b, i + 3)}\n`; });
+
+  text += `══════════════════\n`;
+  text += `📊 POINTS TABLE\n`;
+  text += `═════════════════\n`;
+  text += `${ht.name || 'TEAM 1'} : 00\n`;
+  text += `${at.name || 'TEAM 2'} : 00\n`;
+  text += `═════════════════\n\n`;
+  text += `⚡ typ-bd.vercel.app`;
   return text;
 }
 
@@ -7234,7 +7258,9 @@ window.pmdCopyFixtureText = async function() {
   const bouts = window._pmdBouts || [];
   const ht = window._pmdHome || {}, at = window._pmdAway || {};
   if (!bouts.length) return;
-  const text = buildJossFixtureText(bouts, ht, at);
+  const matchNo = bouts[0].day || '?';
+  const seasonLabel = (trnSettingsCache.seasonName || '').replace(/season/i, '').trim();
+  const text = buildJossFixtureText(bouts, ht, at, matchNo, seasonLabel);
   try {
     await navigator.clipboard.writeText(text);
     alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
@@ -10019,7 +10045,9 @@ window.mdcCopyFixtureText = async function(key) {
   if (!bouts.length) { alert('❌ কোনো bout নেই।'); return; }
   const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
   const first = bouts[0], ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
-  const text = buildJossFixtureText(bouts, ht, at);
+  const matchNo = first.day || '?';
+  const seasonLabel = (trnSettingsCache.seasonName || '').replace(/season/i, '').trim();
+  const text = buildJossFixtureText(bouts, ht, at, matchNo, seasonLabel);
   try {
     await navigator.clipboard.writeText(text);
     alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
