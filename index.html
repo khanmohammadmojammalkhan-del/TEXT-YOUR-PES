@@ -8678,114 +8678,51 @@ window.downloadStatsCard = async function() {
   }
 
   // ════════════════════════════════════════════
-  // LAYER 3: DARK OVERLAYS (so text is readable)
+  // LAYER 3: (dark overlay panel removed per request — photo shows full-bleed,
+  // text legibility relies on per-element drop shadows below)
   // ════════════════════════════════════════════
 
-  // Top vignette (for logo + rank area)
-  const topFade = ctx.createLinearGradient(0, 0, 0, 200);
-  topFade.addColorStop(0, 'rgba(0,0,0,0.72)');
-  topFade.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = topFade;
-  ctx.fillRect(0, 0, W, 200);
-
-  // Bottom overlay — strong dark gradient for info panel
-  const botFade = ctx.createLinearGradient(0, H * 0.48, 0, H);
-  botFade.addColorStop(0,   'rgba(0,0,0,0)');
-  botFade.addColorStop(0.18,'rgba(0,0,0,0.55)');
-  botFade.addColorStop(0.42,'rgba(0,0,0,0.85)');
-  botFade.addColorStop(0.65,'rgba(0,0,0,0.96)');
-  botFade.addColorStop(1,   'rgba(0,0,0,1)');
-  ctx.fillStyle = botFade;
-  ctx.fillRect(0, H * 0.48, W, H * 0.52);
-
-  // Side vignettes
-  const vigL = ctx.createLinearGradient(0, 0, 160, 0);
-  vigL.addColorStop(0, 'rgba(0,0,0,0.6)'); vigL.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = vigL; ctx.fillRect(0, 0, 160, H);
-  const vigR = ctx.createLinearGradient(W - 160, 0, W, 0);
-  vigR.addColorStop(0, 'rgba(0,0,0,0)'); vigR.addColorStop(1, 'rgba(0,0,0,0.6)');
-  ctx.fillStyle = vigR; ctx.fillRect(W - 160, 0, 160, H);
+  // Snapshot of the photo, used to blur for the frosted-glass stats panel later
+  const glassBase = document.createElement('canvas');
+  glassBase.width = W; glassBase.height = H;
+  glassBase.getContext('2d').drawImage(canvas, 0, 0);
 
   // ════════════════════════════════════════════
-  // LAYER 4: TOP-LEFT — TYP LOGO
-  // ════════════════════════════════════════════
-  if (typLogoImg) {
-    const lh = 92;
-    const lw = typLogoImg.width * (lh / typLogoImg.height);
-    ctx.save();
-    ctx.filter = 'brightness(0) invert(1) drop-shadow(0 1px 3px rgba(0,0,0,0.6))';
-    ctx.drawImage(typLogoImg, 32, 28, lw, lh);
-    ctx.restore();
-  } else {
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 44px Arial Black, Arial, sans-serif';
-    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-    ctx.fillText('⚡ TYP', 32, 32);
-  }
-
-  // ════════════════════════════════════════════
-  // LAYER 4b: TOP-RIGHT — RANK BADGE
+  // LAYER 4: TOP-LEFT — RANK NUMBER (plain bold white)
   // ════════════════════════════════════════════
   const displayRank = p._liveRank || p.rank;
   if (displayRank) {
     const rankText = `#${displayRank}`;
-    const badgePad = 18, badgeH = 72, badgeR = 14;
-    ctx.font = `bold 44px Arial Black, Arial, sans-serif`;
-    const rankTW = ctx.measureText(rankText).width;
-    const badgeW = rankTW + badgePad * 2;
-    const bx = W - 28 - badgeW, by = 24;
-
-    // Badge background
-    const bg = ctx.createLinearGradient(bx, by, bx + badgeW, by + badgeH);
-    bg.addColorStop(0, 'rgba(245,200,66,0.92)');
-    bg.addColorStop(1, 'rgba(180,130,20,0.92)');
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 14;
-    ctx.beginPath();
-    ctx.moveTo(bx + badgeR, by);
-    ctx.lineTo(bx + badgeW - badgeR, by);
-    ctx.quadraticCurveTo(bx + badgeW, by, bx + badgeW, by + badgeR);
-    ctx.lineTo(bx + badgeW, by + badgeH - badgeR);
-    ctx.quadraticCurveTo(bx + badgeW, by + badgeH, bx + badgeW - badgeR, by + badgeH);
-    ctx.lineTo(bx + badgeR, by + badgeH);
-    ctx.quadraticCurveTo(bx, by + badgeH, bx, by + badgeH - badgeR);
-    ctx.lineTo(bx, by + badgeR);
-    ctx.quadraticCurveTo(bx, by, bx + badgeR, by);
-    ctx.closePath();
-    ctx.fillStyle = bg;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // Rank text
-    ctx.fillStyle = '#1a1000';
-    ctx.font = `bold 44px Arial Black, Arial, sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(rankText, bx + badgeW / 2, by + badgeH / 2 + 2);
+    ctx.font = `900 64px Arial Black, Arial, sans-serif`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.shadowColor = 'rgba(0,0,0,0.95)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetY = 2;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(rankText, 32, 40);
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   }
 
   // ════════════════════════════════════════════
-  // LAYER 5: CLUB BADGE — centered, lower-mid
+  // LAYER 5: TYP LOGO — centered, lower-mid (badge circle removed)
   // ════════════════════════════════════════════
   const badgeX = W / 2, badgeY = H * 0.62, badgeR = 68;
 
-  // Shadow behind badge
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.shadowBlur = 18;
-  ctx.beginPath(); ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffffff'; ctx.fill();
-  ctx.shadowBlur = 0;
-
-  ctx.strokeStyle = '#dddddd'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(badgeX, badgeY, badgeR, 0, Math.PI * 2); ctx.stroke();
-
-  // Club initials
-  const clubWords = (p.club || 'TYP').trim().split(/\s+/);
-  const initials  = clubWords.map(w => w[0] || '').join('').slice(0, 4).toUpperCase();
-  const iFSize    = initials.length <= 2 ? 40 : initials.length === 3 ? 30 : 24;
-  ctx.fillStyle = '#111111';
-  ctx.font = `bold ${iFSize}px Arial Black, Arial, sans-serif`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(initials, badgeX, badgeY);
+  if (typLogoImg) {
+    const lh = badgeR * 1.7;
+    const lw = typLogoImg.width * (lh / typLogoImg.height);
+    ctx.save();
+    ctx.filter = 'brightness(0) invert(1) drop-shadow(0 2px 10px rgba(0,0,0,0.9))';
+    ctx.drawImage(typLogoImg, badgeX - lw / 2, badgeY - lh / 2, lw, lh);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 44px Arial Black, Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 10;
+    ctx.fillText('⚡ TYP', badgeX, badgeY);
+    ctx.shadowBlur = 0;
+  }
 
   // ════════════════════════════════════════════
   // LAYER 6: PLAYER NAME — big bold white
@@ -8793,70 +8730,130 @@ window.downloadStatsCard = async function() {
   const nameY = badgeY + badgeR + 28;
   const name = p.name || '—';
   let fSize = 78;
-  ctx.font = `bold ${fSize}px Arial Black, Arial, sans-serif`;
+  ctx.font = `900 ${fSize}px Arial Black, Arial, sans-serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   while (ctx.measureText(name).width > W - 60 && fSize > 34) {
     fSize -= 2;
-    ctx.font = `bold ${fSize}px Arial Black, Arial, sans-serif`;
+    ctx.font = `900 ${fSize}px Arial Black, Arial, sans-serif`;
   }
   // Text shadow for readability
-  ctx.shadowColor = 'rgba(0,0,0,0.9)';
-  ctx.shadowBlur = 12;
+  ctx.shadowColor = 'rgba(0,0,0,0.95)';
+  ctx.shadowBlur = 18;
   ctx.fillStyle = '#ffffff';
   ctx.fillText(name, W / 2, nameY);
   ctx.shadowBlur = 0;
 
   // ── Club | District ──
-  const subY = nameY + fSize + 10;
-  ctx.fillStyle = '#cccccc';
-  ctx.font = '28px Arial, sans-serif';
-  ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 8;
+  const subY = nameY + fSize + 14;
+  ctx.fillStyle = '#e2e2e2';
+  ctx.font = 'bold 27px Arial, sans-serif';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12;
   ctx.fillText(`${p.club || '—'}  |  ${p.district || '—'}`, W / 2, subY);
   ctx.shadowBlur = 0;
 
-  // ── Separator ──
-  const sepY = subY + 42;
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.2;
-  ctx.beginPath(); ctx.moveTo(50, sepY); ctx.lineTo(W - 50, sepY); ctx.stroke();
-
   // ════════════════════════════════════════════
-  // LAYER 7: STATS ROW — PL W D GF GA
+  // LAYER 7: STATS PILL BAR — PL W D GF GA 👑 (frosted-glass effect)
   // ════════════════════════════════════════════
   const stats = [
-    { label: 'PL',  value: s.m     },
-    { label: 'W',   value: s.w     },
-    { label: 'D',   value: s.d     },
-    { label: 'GF',  value: s.goals },
-    { label: '🏅MVP', value: s.mvp  },
+    { label: 'PL', value: s.m },
+    { label: 'W',  value: s.w },
+    { label: 'D',  value: s.d },
+    { label: 'GF', value: s.goals },
+    { label: 'GA', value: s.ga },
+    { label: '👑', value: s.mvp },
   ];
-  const statsY = sepY + 18;
-  const colW   = W / stats.length;
+  const pillMarginX = 46;
+  const pillW = W - pillMarginX * 2;
+  const pillH = 118;
+  const pillY = subY + 52;
+  const pillX = pillMarginX;
+  const pillR = 24;
+
+  // Build a blurred copy of the photo (captured before heavy darkening) so the
+  // pill reads as real frosted glass sitting on top of the card, not a flat box.
+  const glassSrc = document.createElement('canvas');
+  glassSrc.width = W; glassSrc.height = H;
+  const gctx = glassSrc.getContext('2d');
+  gctx.filter = 'blur(24px)';
+  gctx.drawImage(glassBase, -10, -10, W + 20, H + 20);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pillX + pillR, pillY);
+  ctx.lineTo(pillX + pillW - pillR, pillY);
+  ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + pillR);
+  ctx.lineTo(pillX + pillW, pillY + pillH - pillR);
+  ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - pillR, pillY + pillH);
+  ctx.lineTo(pillX + pillR, pillY + pillH);
+  ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - pillR);
+  ctx.lineTo(pillX, pillY + pillR);
+  ctx.quadraticCurveTo(pillX, pillY, pillX + pillR, pillY);
+  ctx.closePath();
+  ctx.clip();
+
+  // Blurred backdrop
+  ctx.drawImage(glassSrc, 0, 0);
+  // Dark translucent tint on top of the blur (keeps text legible, reads as smoked glass)
+  ctx.fillStyle = 'rgba(10,10,16,0.38)';
+  ctx.fillRect(pillX, pillY, pillW, pillH);
+  // Subtle glass sheen — brighter band across the top third
+  const sheen = ctx.createLinearGradient(0, pillY, 0, pillY + pillH);
+  sheen.addColorStop(0, 'rgba(255,255,255,0.14)');
+  sheen.addColorStop(0.4, 'rgba(255,255,255,0.03)');
+  sheen.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(pillX, pillY, pillW, pillH);
+
+  const colW = pillW / stats.length;
+  // vertical dividers between columns
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < stats.length; i++) {
+    const dx = pillX + colW * i;
+    ctx.beginPath(); ctx.moveTo(dx, pillY + 16); ctx.lineTo(dx, pillY + pillH - 16); ctx.stroke();
+  }
 
   stats.forEach((st, i) => {
-    const cx = colW * i + colW / 2;
+    const cx = pillX + colW * i + colW / 2;
     // Label
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.font = 'bold 26px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = 'bold 22px Arial, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 6;
-    ctx.fillText(st.label, cx, statsY);
-    // Value — yellow
-    ctx.fillStyle = '#f5c842';
-    ctx.font = 'bold 82px Arial Black, Arial, sans-serif';
+    ctx.fillText(st.label, cx, pillY + 18);
+    // Value — white, bold
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 42px Arial Black, Arial, sans-serif';
     ctx.textBaseline = 'top';
-    ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = 10;
-    ctx.fillText(st.value, cx, statsY + 32);
+    ctx.fillText(st.value, cx, pillY + 54);
   });
-  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Glass edge highlight (drawn after clip is released so it isn't cropped)
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pillX + pillR, pillY);
+  ctx.lineTo(pillX + pillW - pillR, pillY);
+  ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + pillR);
+  ctx.lineTo(pillX + pillW, pillY + pillH - pillR);
+  ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - pillR, pillY + pillH);
+  ctx.lineTo(pillX + pillR, pillY + pillH);
+  ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - pillR);
+  ctx.lineTo(pillX, pillY + pillR);
+  ctx.quadraticCurveTo(pillX, pillY, pillX + pillR, pillY);
+  ctx.closePath();
+  ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.restore();
 
   // ════════════════════════════════════════════
   // LAYER 8: FOOTER
   // ════════════════════════════════════════════
   const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
-  ctx.fillStyle = 'rgba(180,180,180,0.7)';
-  ctx.font = '20px monospace';
+  ctx.fillStyle = 'rgba(200,200,200,0.75)';
+  ctx.font = 'bold 20px Arial, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-  ctx.fillText(`All-Time Official  |  TYP Championship  |  ${dateStr}`, W / 2, H - 22);
+  ctx.fillText(`All-Time Official  |  TYP Championship  |  ${dateStr}`, W / 2, H - 24);
 
   // ── Export ──
   const link = document.createElement('a');
