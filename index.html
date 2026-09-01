@@ -4519,8 +4519,8 @@ function renderRankingCards(data) {
     const goals = p.goalsFor||0, mvp = p.mvp||0;
     const score = (w||0)*9 + (mvp||0)*5 + (d||0)*3 + (goals||0)*1;
     const gd = goals - (p.goalsAgainst||0);
-    const rating = Math.min(99, Math.max(40, Math.round(50 + w*3 - l*2 + d*0.5 + wp*0.3)));
-    const ratingColor = rating>=85?'#f5c842':rating>=70?'#7ed321':rating>=55?'#7C3AED':'#aaa';
+    const rating = (Math.min(99, Math.max(40, Math.round(50 + w*3 - l*2 + d*0.5 + wp*0.3))) / 10).toFixed(1);
+    const ratingColor = rating>=8.5?'#f5c842':rating>=7.0?'#7ed321':rating>=5.5?'#7C3AED':'#aaa';
     // Always dark card bg so white text is visible in both light/dark mode
     const cardBg = rank===1?'linear-gradient(135deg,#1a0a2e,#2d1458)':rank===2?'linear-gradient(135deg,#0d1f3c,#1a2d4a)':rank===3?'linear-gradient(135deg,#2a0a0a,#3a1010)':'linear-gradient(135deg,#1a1035,#12092a)';
     const borderCol = rank===1?'#f5c842':rank===2?'#aaa':rank===3?'#cd7f32':'rgba(124,58,237,0.4)';
@@ -4547,7 +4547,7 @@ function renderRankingCards(data) {
       <!-- Rating badge -->
       <div style="position:absolute;top:10px;right:10px;text-align:center;background:rgba(0,0,0,0.5);border-radius:6px;padding:4px 8px;min-width:36px">
         <div style="font-family:'Libre Caslon Text',sans-serif;font-weight:900;font-size:20px;color:${ratingColor};line-height:1">${rating}</div>
-        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.1em">OVR</div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:0.1em">RATING</div>
       </div>
       <!-- Avatar -->
       <div style="width:80px;height:80px;border-radius:8px;background:rgba(255,255,255,0.05);border:2px solid ${borderCol}33;display:flex;align-items:center;justify-content:center;margin:20px auto 12px;overflow:hidden">${avatar}</div>
@@ -7976,7 +7976,7 @@ window.openPublicProfile = async function(uid) {
   av.innerHTML = p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮';
 
   // Always show ALL-TIME cumulative stats (archived + current season)
-  let m=0, w=0, d=0, l=0, goals=0, mvp=0, score=0, wp='0.0';
+  let m=0, w=0, d=0, l=0, goals=0, ga=0, mvp=0, score=0, wp='0.0';
 
   // If main ranking already loaded with this uid, use it directly
   const rdPlayer = (window.rankingData||[]).find(r => r.uid === uid);
@@ -7984,7 +7984,7 @@ window.openPublicProfile = async function(uid) {
 
   if (rdHasData && window._rankingMode === 'main') {
     m = rdPlayer.matches||0; w = rdPlayer.wins||0; d = rdPlayer.draws||0; l = rdPlayer.losses||0;
-    goals = rdPlayer.goalsFor||0; mvp = rdPlayer.mvp||0;
+    goals = rdPlayer.goalsFor||0; ga = rdPlayer.goalsAgainst||0; mvp = rdPlayer.mvp||0;
   } else {
     // Calculate all-time stats: sum archived seasons + current season
     try {
@@ -8009,19 +8009,19 @@ window.openPublicProfile = async function(uid) {
       archivedStats.forEach(s => {
         if (!s) return;
         m += s.matches||0; w += s.wins||0; d += s.draws||0; l += s.losses||0;
-        goals += s.goalsFor||0; mvp += s.mvp||0;
+        goals += s.goalsFor||0; ga += s.goalsAgainst||0; mvp += s.mvp||0;
       });
 
       // Add current season
       if (currentData) {
         Object.assign(p, currentData);
         m += currentData.matches||0; w += currentData.wins||0; d += currentData.draws||0;
-        l += currentData.losses||0; goals += currentData.goalsFor||0; mvp += currentData.mvp||0;
+        l += currentData.losses||0; goals += currentData.goalsFor||0; ga += currentData.goalsAgainst||0; mvp += currentData.mvp||0;
       }
     } catch(e) {
       // Fallback to stored user data
       m = p.matches||0; w = p.wins||0; d = p.draws||0; l = p.losses||0;
-      goals = p.goalsFor||0; mvp = p.mvp||0;
+      goals = p.goalsFor||0; ga = p.goalsAgainst||0; mvp = p.mvp||0;
     }
   }
 
@@ -8029,31 +8029,41 @@ window.openPublicProfile = async function(uid) {
   const wl = w + l;
   wp = wl > 0 ? ((w/wl)*100).toFixed(1) : '0.0';
 
-  // ── AUTO RATING ──
+  // ── AUTO RATING — a per-match rating out of 10 (like a real match-day player rating), ──
+  // ── the profile's headline number is the career average of these match ratings.        ──
+  function calcMatchRating10(myS, oppS) {
+    const diff = myS - oppS;
+    const r = 6.0
+      + Math.min(myS, 5) * 0.4                       // scoring goals lifts the rating
+      + (diff > 0 ? 1.5 : diff === 0 ? 0.3 : -1.2)    // result of that specific match
+      + Math.max(-2, Math.min(2, diff * 0.25));       // margin of victory/defeat, capped
+    return Math.min(10, Math.max(3, r));
+  }
+
   function calcRating(player, allMatches) {
     const pName = player.name;
-    const recentMatches = allMatches
+    const playedMatches = allMatches
       .filter(mx => (mx.home_team === pName || mx.away_team === pName) && mx.status === 'completed')
-      .sort((a,b) => (b.addedAt||b.date||'').localeCompare(a.addedAt||a.date||''))
-      .slice(0, 5);
-    
-    if (!recentMatches.length) return { rating: 50, form: [] };
-    
-    let ratingScore = 50;
-    const form = [];
-    recentMatches.forEach(mx => {
+      .sort((a,b) => (a.addedAt||a.date||'').localeCompare(b.addedAt||b.date||''));
+
+    if (!playedMatches.length) return { rating: '6.0', form: [] };
+
+    const perMatchRatings = playedMatches.map(mx => {
       const isHome = mx.home_team === pName;
       const myS = parseInt(isHome ? mx.home_score : mx.away_score) || 0;
       const oppS = parseInt(isHome ? mx.away_score : mx.home_score) || 0;
-      const diff = myS - oppS;
-      if (myS > oppS) { ratingScore += 8 + Math.min(diff, 3)*2; form.push('W'); }
-      else if (myS === oppS) { ratingScore += 2; form.push('D'); }
-      else { ratingScore -= 5 + Math.min(-diff, 3); form.push('L'); }
+      return calcMatchRating10(myS, oppS);
     });
-    // Factor in overall win rate
-    const overallWR = m > 0 ? (w/m) : 0;
-    ratingScore = ratingScore * 0.7 + overallWR * 100 * 0.3;
-    return { rating: Math.min(99, Math.max(40, Math.round(ratingScore))), form };
+    const avgRating = perMatchRatings.reduce((a,b)=>a+b, 0) / perMatchRatings.length;
+
+    const form = playedMatches.slice(-5).reverse().map(mx => {
+      const isHome = mx.home_team === pName;
+      const myS = parseInt(isHome ? mx.home_score : mx.away_score) || 0;
+      const oppS = parseInt(isHome ? mx.away_score : mx.home_score) || 0;
+      return myS > oppS ? 'W' : myS === oppS ? 'D' : 'L';
+    });
+
+    return { rating: avgRating.toFixed(1), form };
   }
 
   // Load matches for rating + graph — merge LIVE matches with matches from
@@ -8125,10 +8135,10 @@ window.openPublicProfile = async function(uid) {
   const tierChipEl = document.getElementById('ppTierChip');
   if (tierChipEl) tierChipEl.textContent = tierNames[tier];
 
-  // Inject rating corner badge (card-style OVR number — recent form rating)
+  // Inject rating corner badge (career average of per-match ratings, out of 10)
   const ratingEl = document.getElementById('ppRatingBadge');
   if (ratingEl) {
-    ratingEl.innerHTML = `<span class="pp-num" style="font-size:44px;color:#fff;line-height:0.85;text-shadow:0 2px 10px rgba(0,0,0,0.5)">${rating}</span><span style="font-size:9px;color:rgba(255,255,255,0.65);letter-spacing:0.14em;font-weight:700">OVR</span>`;
+    ratingEl.innerHTML = `<span class="pp-num" style="font-size:40px;color:#fff;line-height:0.85;text-shadow:0 2px 10px rgba(0,0,0,0.5)">${rating}</span><span style="font-size:9px;color:rgba(255,255,255,0.65);letter-spacing:0.14em;font-weight:700">RATING</span>`;
   }
 
   // Form badges
@@ -8150,16 +8160,12 @@ window.openPublicProfile = async function(uid) {
       .slice(-10);
 
     if (myMatches.length >= 2) {
-      let runRating = 50;
       const dataPoints = myMatches.map((mx, i) => {
         const isHome = mx.home_team === pName;
         const myS = parseInt(isHome ? mx.home_score : mx.away_score)||0;
         const oppS = parseInt(isHome ? mx.away_score : mx.home_score)||0;
-        const diff = myS - oppS;
-        if (myS > oppS) runRating = Math.min(99, runRating + 8 + Math.min(diff,3)*2);
-        else if (myS === oppS) runRating = Math.min(99, runRating + 2);
-        else runRating = Math.max(40, runRating - 5 - Math.min(-diff,3));
-        return { x: i+1, y: runRating, result: myS > oppS ? 'W' : myS < oppS ? 'L' : 'D', score: `${myS}-${oppS}` };
+        const matchRating = Math.round(calcMatchRating10(myS, oppS) * 10) / 10;
+        return { x: i+1, y: matchRating, result: myS > oppS ? 'W' : myS < oppS ? 'L' : 'D', score: `${myS}-${oppS}` };
       });
 
       graphContainer.innerHTML = `<canvas id="perfChartCanvas" height="120"></canvas>`;
@@ -8186,10 +8192,10 @@ window.openPublicProfile = async function(uid) {
           options: {
             responsive: true,
             plugins: { legend: { display: false }, tooltip: {
-              callbacks: { label: (ctx) => `Rating: ${ctx.raw} (${dataPoints[ctx.dataIndex].score})` }
+              callbacks: { label: (ctx) => `Rating: ${ctx.raw}/10 (${dataPoints[ctx.dataIndex].score})` }
             }},
             scales: {
-              y: { min: 30, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 } } },
+              y: { min: 3, max: 10, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 } } },
               x: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } }
             }
           }
@@ -10052,6 +10058,28 @@ function _computeMatchupMvp(matches, overrideMvpName) {
   return { mvpName, playerStats, winSide };
 }
 
+// ── Per-match rating (out of 10) — same formula the public profile uses for its
+// career-average rating, reused here so the MVP card's number always lines up
+// with what that player's own profile would show for these bouts.
+function _calcMatchRating10(myS, oppS) {
+  const diff = myS - oppS;
+  const r = 6.0
+    + Math.min(myS, 5) * 0.4
+    + (diff > 0 ? 1.5 : diff === 0 ? 0.3 : -1.2)
+    + Math.max(-2, Math.min(2, diff * 0.25));
+  return Math.min(10, Math.max(3, r));
+}
+function _calcAvgMvpRating(matches, playerName) {
+  const mine = [];
+  matches.forEach(m => {
+    const hs = parseInt(m.homeScore) || 0, as_ = parseInt(m.awayScore) || 0;
+    if (m.player1 === playerName) mine.push(_calcMatchRating10(hs, as_));
+    else if (m.player2 === playerName) mine.push(_calcMatchRating10(as_, hs));
+  });
+  if (!mine.length) return 6.0;
+  return mine.reduce((a, b) => a + b, 0) / mine.length;
+}
+
 // Matchday Control theke standalone "Man of the Match" polaroid-style card download —
 // admin er manual MVP selection (or auto-detect fallback) diye player-er photo, name,
 // team ebong ei matchup-er stats diye ekta portrait card banay (story-share upojogi).
@@ -10086,6 +10114,7 @@ window.mdcDownloadMVPCard = async function(key) {
   const stat = playerStats[mvpName] || { gf:0, ga:0 };
   const sampleM = matches[0];
   const dayVal = (sampleM.matchday || 'Matchday ?').replace('—', '•');
+  const rating = _calcAvgMvpRating(matches, mvpName);
 
   await _renderMVPCard({
     playerName: mvpName,
@@ -10098,15 +10127,18 @@ window.mdcDownloadMVPCard = async function(key) {
     fileSuffix: mvpName.replace(/\s+/g,'-'),
     opponentName,
     myScore,
-    oppScore
+    oppScore,
+    rating
   });
 };
 
 // ══════════════════════════════════════════
 // 🎴 CANVAS — standalone "Man of the Match" polaroid card
 // ══════════════════════════════════════════
-async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goals, conceded, dayLabel, fileSuffix, opponentName, myScore, oppScore }) {
-  const CARD_W = 1000, CARD_H = 1600;
+async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goals, conceded, dayLabel, fileSuffix, opponentName, myScore, oppScore, rating }) {
+  // Bigger canvas (was 1000x1480) — more room for the photo so faces don't
+  // get cropped, and a higher-res export for sharing.
+  const CARD_W = 1080, CARD_H = 1680;
   const canvas = document.createElement('canvas');
   canvas.width = CARD_W; canvas.height = CARD_H;
   const ctx = canvas.getContext('2d');
@@ -10122,6 +10154,11 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   const GOLD_DEEP  = '#916f21';
   const GOLD_SOFT  = 'rgba(199,154,61,0.35)';
   const LINE_COL   = 'rgba(15,30,48,0.10)';
+
+  // Match rating (out of 10) — same tiering as the public profile's rating badge.
+  const ratingVal = Math.max(0, Math.min(10, parseFloat(rating) || 6.0));
+  const ratingStr = ratingVal.toFixed(1);
+  const RATING_COL = ratingVal >= 8.5 ? '#e0b84a' : ratingVal >= 7.0 ? '#5fbf72' : ratingVal >= 5.5 ? '#9a7bdb' : '#8a93a0';
 
   // ── Ensure display fonts are loaded before drawing on canvas ──
   try {
@@ -10151,11 +10188,33 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     return size;
   }
 
-  // ── Background: clean white with a faint warm vignette ──
+  // Builds a small repeating-tile pattern (used for subtle textured backgrounds).
+  function makeTilePattern(draw, size) {
+    const tile = document.createElement('canvas');
+    tile.width = size; tile.height = size;
+    draw(tile.getContext('2d'), size);
+    return ctx.createPattern(tile, 'repeat');
+  }
+  const diagonalHatch = makeTilePattern((tctx, s) => {
+    tctx.strokeStyle = 'rgba(15,30,48,0.55)';
+    tctx.lineWidth = 1;
+    tctx.beginPath(); tctx.moveTo(0, s); tctx.lineTo(s, 0); tctx.stroke();
+  }, 20);
+  const goldDotGrid = makeTilePattern((tctx, s) => {
+    tctx.fillStyle = 'rgba(199,154,61,0.9)';
+    tctx.beginPath(); tctx.arc(s/2, s/2, 1.3, 0, Math.PI*2); tctx.fill();
+  }, 24);
+
+  // ── Background: clean white + very faint diagonal texture + warm vignette ──
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
-  const vign = ctx.createRadialGradient(CARD_W/2, CARD_H*0.42, 120, CARD_W/2, CARD_H*0.5, CARD_H*0.75);
-  vign.addColorStop(0, 'rgba(199,154,61,0.06)');
+  ctx.save();
+  ctx.globalAlpha = 0.05;
+  ctx.fillStyle = diagonalHatch;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+  ctx.restore();
+  const vign = ctx.createRadialGradient(CARD_W/2, CARD_H*0.4, 140, CARD_W/2, CARD_H*0.48, CARD_H*0.75);
+  vign.addColorStop(0, 'rgba(199,154,61,0.07)');
   vign.addColorStop(1, 'rgba(199,154,61,0)');
   ctx.fillStyle = vign;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
@@ -10163,7 +10222,7 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   // ── Outer gold frame ──
   ctx.strokeStyle = GOLD_SOFT;
   ctx.lineWidth = 2;
-  roundRect(22, 22, CARD_W-44, CARD_H-44, 22);
+  roundRect(20, 20, CARD_W-40, CARD_H-40, 22);
   ctx.stroke();
 
   // ── Decorative dotted diamond corners ──
@@ -10184,30 +10243,38 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
       }
     }
   }
-  drawDotDiamond(72, 150, 7, 13, 'rgba(15,30,48,0.10)');
-  drawDotDiamond(CARD_W-72, CARD_H-150, 7, 13, 'rgba(15,30,48,0.10)');
+  drawDotDiamond(70, 160, 7, 13, 'rgba(15,30,48,0.10)');
+  drawDotDiamond(CARD_W-70, CARD_H-160, 7, 13, 'rgba(15,30,48,0.10)');
 
   // ── Eyebrow tag ──
   ctx.textAlign = 'center';
-  ctx.font = "700 16px 'Libre Caslon Text', sans-serif";
+  ctx.font = "700 15px 'Libre Caslon Text', sans-serif";
   ctx.fillStyle = INK_SOFT;
   ctx.save();
   ctx.letterSpacing = '6px';
-  ctx.fillText('TYP CHAMPIONSHIP PRESENTS', CARD_W/2, 78);
+  ctx.fillText('TYP CHAMPIONSHIP PRESENTS', CARD_W/2, 72);
   ctx.restore();
 
   // ── Title plaque: dark navy banner holding the "MAN [OF/THE] MATCH" lockup ──
-  const plaqueX = 60, plaqueY = 98, plaqueW = CARD_W-120, plaqueH = 158;
+  const plaqueX = 60, plaqueY = 96, plaqueW = CARD_W-120, plaqueH = 160;
   ctx.save();
   ctx.shadowColor = 'rgba(15,30,48,0.28)';
-  ctx.shadowBlur = 22;
-  ctx.shadowOffsetY = 10;
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 9;
   const plaqueGrad = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY+plaqueH);
   plaqueGrad.addColorStop(0, '#16283e');
   plaqueGrad.addColorStop(1, NAVY_DEEP);
   ctx.fillStyle = plaqueGrad;
   roundRect(plaqueX, plaqueY, plaqueW, plaqueH, 18);
   ctx.fill();
+  ctx.restore();
+  // faint gold dot-grid texture inside the plaque
+  ctx.save();
+  roundRect(plaqueX, plaqueY, plaqueW, plaqueH, 18);
+  ctx.clip();
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = goldDotGrid;
+  ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
   ctx.restore();
   ctx.strokeStyle = GOLD;
   ctx.lineWidth = 2;
@@ -10220,8 +10287,8 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
 
   // ── "MAN [OF/THE] MATCH" lockup — big Anton words with a small stacked "OF / THE" ──
   {
-    const baseY = plaqueY + plaqueH/2 + 34;   // shared baseline for MAN / MATCH / THE
-    const bigSize = 88, theSize = 36, ofSize = 20;
+    const baseY = plaqueY + plaqueH/2 + 34;
+    const bigSize = 92, theSize = 38, ofSize = 21;
     const gap = 22;
 
     ctx.font = `${bigSize}px 'Anton', sans-serif`;
@@ -10259,31 +10326,166 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
 
   let cursorY = plaqueY + plaqueH + 34;
 
-  // ── 1v1 bout strip: exactly who this MVP played against ──
+  // ══════════════════════════════════════════
+  // ── Big poster-style photo panel ──
+  // Full-bleed photo, top-anchored crop (so heads never get cut off the way a
+  // pure centre-crop would), with the rating badge, matchday tag, player name
+  // and team overlaid directly on the photo — a bigger, more premium panel
+  // that needs far less of the photo cropped away than the old boxed layout.
+  // ══════════════════════════════════════════
+  const panelX = 60, panelW = CARD_W - 120;
+  const panelY = cursorY, panelH = 900;
+  const panelBottom = panelY + panelH;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(15,30,48,0.28)';
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 16;
+  ctx.fillStyle = NAVY_DEEP;
+  roundRect(panelX, panelY, panelW, panelH, 22);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  roundRect(panelX, panelY, panelW, panelH, 22);
+  ctx.clip();
+
+  const avatarImg = avatarUrl ? await bdLoadImage(avatarUrl) : null;
+  if (avatarImg) {
+    const scale = Math.max(panelW / avatarImg.width, panelH / avatarImg.height);
+    const dw = avatarImg.width * scale, dh = avatarImg.height * scale;
+    const dx = panelX + (panelW - dw) / 2;
+    // Bias the vertical crop toward the top of the photo (instead of dead-centre)
+    // so a player's face stays in frame instead of getting cropped off the top.
+    const topBias = 0.14;
+    const dy = panelY - (dh - panelH) * topBias;
+    ctx.drawImage(avatarImg, dx, dy, dw, dh);
+  } else {
+    const phGrad = ctx.createLinearGradient(panelX, panelY, panelX, panelY+panelH);
+    phGrad.addColorStop(0, '#2b3d52'); phGrad.addColorStop(1, '#141f30');
+    ctx.fillStyle = phGrad;
+    ctx.fillRect(panelX, panelY, panelW, panelH);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = "220px sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🎮', panelX+panelW/2, panelY+panelH/2);
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  // bottom scrim so the name/team stay legible over any photo
+  const scrimH = 270;
+  const scrim = ctx.createLinearGradient(0, panelBottom - scrimH, 0, panelBottom);
+  scrim.addColorStop(0, 'rgba(8,18,32,0)');
+  scrim.addColorStop(1, 'rgba(8,18,32,0.86)');
+  ctx.fillStyle = scrim;
+  ctx.fillRect(panelX, panelBottom - scrimH, panelW, scrimH);
+
+  ctx.restore(); // end panel clip
+
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = 3;
+  roundRect(panelX, panelY, panelW, panelH, 22);
+  ctx.stroke();
+
+  // matchday tag — floating pill over the top-left of the photo
+  if (dayLabel) {
+    ctx.font = "700 17px 'Libre Caslon Text', sans-serif";
+    const tagPad = 18;
+    const tagW = ctx.measureText(dayLabel).width + tagPad*2;
+    const tagH = 40, tagX = panelX + 20, tagY = panelY + 20;
+    ctx.fillStyle = 'rgba(8,18,32,0.72)';
+    roundRect(tagX, tagY, tagW, tagH, tagH/2);
+    ctx.fill();
+    ctx.strokeStyle = GOLD_SOFT; ctx.lineWidth = 1.2;
+    roundRect(tagX, tagY, tagW, tagH, tagH/2);
+    ctx.stroke();
+    ctx.fillStyle = '#f4e9d0';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(dayLabel, tagX + tagPad, tagY + tagH/2 + 1);
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  // ── Match-rating badge — FIFA-OVR-style circle overlapping the top-right corner ──
+  {
+    const rR = 68;
+    const cx = panelX + panelW - 58, cy = panelY + 58;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    const badgeGrad = ctx.createRadialGradient(cx-16, cy-16, 6, cx, cy, rR);
+    badgeGrad.addColorStop(0, '#132234');
+    badgeGrad.addColorStop(1, '#08121e');
+    ctx.fillStyle = badgeGrad;
+    ctx.beginPath(); ctx.arc(cx, cy, rR, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = RATING_COL; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(cx, cy, rR, 0, Math.PI*2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy, rR-7, 0, Math.PI*2); ctx.stroke();
+
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = RATING_COL;
+    ctx.font = "700 42px 'Libre Caslon Text', sans-serif";
+    ctx.fillText(ratingStr, cx, cy - 9);
+    ctx.font = "700 12px 'Libre Caslon Text', sans-serif";
+    ctx.fillStyle = 'rgba(255,255,255,0.78)';
+    ctx.save(); ctx.letterSpacing = '2px';
+    ctx.fillText('RATING', cx, cy + 22);
+    ctx.restore();
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  // ── Player name + team, overlaid on the scrim at the bottom of the photo ──
+  {
+    const nameMaxW = panelW - 60;
+    const nameText = (playerName || '—').toUpperCase();
+    const nameSize = fitFont(nameText, nameMaxW, 62, 32, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffffff';
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 2;
+    const nameY = panelBottom - 74;
+    ctx.font = `700 ${nameSize}px 'Libre Caslon Text', sans-serif`;
+    ctx.fillText(nameText, panelX + 30, nameY);
+
+    if (teamName) {
+      const teamLine = `${teamEmoji||'🛡️'}  ${teamName.toUpperCase()}`;
+      const teamSize = fitFont(teamLine, nameMaxW, 26, 16, s=>`600 ${s}px 'Libre Caslon Text', sans-serif`);
+      ctx.font = `600 ${teamSize}px 'Libre Caslon Text', sans-serif`;
+      ctx.fillStyle = GOLD;
+      ctx.fillText(teamLine, panelX + 30, nameY + 38);
+    }
+    ctx.restore();
+  }
+
+  cursorY = panelBottom + 30;
+
+  // ── 1v1 bout strip: exactly who this MVP played against (aligned to the photo panel) ──
   const hasBoutInfo = !!opponentName;
   if (hasBoutInfo) {
-    const stripY = cursorY, stripH = 72, stripW = 860, stripX = (CARD_W-stripW)/2;
+    const stripY = cursorY, stripH = 72, stripW = panelW, stripX = panelX;
     ctx.fillStyle = PAPER_SOFT;
-    roundRect(stripX, stripY, stripW, stripH, 14);
+    roundRect(stripX, stripY, stripW, stripH, 16);
     ctx.fill();
     ctx.strokeStyle = GOLD_SOFT;
     ctx.lineWidth = 1.5;
-    roundRect(stripX, stripY, stripW, stripH, 14);
+    roundRect(stripX, stripY, stripW, stripH, 16);
     ctx.stroke();
 
     const midY = stripY + stripH/2 + 9;
     const scoreText = (myScore != null && oppScore != null) ? `${myScore} – ${oppScore}` : 'VS';
     ctx.font = "700 28px 'Libre Caslon Text', sans-serif";
-    const scoreW = ctx.measureText(scoreText).width + 40;
+    const scoreW = ctx.measureText(scoreText).width + 42;
 
     ctx.textAlign = 'right';
     ctx.fillStyle = INK;
-    const nameFont1 = fitFont((playerName||'').toUpperCase(), 300, 24, 14, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
+    const nameFont1 = fitFont((playerName||'').toUpperCase(), 330, 24, 14, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
     ctx.font = `700 ${nameFont1}px 'Libre Caslon Text', sans-serif`;
     ctx.fillText((playerName||'').toUpperCase(), CARD_W/2 - scoreW/2 - 18, midY);
 
     ctx.textAlign = 'left';
-    const nameFont2 = fitFont((opponentName||'').toUpperCase(), 300, 24, 14, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
+    const nameFont2 = fitFont((opponentName||'').toUpperCase(), 330, 24, 14, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
     ctx.font = `700 ${nameFont2}px 'Libre Caslon Text', sans-serif`;
     ctx.fillStyle = INK_SOFT;
     ctx.fillText((opponentName||'').toUpperCase(), CARD_W/2 + scoreW/2 + 18, midY);
@@ -10299,130 +10501,56 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.font = "700 28px 'Libre Caslon Text', sans-serif";
     ctx.fillText(scoreText, CARD_W/2, midY);
 
-    cursorY = stripY + stripH + 22;
-  }
-
-  // matchday / group tag
-  if (dayLabel) {
-    ctx.font = "600 19px 'Libre Caslon Text', sans-serif";
-    ctx.fillStyle = INK_SOFT;
-    ctx.textAlign = 'center';
-    ctx.fillText(dayLabel, CARD_W/2, cursorY + 2);
-    cursorY += 30;
-  }
-
-  // ── Polaroid-style photo card ──
-  const polW = 780, sideMargin = 24, topMargin = 24, nameStripH = 176;
-  const polY = Math.max(cursorY + 14, 470);
-  const photoH = 1230 - polY; // keeps everything balanced above the stats row
-  const polH = topMargin + photoH + nameStripH;
-  const polX = (CARD_W - polW) / 2;
-
-  ctx.save();
-  ctx.shadowColor = 'rgba(15,30,48,0.22)';
-  ctx.shadowBlur = 32;
-  ctx.shadowOffsetY = 16;
-  ctx.fillStyle = PAPER_SOFT;
-  roundRect(polX, polY, polW, polH, 16);
-  ctx.fill();
-  ctx.restore();
-
-  ctx.strokeStyle = GOLD;
-  ctx.lineWidth = 3;
-  roundRect(polX, polY, polW, polH, 16);
-  ctx.stroke();
-
-  const photoX = polX + sideMargin, photoY = polY + topMargin, photoW = polW - sideMargin*2;
-
-  // ── Player photo (or fallback silhouette) ──
-  const avatarImg = avatarUrl ? await bdLoadImage(avatarUrl) : null;
-  ctx.save();
-  roundRect(photoX, photoY, photoW, photoH, 8);
-  ctx.clip();
-  if (avatarImg) {
-    const scale = Math.max(photoW / avatarImg.width, photoH / avatarImg.height);
-    const dw = avatarImg.width * scale, dh = avatarImg.height * scale;
-    ctx.drawImage(avatarImg, photoX + (photoW-dw)/2, photoY + (photoH-dh)/2, dw, dh);
+    cursorY = stripY + stripH + 26;
   } else {
-    const phGrad = ctx.createLinearGradient(photoX, photoY, photoX, photoY+photoH);
-    phGrad.addColorStop(0, '#2b3d52'); phGrad.addColorStop(1, '#141f30');
-    ctx.fillStyle = phGrad;
-    ctx.fillRect(photoX, photoY, photoW, photoH);
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = "220px sans-serif";
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('🎮', photoX+photoW/2, photoY+photoH/2);
-    ctx.textBaseline = 'alphabetic';
-  }
-  ctx.restore();
-
-  // thin gold seam between photo and nameplate
-  ctx.strokeStyle = GOLD_SOFT;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(photoX, photoY+photoH); ctx.lineTo(photoX+photoW, photoY+photoH); ctx.stroke();
-
-  // ── Player name (auto-fit so long names never get clipped) ──
-  ctx.textAlign = 'center';
-  const nameMaxW = polW - sideMargin*2 - 30;
-  const nameText = (playerName || '—').toUpperCase();
-  const nameSize = fitFont(nameText, nameMaxW, 56, 28, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
-  ctx.font = `700 ${nameSize}px 'Libre Caslon Text', sans-serif`;
-  ctx.fillStyle = INK;
-  const nameY = photoY + photoH + 62;
-  ctx.fillText(nameText, CARD_W/2, nameY);
-
-  // team line under the name
-  if (teamName) {
-    const teamLine = fitFont(`${teamEmoji||'🛡️'}  ${teamName.toUpperCase()}`, nameMaxW, 24, 14, s=>`600 ${s}px 'Libre Caslon Text', sans-serif`);
-    ctx.font = `600 ${teamLine}px 'Libre Caslon Text', sans-serif`;
-    ctx.fillStyle = GOLD_DEEP;
-    ctx.fillText(`${teamEmoji||'🛡️'}  ${teamName.toUpperCase()}`, CARD_W/2, nameY + 46);
+    cursorY += 10;
   }
 
-  // ── Stat chips: Goals / Goal Difference ──
+  // ── Stat chips: Goals / Goal Difference (rating already lives on the photo badge) ──
   const gd = (goals||0) - (conceded||0);
   const gdStr = gd > 0 ? `+${gd}` : `${gd}`;
-  const chipY = polY + polH + 58, chipH = 78, chipGap = 22;
-  const chipW = (polW - chipGap) / 2;
-  const chipX1 = polX, chipX2 = polX + chipW + chipGap;
+  const chipY = cursorY, chipH = 84, chipGap = 24;
+  const chipW = (panelW - chipGap) / 2;
+  const chipX1 = panelX, chipX2 = panelX + chipW + chipGap;
 
   function drawStatChip(x, icon, value, label) {
     ctx.fillStyle = PAPER_SOFT;
-    roundRect(x, chipY, chipW, chipH, 14);
+    roundRect(x, chipY, chipW, chipH, 16);
     ctx.fill();
-    ctx.strokeStyle = GOLD_SOFT; ctx.lineWidth = 1.2;
-    roundRect(x, chipY, chipW, chipH, 14);
+    ctx.strokeStyle = GOLD_SOFT; ctx.lineWidth = 1.4;
+    roundRect(x, chipY, chipW, chipH, 16);
     ctx.stroke();
     ctx.textAlign = 'center';
-    ctx.font = "700 36px 'Libre Caslon Text', sans-serif";
+    ctx.font = "700 38px 'Libre Caslon Text', sans-serif";
     ctx.fillStyle = GOLD_DEEP;
-    ctx.fillText(`${icon} ${value}`, x + chipW/2, chipY + 38);
-    ctx.font = "600 15px 'Libre Caslon Text', sans-serif";
+    ctx.fillText(`${icon} ${value}`, x + chipW/2, chipY + 44);
+    ctx.font = "600 16px 'Libre Caslon Text', sans-serif";
     ctx.fillStyle = INK_SOFT;
-    ctx.fillText(label, x + chipW/2, chipY + 62);
+    ctx.fillText(label, x + chipW/2, chipY + 68);
   }
   drawStatChip(chipX1, '⚽', goals||0, `GOAL${(goals||0)===1?'':'S'}`);
   drawStatChip(chipX2, '🎯', gdStr, 'GOAL DIFFERENCE');
+  const chipBottom = chipY + chipH;
 
   // ── MVP ribbon badge ──
-  const pillY = chipY + chipH + 62;
+  const pillH = 52;
+  const pillCenterY = chipBottom + 46 + pillH/2;
   ctx.font = "700 24px 'Libre Caslon Text', sans-serif";
   const pillText = '👑  MVP OF THE MATCHDAY';
   const pillW = ctx.measureText(pillText).width + 70;
-  const pillH = 52;
   ctx.fillStyle = 'rgba(199,154,61,0.12)';
-  roundRect(CARD_W/2 - pillW/2, pillY - pillH/2, pillW, pillH, pillH/2);
+  roundRect(CARD_W/2 - pillW/2, pillCenterY - pillH/2, pillW, pillH, pillH/2);
   ctx.fill();
-  ctx.strokeStyle = GOLD; ctx.lineWidth = 1.6;
-  roundRect(CARD_W/2 - pillW/2, pillY - pillH/2, pillW, pillH, pillH/2);
+  ctx.strokeStyle = GOLD; ctx.lineWidth = 1.8;
+  roundRect(CARD_W/2 - pillW/2, pillCenterY - pillH/2, pillW, pillH, pillH/2);
   ctx.stroke();
   ctx.fillStyle = GOLD_DEEP;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(pillText, CARD_W/2, pillY+2);
+  ctx.fillText(pillText, CARD_W/2, pillCenterY+2);
   ctx.textBaseline = 'alphabetic';
 
-  // ── Footer: TYP brand ──
+  // ── Footer: TYP brand (anchored to the bottom edge — never collides with content above) ──
   const typLogoImg = await new Promise(resolve => {
     if (!window.TYP_LOGO_DATA) { resolve(null); return; }
     const img = new Image();
@@ -10430,19 +10558,19 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     img.onerror = () => resolve(null);
     img.src = window.TYP_LOGO_DATA;
   });
-  const footerY = CARD_H - 66;
+  const footerY = CARD_H - 60;
   ctx.strokeStyle = LINE_COL;
   ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(90, footerY-32); ctx.lineTo(CARD_W-90, footerY-32); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(90, footerY-30); ctx.lineTo(CARD_W-90, footerY-30); ctx.stroke();
   ctx.textAlign = 'center';
   if (typLogoImg) {
     const lw = 32, lh = 32;
-    ctx.drawImage(typLogoImg, CARD_W/2 - 95, footerY - lh/2, lw, lh);
+    ctx.drawImage(typLogoImg, CARD_W/2 - 96, footerY - lh/2, lw, lh);
   }
   ctx.font = "700 19px 'Libre Caslon Text', sans-serif";
   ctx.fillStyle = INK_SOFT;
   ctx.textAlign = typLogoImg ? 'left' : 'center';
-  ctx.fillText('TYP CHAMPIONSHIP', typLogoImg ? CARD_W/2 - 50 : CARD_W/2, footerY + 7);
+  ctx.fillText('TYP CHAMPIONSHIP', typLogoImg ? CARD_W/2 - 54 : CARD_W/2, footerY + 6);
 
   // ── Export ──
   const link = document.createElement('a');
@@ -11263,6 +11391,7 @@ window.trnDownloadMVPCard = async function() {
   const stat = playerStats[mvpName] || { gf: 0, ga: 0 };
   const sampleM = matches[0];
   const dayVal = (sampleM.matchday || window._trnCurrentDay || 'Matchday ?').toString().replace('—', '•');
+  const rating = _calcAvgMvpRating(matches, mvpName);
 
   await _renderMVPCard({
     playerName: mvpName,
@@ -11275,7 +11404,8 @@ window.trnDownloadMVPCard = async function() {
     fileSuffix: mvpName.replace(/\s+/g, '-'),
     opponentName,
     myScore,
-    oppScore
+    oppScore,
+    rating
   });
 };
 
@@ -11867,7 +11997,17 @@ window.downloadMatchupResultCard = async function(matchupKey) {
   const homeTeam = teamMap[sampleM.homeTeam] || { name: 'HOME', emoji: '🏟️' };
   const awayTeam = teamMap[sampleM.awayTeam] || { name: 'AWAY', emoji: '🏟️' };
 
-  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: `${homeTeam.name||'Home'}-vs-${awayTeam.name||'Away'}` });
+  // Pull the admin's manually-selected MVP for this matchup (if any), so the
+  // downloaded result card matches what was saved via "🏅 Save MVP" instead
+  // of always falling back to auto-detection.
+  const mdcKey = window._trnCurrentMdcKey || `${sampleM.day}_${matchupKey}`;
+  let ctrl = window._trnCurrentMdcCtrl;
+  if (!ctrl) {
+    try { const r = await fetch(`${TRN_DB}/tournament/matchdayControl/${mdcKey}.json`); ctrl = await r.json() || {}; } catch (e) { ctrl = {}; }
+  }
+  const overrideMvpName = (ctrl && ctrl.manualMvpName) || '';
+
+  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: `${homeTeam.name||'Home'}-vs-${awayTeam.name||'Away'}`, overrideMvpName });
 };
 
 window.downloadMatchdayResultCard = async function() {
@@ -11912,7 +12052,16 @@ window.downloadMatchdayResultCard = async function() {
   const homeTeam = teamMap[sampleM.homeTeam] || { name: 'HOME', emoji: '🏟️' };
   const awayTeam = teamMap[sampleM.awayTeam] || { name: 'AWAY', emoji: '🏟️' };
 
-  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: dayVal });
+  // Pull the admin's manually-selected MVP (if any), so this export matches
+  // what was saved via "🏅 Save MVP" instead of always falling back to auto-detection.
+  const mdcKey = window._trnCurrentMdcKey || `${sampleM.day}_${sampleM.homeTeam}_${sampleM.awayTeam}`;
+  let ctrl = window._trnCurrentMdcCtrl;
+  if (!ctrl) {
+    try { const r = await fetch(`${TRN_DB}/tournament/matchdayControl/${mdcKey}.json`); ctrl = await r.json() || {}; } catch (e) { ctrl = {}; }
+  }
+  const overrideMvpName = (ctrl && ctrl.manualMvpName) || '';
+
+  await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: dayVal, overrideMvpName });
 };
 
 // Shared canvas-drawing routine used by both full-matchday and per-matchup exports
