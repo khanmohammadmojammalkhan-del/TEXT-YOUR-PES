@@ -10714,9 +10714,15 @@ window.saveF4mMatchdayResults = async function(mid) {
   }
 
   window._allUsersCache = [];
-  statusEl.textContent = `✅ Saved! ${Object.keys(statDelta).length} player profile updated.`;
-  statusEl.style.color = 'var(--green)';
   await loadF4mAdminMatchdays();
+  // loadF4mAdminMatchdays() clears the entry area — reselect this matchday and
+  // re-render the entry form so the now-completed matchday shows its
+  // "🎴 Matchday Card ডাউনলোড করো" controls instead of disappearing.
+  const mdSel = document.getElementById('f4mMdSelect');
+  if (mdSel) mdSel.value = mid;
+  await loadF4mMatchdayForEntry();
+  const statusEl2 = document.getElementById('f4mSaveStatus');
+  if (statusEl2) { statusEl2.textContent = `✅ Saved! ${Object.keys(statDelta).length} player profile updated.`; statusEl2.style.color = 'var(--green)'; }
 };
 
 // ════════════════════════════════════════════════════════
