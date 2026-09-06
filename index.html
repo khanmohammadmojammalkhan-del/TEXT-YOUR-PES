@@ -9426,6 +9426,28 @@ function f4mSquadName(id) {
   return s ? (s.tag ? `[${s.tag}] ` : '') + s.name : '—';
 }
 
+// ── Sort matchdays in a sensible on-screen order: Group stage (Group A→D,
+// Round 1→3) first, then Quarterfinal → Semifinal → Final. Falls back to
+// parsing "Round N" out of the label for older matchdays saved before the
+// explicit `round` field existed, so old data still sorts correctly. ──
+function f4mMdRoundOf(m) {
+  if (m.round !== undefined && m.round !== null) return m.round;
+  const mt = /Round\s*(\d+)/i.exec(m.label || '');
+  return mt ? parseInt(mt[1], 10) : 0;
+}
+function f4mMdCompare(a, b) {
+  const stageOrder = { group: 0, qf: 1, sf: 2, final: 3 };
+  const soA = stageOrder[a.stage] ?? 9, soB = stageOrder[b.stage] ?? 9;
+  if (soA !== soB) return soA - soB;
+  const gA = a.group || '', gB = b.group || '';
+  if (gA !== gB) return gA.localeCompare(gB);
+  const rA = f4mMdRoundOf(a), rB = f4mMdRoundOf(b);
+  if (rA !== rB) return rA - rB;
+  const slotA = a.koSlot || '', slotB = b.koSlot || '';
+  if (slotA !== slotB) return slotA.localeCompare(slotB);
+  return (a.createdAt || '').localeCompare(b.createdAt || '');
+}
+
 function f4mShuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -9517,7 +9539,7 @@ window.loadF4mMatchdaysList = async function() {
   const wrap = document.getElementById('f4mMatchdaysList');
   if (!wrap) return;
   if (!f4mMatchdaysCache.length) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">এখনো কোনো matchday তৈরি হয়নি।</div>`; return; }
-  const sorted = [...f4mMatchdaysCache].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const sorted = [...f4mMatchdaysCache].sort(f4mMdCompare);
   wrap.innerHTML = sorted.map(m => {
     const boutRows = Object.keys(m.bouts || {}).sort().map(k => {
       const b = m.bouts[k];
@@ -9774,7 +9796,7 @@ window.generateF4mGroupFixtures = async function() {
           label: `Group ${g} — Round ${rIdx + 1}`,
           squadA: aId, squadB: bId,
           bouts: f4mEmptyBouts(),
-          status: 'pending', stage: 'group', group: g,
+          status: 'pending', stage: 'group', group: g, round: rIdx + 1,
           createdAt: new Date().toISOString()
         };
       });
@@ -9932,7 +9954,7 @@ window.loadF4mAdminMatchdays = async function() {
   if (!f4mUsersCache.length) f4mUsersCache = await getAllUsers();
   f4mPopulateSquadSelects();
   const sel = document.getElementById('f4mMdSelect');
-  const sorted = [...f4mMatchdaysCache].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const sorted = [...f4mMatchdaysCache].sort(f4mMdCompare);
   const opts = '<option value="">-- Matchday বাছাই করো --</option>' + sorted.map(m => `<option value="${m.id}">${m.label} — ${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)} ${m.status === 'completed' ? '✅' : '⏳'}</option>`).join('');
   if (sel) sel.innerHTML = opts;
   renderF4mAdminSquadsList();
