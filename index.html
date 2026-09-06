@@ -2665,7 +2665,10 @@ if (document.readyState === 'loading') {
 
   <!-- ═══ 4-MAN TOURNAMENT VIEW ═══ -->
   <div id="trn4ManView" style="display:none">
-    <button class="trn-back-btn" onclick="backToTournamentSelector()">← Tournament Types</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+      <button class="trn-back-btn" onclick="backToTournamentSelector()">← Tournament Types</button>
+      <button class="btn btn-gold" style="padding:8px 16px;font-size:12px" onclick="f4mOpenManagerLogin()">👔 Manager Panel</button>
+    </div>
     <div class="trn-tabs">
       <button class="trn-tab f4m-tab active" onclick="switchF4mTab('standings')">📊 Standings</button>
       <button class="trn-tab f4m-tab" onclick="switchF4mTab('matchdays')">📅 Matchdays</button>
@@ -2777,77 +2780,32 @@ if (document.readyState === 'loading') {
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row"><span class="rl rl-gold">A</span> প্রত্যেক Match Day-এর জন্য Squad Line-up ম্যাচের দিন দুপুর <span class="rh">১:০০ টার আগে</span> Admin-এর Inbox-এ জমা দিতে হবে।</div>
+        <div class="rule-row"><span class="rl rl-gold">A</span> প্রত্যেক Match Day-এর জন্য Squad Line-up ম্যাচের দিন দুপুর <span class="rh">৩:০০ টার আগে</span> Admin-এর Inbox-এ জমা দিতে হবে।</div>
         <div class="rule-row"><span class="rl rl-yellow">B</span> Line-up জমা দেওয়ার দায়িত্ব সংশ্লিষ্ট <strong>Team Manager অথবা Captain</strong>-এর।</div>
-        <div class="rule-row"><span class="rl rl-red">C</span> <strong style="color:var(--red)">Line-up জমা দিতে ব্যর্থ হলে:</strong> দুপুর ১:০০ টার মধ্যে জমা দিতে ব্যর্থ হলে আগের Match Day-এর Line-up স্বয়ংক্রিয়ভাবে কার্যকর বলে গণ্য হবে এবং উক্ত Line-up ব্যবহার করে Official Draw সম্পন্ন করা হবে। পরবর্তীতে কোনো আপত্তি গ্রহণযোগ্য হবে না।</div>
+        <div class="rule-row"><span class="rl rl-red">C</span> <strong style="color:var(--red)">Line-up জমা দিতে ব্যর্থ হলে:</strong> দুপুর ৩:০০ টার মধ্যে জমা দিতে ব্যর্থ হলে আগের Match Day-এর Line-up স্বয়ংক্রিয়ভাবে কার্যকর বলে গণ্য হবে এবং উক্ত Line-up ব্যবহার করে Official Draw সম্পন্ন করা হবে। পরবর্তীতে কোনো আপত্তি গ্রহণযোগ্য হবে না।</div>
       </div>
     </div>
 
     <!-- 2 -->
     <div class="rules-section collapsed" id="rs2">
       <div class="rules-header" onclick="toggleRule(this)">
-        <span style="font-size:1.2rem">👥</span>
-        <span class="rules-title">Match Day Group Creation</span>
-        <span class="rules-toggle">▼</span>
-      </div>
-      <div class="rules-body">
-        <div class="rule-row">যে দল Fixture-এ <span class="rh">Home Team</span> হিসেবে থাকবে, সেই দলের Manager অথবা Captain Match Day Group তৈরি করবে।</div>
-        <div class="rule-row">Group তৈরির পর অবশ্যই নিম্নলিখিত ব্যক্তিদের Add করতে হবে: <span class="rh">✅ Tournament Official</span> এবং <span class="rh">✅ Opponent Team-এর Manager অথবা Captain</span>।</div>
-      </div>
-    </div>
-
-    <!-- 3 -->
-    <div class="rules-section collapsed" id="rs3">
-      <div class="rules-header" onclick="toggleRule(this)">
-        <span style="font-size:1.2rem">🗂️</span>
-        <span class="rules-title">Match Fixture Creation</span>
-        <span class="rules-toggle">▼</span>
-      </div>
-      <div class="rules-body">
-        <div class="rule-row">Official Draw সম্পন্ন হওয়ার পর <span class="rh">Home Team</span>-এর Manager অথবা Captain Match Fixture তৈরি করবে।</div>
-      </div>
-    </div>
-
-    <!-- 4 -->
-    <div class="rules-section collapsed" id="rs4">
-      <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🔄</span>
         <span class="rules-title">Substitution &amp; Swap Rules</span>
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row" style="margin-bottom:10px">প্রত্যেক Match Day-এ খেলোয়াড়দের উপস্থিতি, Substitution এবং Swap নির্ধারিত Deadline-এর মধ্যে সম্পন্ন করতে হবে।</div>
-        <div style="display:flex;flex-direction:column;gap:0;margin-bottom:14px">
-          <div style="display:flex;gap:14px;padding-bottom:16px;position:relative">
-            <div style="width:12px;height:12px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px rgba(0,229,255,0.5);position:relative;z-index:1"></div>
-            <div style="flex:1">
-              <div style="font-family:'Libre Caslon Text',sans-serif;font-weight:700;font-size:13px;color:var(--primary);letter-spacing:0.05em">🕚 1ST DEADLINE — রাত ১১:০০</div>
-              <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:3px">Attendance Deadline: <span class="rh">রাত ১১:০০</span>। Priority Time: <span class="rh">রাত ১০:৪৫</span>। Sub/Swap Deadline: <span class="rh">রাত ১০:৪৪:৫৯</span>।</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:14px;padding-bottom:16px;position:relative">
-            <div style="width:12px;height:12px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px rgba(0,229,255,0.5);position:relative;z-index:1"></div>
-            <div style="flex:1">
-              <div style="font-family:'Libre Caslon Text',sans-serif;font-weight:700;font-size:13px;color:var(--primary);letter-spacing:0.05em">🕛 2ND DEADLINE — রাত ১২:০০</div>
-              <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:3px">Attendance Deadline: <span class="rh">রাত ১২:০০</span>। Priority Time: <span class="rh">রাত ১১:৪৫</span>। Sub/Swap Deadline: <span class="rh">রাত ১১:৪৪:৫৯</span>।</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:14px;padding-bottom:4px">
-            <div style="width:12px;height:12px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:5px;box-shadow:0 0 8px rgba(0,229,255,0.5)"></div>
-            <div style="flex:1">
-              <div style="font-family:'Libre Caslon Text',sans-serif;font-weight:700;font-size:13px;color:var(--primary);letter-spacing:0.05em">🕐 3RD DEADLINE — রাত ১:০০</div>
-              <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:3px">Attendance Deadline: <span class="rh">রাত ১:০০</span>। Priority Time: <span class="rh">রাত ১২:৪৫</span>। Sub/Swap Deadline: <span class="rh">রাত ১২:৪৪:৫৯</span>।</div>
-            </div>
-          </div>
+        <div class="rule-row" style="margin-bottom:6px">প্রত্যেক Match Day-এ খেলোয়াড়দের উপস্থিতি, Substitution এবং Swap নির্ধারিত <span class="rh">Main Deadline</span>-এর পূর্বে সম্পন্ন করতে হবে।</div>
+        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Substitution &amp; Swap Deadline</strong></div>
+        <div class="rule-row">Main Deadline-এর <span class="rh">১০ মিনিট আগে</span> Substitution ও Swap-এর Deadline শেষ হবে।</div>
+        <div class="rule-row" style="background:rgba(0,229,255,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:10px 14px">
+          <strong style="color:var(--primary)">📝 উদাহরণ:</strong> Main Deadline: <span class="rh">12:00 AM</span> হলে Sub/Swap Deadline: <span class="rh">11:49:59 PM</span>।
         </div>
-        <div class="rule-row"><span class="rl rl-red">⚠️</span> নির্ধারিত Substitution/Swap Deadline অতিক্রম করার পর কোনো Substitution বা Swap গ্রহণযোগ্য হবে না। সকল Manager এবং Captain-কে নির্ধারিত সময়সীমা মেনে চলতে হবে।</div>
-        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Priority Time Rule</strong></div>
-        <div class="rule-row"><span class="rl rl-red">⏱️</span> Priority Time-এ অপোনেন্টকে মেনশন করার পর যদি আপনি অ্যাক্টিভ থাকেন, তাহলে অবশ্যই ডেডলাইনের আগেই ম্যাচ সম্পন্ন করতে হবে। ডেডলাইন অতিক্রম হলে কোনো অতিরিক্ত সময় দেওয়া হবে না এবং ম্যাচ <span style="color:var(--red);font-weight:600">Auto Loss</span> হিসেবে গণ্য হবে।</div>
+        <div class="rule-row"><span class="rl rl-red">⛔</span> নির্ধারিত Substitution/Swap Deadline অতিক্রম করার পর কোনো Substitution বা Swap গ্রহণযোগ্য হবে না। সকল Manager এবং Captain-কে নির্ধারিত সময়সীমা মেনে চলতে হবে।</div>
       </div>
     </div>
 
-    <!-- 5 -->
-    <div class="rules-section collapsed" id="rs5">
+    <!-- 3 -->
+    <div class="rules-section collapsed" id="rs3">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🃏</span>
         <span class="rules-title">Substitution &amp; Swap Card Rules</span>
@@ -2863,8 +2821,8 @@ if (document.readyState === 'loading') {
       </div>
     </div>
 
-    <!-- 6 -->
-    <div class="rules-section collapsed" id="rs6">
+    <!-- 4 -->
+    <div class="rules-section collapsed" id="rs4">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">⚠️</span>
         <span class="rules-title">Manager Conduct &amp; Penalty Rules</span>
@@ -2878,8 +2836,8 @@ if (document.readyState === 'loading') {
       </div>
     </div>
 
-    <!-- 7 -->
-    <div class="rules-section collapsed" id="rs7">
+    <!-- 5 -->
+    <div class="rules-section collapsed" id="rs5">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🚫</span>
         <span class="rules-title">Match Fixing &amp; Disciplinary Action</span>
@@ -2893,8 +2851,24 @@ if (document.readyState === 'loading') {
       </div>
     </div>
 
-    <!-- 8 -->
-    <div class="rules-section collapsed" id="rs8">
+    <!-- 6 -->
+    <div class="rules-section collapsed" id="rs6">
+      <div class="rules-header" onclick="toggleRule(this)">
+        <span style="font-size:1.2rem">🚫</span>
+        <span class="rules-title">Proxy Player Rules</span>
+        <span class="rules-toggle">▼</span>
+      </div>
+      <div class="rules-body">
+        <div class="rule-row"><strong style="color:var(--red)">Tournament চলাকালীন কোনো Player-এর পরিবর্তে অন্য কোনো ব্যক্তি Proxy হিসেবে ম্যাচ খেললে তা সম্পূর্ণরূপে নিষিদ্ধ।</strong></div>
+        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Proxy Player ধরা পড়লে</strong></div>
+        <div class="rule-row">কোনো Player Proxy ব্যবহার করেছে বলে Official Review-এর মাধ্যমে প্রমাণিত হলে সংশ্লিষ্ট Player-কে <span style="color:var(--red);font-weight:600">🚫 TYP Community থেকে Permanent Ban</span> করা হবে।</div>
+        <div class="rule-row">Permanent Ban-এর পর সংশ্লিষ্ট Player ভবিষ্যতে TYP Community-এর কোনো Tournament বা কার্যক্রমে অংশগ্রহণ করতে পারবে না।</div>
+        <div class="rule-row"><span class="rl rl-red">★</span> Proxy সংক্রান্ত সকল অভিযোগ প্রমাণ ও Official Review-এর ভিত্তিতে যাচাই করা হবে। Tournament Authority-এর সিদ্ধান্তই চূড়ান্ত।</div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="rules-section collapsed" id="rs7">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">📲</span>
         <span class="rules-title">Communication, User ID &amp; Device Change</span>
@@ -2904,17 +2878,17 @@ if (document.readyState === 'loading') {
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Admin Communication</strong></div>
         <div class="rule-row">Match Day চলাকালীন যেকোনো সমস্যা বা গুরুত্বপূর্ণ বিষয় Match Day Group-এ Admin-কে Mention করে জানাতে হবে। সিদ্ধান্তের আগে Admin-এর নির্দেশনার জন্য অপেক্ষা করতে হবে। Admin Active না থাকলে সরাসরি Admin-এর Inbox-এ যোগাযোগ করতে হবে।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 User ID Information Change</strong></div>
-        <div class="rule-row">User ID পরিবর্তনের প্রয়োজন হলে বিকাল <span class="rh">৫:০০ টার মধ্যে</span> Manager Group-এ নতুন User ID Submit করতে হবে। নির্ধারিত সময়ের পরে আবেদন গ্রহণযোগ্য হবে না, যদি না Tournament Authority বিশেষ অনুমতি দেয়।</div>
+        <div class="rule-row">User ID পরিবর্তনের প্রয়োজন হলে বিকাল <span class="rh">৫:০০ টার মধ্যে</span> নতুন User ID Submit করতে হবে। নির্ধারিত সময়ের পরে আবেদন গ্রহণযোগ্য হবে না, যদি না Tournament Authority বিশেষ অনুমতি দেয়।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Device Change Rules</strong></div>
         <div class="rule-row">Running Tournament চলাকালীন কোনো Player নিজের Device পরিবর্তন করতে পারবে না। Tournament শুরুতে জমা দেওয়া Device Information-ই শেষ পর্যন্ত বৈধ বলে গণ্য হবে।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Emergency Device Change</strong></div>
-        <div class="rule-row">Device নষ্ট/হারিয়ে গেলে বা বাস্তব সমস্যা হলে Admin-কে অবিলম্বে জানিয়ে প্রমাণ জমা দিতে হবে। Admin যাচাই করে অনুমতি দিলেই Device Change করা যাবে। অনুমতি ছাড়া Device Change করলে তা <span style="color:var(--red);font-weight:600">Rule Violation</span> হিসেবে গণ্য হবে।</div>
+        <div class="rule-row">Device নষ্ট/হারিয়ে গেলে বা বাস্তব সমস্যা হলে Admin-কে অবিলম্বে জানিয়ে প্রমাণ জমা দিতে হবে। Admin যাচাই করে অনুমতি দিলেই Device Change করা যাবে। অনুমতি ছাড়া Device Change করলে তা <span style="color:var(--red);font-weight:600">❌ Rule Violation</span> হিসেবে গণ্য হবে।</div>
         <div class="rule-row"><span class="rl rl-red">★</span> User ID ও Device Change সংক্রান্ত সকল বিষয়ে Tournament Authority-এর সিদ্ধান্তই চূড়ান্ত।</div>
       </div>
     </div>
 
-    <!-- 9 -->
-    <div class="rules-section collapsed" id="rs9">
+    <!-- 8 -->
+    <div class="rules-section collapsed" id="rs8">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🎬</span>
         <span class="rules-title">Match Result Video Rules</span>
@@ -2922,54 +2896,54 @@ if (document.readyState === 'loading') {
       </div>
       <div class="rules-body">
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">🏅 Win / 🤝 Draw Match</strong></div>
-        <div class="rule-row">বিজয়ী/ড্র উভয় প্লেয়ারকে ভিডিওতে অবশ্যই দেখাতে হবে: <span class="rh">✅ Match Result</span>, <span class="rh">✅ SMART Assist OFF</span>, <span class="rh">✅ User ID</span>, <span class="rh">✅ Device Name</span>। ভিডিও ম্যাচ ডে গ্রুপে জমা দিতে হবে।</div>
+        <div class="rule-row">বিজয়ী/ড্র উভয় Player-কে ভিডিওতে অবশ্যই দেখাতে হবে: <span class="rh">✅ Match Result</span>, <span class="rh">✅ SMART Assist OFF</span>, <span class="rh">✅ User ID</span>, <span class="rh">✅ Device Name</span>। ভিডিও Match Day Group-এ জমা দিতে হবে।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Black Screen / Loading Issue</strong></div>
-        <div class="rule-row">এই সমস্যায় Match Result দেখা না গেলে সেই অবস্থা থেকেই রেকর্ডিং শুরু করতে হবে এবং বের হয়ে <span class="rh">SMART Assist OFF, Device Name, User ID, Match History</span> দেখাতে হবে।</div>
+        <div class="rule-row">এই সমস্যায় Match Result দেখা না গেলে সেই অবস্থা থেকেই Recording শুরু করতে হবে এবং বের হয়ে <span class="rh">✅ SMART Assist OFF</span>, <span class="rh">✅ Device Name</span>, <span class="rh">✅ User ID</span>, <span class="rh">✅ Match History</span> দেখাতে হবে।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Video Submission Time</strong></div>
-        <div class="rule-row">ম্যাচ শেষের <span class="rh">১৫ মিনিটের মধ্যে</span> ভিডিও জমা দিতে হবে। নেটওয়ার্ক সমস্যায় Sending অবস্থার স্ক্রিনশট দিতে হবে।</div>
-        <div class="rule-row"><span class="rl rl-red">⛔</span> ১৫ মিনিটের মধ্যে জমা না দিলে: Win Match হলে <span style="color:var(--red);font-weight:600">Rematch</span>; Draw Match হলে Opponent <span class="rh">১ গোল লিড</span> নিয়ে Rematch শুরু করবে। কোনো অজুহাত গ্রহণযোগ্য নয়।</div>
-        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Video Submission Rule (Invalid/Incomplete Video)</strong></div>
-        <div class="rule-row">যদি কোনো খেলোয়াড় অসম্পূর্ণ (Incomplete) বা ভুল ভিডিও সাবমিট করে — অর্থাৎ ভিডিওতে ম্যাচ ভেরিফাই করার জন্য প্রয়োজনীয় অংশ সম্পূর্ণভাবে না থাকে — তাহলে সেই ভিডিও <span style="color:var(--red);font-weight:600">Invalid</span> হিসেবে গণ্য হবে। এরপর সিদ্ধান্ত হবে নিচের নিয়ম অনুযায়ী:</div>
-        <div class="rule-row">• যদি ওই খেলোয়াড় <span class="rh">Winning Position</span>-এ থাকে, তাহলে ম্যাচটি <span class="rh">Replay (Re-Match)</span> করতে হবে।</div>
-        <div class="rule-row">• যদি ম্যাচটি <span class="rh">Draw Position</span>-এ থাকে, তাহলে প্রতিপক্ষকে <span class="rh">১ গোল লিড</span> দিয়ে Replay (Re-Match) খেলতে হবে।</div>
-        <div class="rule-row">সকল খেলোয়াড়ের দায়িত্ব সম্পূর্ণ ও পরিষ্কার ভিডিও রেকর্ড করে সাবমিট করা। ভুল বা অসম্পূর্ণ ভিডিওর দায়ভার সম্পূর্ণভাবে সংশ্লিষ্ট খেলোয়াড়ের।</div>
+        <div class="rule-row">ম্যাচ শেষের <span class="rh">১৫ মিনিটের মধ্যে</span> ভিডিও জমা দিতে হবে। Network সমস্যায় Sending অবস্থার Screenshot দিতে হবে।</div>
+        <div class="rule-row"><span class="rl rl-red">⛔</span> Video Submit করতে ব্যর্থ হলে — Win Match: Winning Player-কে <span style="color:var(--red);font-weight:600">Rematch</span> খেলতে হবে। Draw Match: Opponent <span class="rh">১ গোল লিড</span> নিয়ে Rematch খেলবে। কোনো অজুহাত গ্রহণযোগ্য নয়।</div>
+        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Video Submission Rule — Invalid/Incomplete Video</strong></div>
+        <div class="rule-row">যদি কোনো Player অসম্পূর্ণ (Incomplete) বা ভুল ভিডিও Submit করে — অর্থাৎ ভিডিওতে ম্যাচ Verify করার জন্য প্রয়োজনীয় অংশ সম্পূর্ণভাবে না থাকে — তাহলে সেই ভিডিও <span style="color:var(--red);font-weight:600">❌ Invalid</span> হিসেবে গণ্য হবে। এরপর সিদ্ধান্ত হবে:</div>
+        <div class="rule-row">• যদি ওই Player <span class="rh">Winning Position</span>-এ থাকে, তাহলে ম্যাচটি <span class="rh">Replay (Re-Match)</span> করতে হবে।</div>
+        <div class="rule-row">• যদি ম্যাচটি <span class="rh">Draw Position</span>-এ থাকে, তাহলে Opponent-কে <span class="rh">১ গোল লিড</span> দিয়ে Replay (Re-Match) খেলতে হবে।</div>
+        <div class="rule-row">সকল Player-এর দায়িত্ব সম্পূর্ণ ও পরিষ্কার Video Record করে Submit করা। ভুল বা অসম্পূর্ণ ভিডিওর দায়ভার সম্পূর্ণভাবে সংশ্লিষ্ট Player-এর।</div>
       </div>
     </div>
 
-    <!-- 10 -->
-    <div class="rules-section collapsed" id="rs10">
+    <!-- 9 -->
+    <div class="rules-section collapsed" id="rs9">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">📡</span>
         <span class="rules-title">Match Exit / Disconnect Rules</span>
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row">ম্যাচ শেষ হওয়ার আগে Exit করলে শুধুমাত্র Exit করা প্লেয়ারকে ভিডিও প্রমাণ দিতে হবে — সমস্যার প্রমাণ, কেন Exit করেছে, SMART Assist OFF, Device Name, User ID দেখাতে হবে।</div>
+        <div class="rule-row">ম্যাচ শেষ হওয়ার আগে Exit করলে শুধুমাত্র Exit করা Player-কে Video Proof দিতে হবে — দেখাতে হবে: <span class="rh">✅ সমস্যার প্রমাণ</span>, <span class="rh">✅ কেন Exit করেছে</span>, <span class="rh">✅ SMART Assist OFF</span>, <span class="rh">✅ Device Name</span>, <span class="rh">✅ User ID</span>।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 প্রমাণ দিতে না পারলে</strong></div>
         <div class="rule-row">📈 Lead অবস্থায় Exit: <span class="rh">0-0 থেকে Rematch</span> + 🟨 ১টি Yellow Card।</div>
         <div class="rule-row">🤝 Draw অবস্থায় Exit: Opponent <span class="rh">১ গোল লিড</span> নিয়ে Rematch + 🟨 ১টি Yellow Card।</div>
         <div class="rule-row">📉 Opponent Lead অবস্থায় Exit: শুধুমাত্র 🟨 ১টি Yellow Card, বাকি সময় থেকে ম্যাচ সম্পন্ন করতে হবে।</div>
-        <div class="rule-row">🚪 যাকে Winner দেখাবে সে-ই Room Create করবে এবং তাকে ভিডিও দিতে হবে না — শুধু <span class="rh">Winner Result-এর Screenshot</span> দিলেই যথেষ্ট।</div>
-        <div class="rule-row">গেমের টেকনিক্যাল সমস্যায় বের করে দিলে সেটিও ভিডিওতে স্পষ্টভাবে দেখাতে হবে।</div>
+        <div class="rule-row">🚪 যাকে Winner দেখাবে সে-ই Room Create করবে এবং তাকে Video দিতে হবে না — শুধু <span class="rh">Winner Result-এর Screenshot</span> দিলেই যথেষ্ট।</div>
+        <div class="rule-row">গেমের Technical সমস্যায় বের করে দিলে সেটিও Video-তে স্পষ্টভাবে দেখাতে হবে।</div>
         <div class="rule-row"><span class="rl rl-red">⛔</span> সঠিক প্রমাণ দিতে ব্যর্থ হলে Opponent <span class="rh">১ গোল লিড</span> নিয়ে বাকি সময় থেকে ম্যাচ সম্পন্ন করবে।</div>
         <div class="rule-row">⏱️ সকল Disconnect Match, Resume Match ও Rematch সর্বোচ্চ <span class="rh">১৫ মিনিটের মধ্যে</span> সম্পন্ন করতে হবে। সকল Rematch-এও Video Rules বাধ্যতামূলক।</div>
       </div>
     </div>
 
-    <!-- 11 -->
-    <div class="rules-section collapsed" id="rs11">
+    <!-- 10 -->
+    <div class="rules-section collapsed" id="rs10">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🎮</span>
         <span class="rules-title">SMART Assist Rules</span>
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row"><span class="rl rl-red">⛔</span> কোনো প্লেয়ার <span style="color:var(--red);font-weight:600">SMART Assist ON</span> করে খেললে সেই ম্যাচ <span class="rh">❌ Auto Loss</span> এবং <span class="rh">🟨 ১টি Yellow Card</span>।</div>
+        <div class="rule-row"><span class="rl rl-red">⛔</span> কোনো Player <span style="color:var(--red);font-weight:600">SMART Assist ON</span> করে খেললে সেই ম্যাচ <span class="rh">❌ Auto Loss</span> এবং <span class="rh">🟨 ১টি Yellow Card</span>।</div>
       </div>
     </div>
 
-    <!-- 12 -->
-    <div class="rules-section collapsed" id="rs12">
+    <!-- 11 -->
+    <div class="rules-section collapsed" id="rs11">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🪪</span>
         <span class="rules-title">User ID &amp; Device Verification</span>
@@ -2981,23 +2955,23 @@ if (document.readyState === 'loading') {
       </div>
     </div>
 
-    <!-- 13 -->
-    <div class="rules-section collapsed" id="rs13">
+    <!-- 12 -->
+    <div class="rules-section collapsed" id="rs12">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🟥</span>
         <span class="rules-title">In-Game Red Card Rules</span>
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row">কোনো প্লেয়ার ম্যাচ চলাকালীন Red Card পেয়ে Disconnect হলে: Opponent অতিরিক্ত <span class="rh">১ গোল লিড</span> নিয়ে বাকি সময় খেলবে। Opponent আগে থেকেই Lead-এ থাকলে সেই Lead-এর সাথে আরও ১ গোল যুক্ত হবে।</div>
+        <div class="rule-row">কোনো Player ম্যাচ চলাকালীন Red Card পেয়ে Disconnect হলে: Opponent অতিরিক্ত <span class="rh">১ গোল লিড</span> নিয়ে বাকি সময় খেলবে। Opponent আগে থেকেই Lead-এ থাকলে সেই Lead-এর সাথে আরও ১ গোল যুক্ত হবে।</div>
         <div class="rule-row" style="background:rgba(52,211,153,0.06);border-left:3px solid var(--green);border-radius:6px;padding:10px 14px">
-          <strong style="color:var(--green)">📝 উদাহরণ:</strong> স্কোর 2-1 অবস্থায় Red Card পাওয়া প্লেয়ার Disconnect করলে ম্যাচ <span class="rh">3-1</span> স্কোর থেকে Resume হবে।
+          <strong style="color:var(--green)">📝 উদাহরণ:</strong> স্কোর 2-1 অবস্থায় Red Card পাওয়া Player Disconnect করলে ম্যাচ <span class="rh">3-1</span> স্কোর থেকে Resume হবে।
         </div>
       </div>
     </div>
 
-    <!-- 14 -->
-    <div class="rules-section collapsed" id="rs14">
+    <!-- 13 -->
+    <div class="rules-section collapsed" id="rs13">
       <div class="rules-header" onclick="toggleRule(this)">
         <span style="font-size:1.2rem">🟨</span>
         <span class="rules-title">Card System</span>
@@ -3005,12 +2979,33 @@ if (document.readyState === 'loading') {
       </div>
       <div class="rules-body">
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--yellow)">🟨 Yellow Card পাওয়ার কারণ</strong></div>
-        <div class="rule-row">প্রমাণ ছাড়া Disconnect • সময়মতো ম্যাচ না খেলা • অসহযোগিতা • অযৌক্তিক আচরণ • গালিগালাজ • ব্যক্তিগত আক্রমণ • হাহা রিঅ্যাক্ট, ইত্যাদি।</div>
+        <div class="rule-row">প্রমাণ ছাড়া Disconnect • সময়মতো ম্যাচ না খেলা • অসহযোগিতা • অযৌক্তিক আচরণ • গালিগালাজ • ব্যক্তিগত আক্রমণ • Haha React, ইত্যাদি।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--red)">🟥 Red Card পাওয়ার কারণ</strong></div>
-        <div class="rule-row">গুরুতর অসদাচরণ • অফিসিয়ালদের অসম্মান, ইত্যাদি।</div>
+        <div class="rule-row">গুরুতর অসদাচরণ • Officials-এর অসম্মান • গুরুতর Rule Violation।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Card Rules</strong></div>
         <div class="rule-row">🟨 ২টি Yellow Card = ১টি Red Card। ❌ Match Result-এর আগে Red Card = Auto Loss। ✅ Match Result-এর পরে Red Card = Result বহাল থাকবে।</div>
         <div class="rule-row">⏳ Yellow Card <span class="rh">২ দিন</span> পর্যন্ত কার্যকর থাকবে — এই সময়ে আরেকটি Yellow Card পেলে Red Card হবে। 🚫 Red Card পেলে পরবর্তী <span class="rh">২ ম্যাচ</span> নিষিদ্ধ।</div>
+      </div>
+    </div>
+
+    <!-- 14 -->
+    <div class="rules-section collapsed" id="rs14">
+      <div class="rules-header" onclick="toggleRule(this)">
+        <span style="font-size:1.2rem">⚡</span>
+        <span class="rules-title">Auto Win &amp; Activity Rules</span>
+        <span class="rules-toggle">▼</span>
+      </div>
+      <div class="rules-body">
+        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Priority Time Rule</strong></div>
+        <div class="rule-row">Priority Time Main Deadline-এর <span class="rh">১০ মিনিট আগে</span> থেকে শুরু হবে।</div>
+        <div class="rule-row" style="background:rgba(0,229,255,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:10px 14px">
+          <strong style="color:var(--primary)">📝 উদাহরণ:</strong> Main Deadline: <span class="rh">12:00 AM</span> হলে Priority Time শুরু: <span class="rh">11:50 PM</span>।
+        </div>
+        <div class="rule-row">Priority Time-এর মধ্যে Opponent-এর Response না পেলে, Main Deadline শেষ হওয়ার পর Active Player <span class="rh">Auto Win</span> পাবে।</div>
+        <div class="rule-row">তবে Priority Time-এর মধ্যে Opponent Response করলে, Main Deadline-এর পর ম্যাচ সম্পন্ন করার জন্য অতিরিক্ত <span class="rh">৫ মিনিট</span> সময় দেওয়া হবে। অতিরিক্ত ৫ মিনিটের মধ্যেও Opponent ম্যাচে না এলে Active Player Auto Win পাবে।</div>
+        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Auto Win Scoreline</strong></div>
+        <div class="rule-row">Auto Win নিশ্চিত হলে ম্যাচের ফলাফল সবসময় নির্ধারিত <span class="rh">🏆 3-0</span> স্কোরলাইনে রেকর্ড করা হবে।</div>
+        <div class="rule-row"><span class="rl rl-red">★</span> Activity ও Response যাচাই করে Admin Panel Auto Win-এর সিদ্ধান্ত দেবে — Admin Panel-এর সিদ্ধান্তই চূড়ান্ত।</div>
       </div>
     </div>
 
@@ -3022,50 +3017,33 @@ if (document.readyState === 'loading') {
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row" style="display:block">
-          <div style="color:var(--red);font-weight:700;margin-bottom:6px">🚫 Wall Formation Rules</div>
-          <div>1. Wall Formation সম্পূর্ণ নিষিদ্ধ। কোনো খেলোয়াড় Wall Formation ব্যবহার করেছে বলে অফিসিয়াল যাচাইয়ে প্রমাণিত হলে, তার প্রতিপক্ষকে ১ গোল লিড দেওয়া হবে।</div>
-          <div>2. ৫ CB Allowed, তবে শুধুমাত্র গেমের ডিফল্ট (Default) Formation ব্যবহার করা যাবে। ৫ CB দিয়ে Custom Formation তৈরি করা সম্পূর্ণ নিষিদ্ধ।</div>
-          <div>3. কোনো খেলোয়াড় যদি ৫ CB দিয়ে Custom Formation ব্যবহার করে, তাহলে সেটিকে Wall Formation হিসেবে গণ্য করা হবে এবং শাস্তি প্রযোজ্য হবে।</div>
-          <div>4. ম্যাচ শুরুর পর যদি প্রতিপক্ষের Wall Formation নিয়ে অভিযোগ থাকে, তাহলে In-Game Time-এর প্রথম ১০ মিনিটের মধ্যে স্ক্রিনশট (SS) নিয়ে গ্রুপে অফিসিয়ালদের ট্যাগ করে আপিল করতে হবে।</div>
-          <div>5. In-Game Time ১০ মিনিট পার হয়ে গেলে ওই অভিযোগ গ্রহণ করা হবে না।</div>
-          <div>6. ম্যাচ চলাকালীন যদি কোনো খেলোয়াড় Formation পরিবর্তন করে Wall Formation ব্যবহার করে, তাহলে সঙ্গে সঙ্গে স্ক্রিনশট নিয়ে গ্রুপে অ্যাডমিন/অফিসিয়ালকে জানাতে হবে। দেরিতে করা অভিযোগ গ্রহণযোগ্য হবে না।</div>
-          <div>7. সকল অভিযোগের চূড়ান্ত সিদ্ধান্ত TYP Officials-এর যাচাই (Official Review) অনুযায়ী নেওয়া হবে।</div>
-        </div>
-        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Appeal Rule</strong></div>
-        <div class="rule-row">ম্যাচ শুরুর প্রথম <span class="rh">০-১০ সেকেন্ডের মধ্যে</span> Pause দিয়ে ভিডিওসহ অভিযোগ করতে হবে। Half Time বা Full Time-এর পরে অভিযোগ গ্রহণযোগ্য হবে না।</div>
-        <div class="rule-row">✅ <span class="rh">Double Defence</span> Allowed &nbsp;|&nbsp; ✅ <span class="rh">Double Attack</span> Allowed</div>
+        <div class="rule-row">✅ <span class="rh">Double Defence</span> — Allowed</div>
+        <div class="rule-row">✅ <span class="rh">Double Attack</span> — Allowed</div>
       </div>
     </div>
 
     <!-- 16 -->
     <div class="rules-section collapsed" id="rs16">
       <div class="rules-header" onclick="toggleRule(this)">
-        <span style="font-size:1.2rem">⛔</span>
+        <span style="font-size:1.2rem">⚡</span>
         <span class="rules-title">Backpass Rules</span>
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row"><span style="color:var(--red);font-weight:600">🚫 ইচ্ছাকৃত Backpass সম্পূর্ণ নিষিদ্ধ।</span> Opponent ভিডিও প্রমাণ দিলে Admin Panel যাচাই করবে। অভিযোগ প্রমাণিত হলে যত মিনিট Backpass খেলা হয়েছে, ঠিক তত মিনিট পুনরায় খেলতে হবে। ভিডিও প্রমাণ ছাড়া অভিযোগ গ্রহণযোগ্য হবে না।</div>
+        <div class="rule-row"><span style="color:var(--red);font-weight:600">🚫 ইচ্ছাকৃত Backpass সম্পূর্ণ নিষিদ্ধ।</span> Opponent Video Proof দিলে Admin Panel যাচাই করবে। অভিযোগ প্রমাণিত হলে যত মিনিট Backpass খেলা হয়েছে, ঠিক তত মিনিট পুনরায় খেলতে হবে। ভিডিও প্রমাণ ছাড়া অভিযোগ গ্রহণযোগ্য হবে না।</div>
       </div>
     </div>
 
     <!-- 17 -->
     <div class="rules-section collapsed" id="rs17">
       <div class="rules-header" onclick="toggleRule(this)">
-        <span style="font-size:1.2rem">⚡</span>
-        <span class="rules-title">Auto Win &amp; Activity Rules</span>
+        <span style="font-size:1.2rem">📍</span>
+        <span class="rules-title">Appeal Rule</span>
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Activity Verification</strong></div>
-        <div class="rule-row">প্লেয়ার ক্যাটাগরি অনুযায়ী Priority Time-এর Activity বিবেচনা করে Result Count করা হবে। Priority Time-এর মধ্যে প্রতিপক্ষকে কমপক্ষে <span class="rh">২ বার Mention</span> করতে হবে, প্রতিটি Mention-এর মধ্যে ন্যূনতম <span class="rh">২ মিনিটের ব্যবধান</span> থাকতে হবে।</div>
-        <div class="rule-row">২ বারের কম Mention হলে ডেডলাইন শেষ হওয়ার পরও এক্সটা <span class="rh">৫ মিনিট</span> দেওয়া হবে। সেই ৫ মিনিটের মধ্যেও অপোনেন্ট না আসলে Auto Win আবেদন গ্রহণযোগ্য হবে।</div>
-        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Inactive Rules</strong></div>
-        <div class="rule-row">Fixed Time শেষ হওয়ার পর সর্বোচ্চ <span class="rh">২০ মিনিটের মধ্যে</span> Mention না করলে সংশ্লিষ্ট প্লেয়ারকে Inactive ধরা হবে।</div>
-        <div class="rule-row"><span class="rl rl-red">★</span> Activity Record ও Mention যাচাই করে <strong>Admin Panel</strong> Auto Win-এর সিদ্ধান্ত দেবে — যা চূড়ান্ত।</div>
-        <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Auto Win Scoreline</strong></div>
-        <div class="rule-row">Auto Win নিশ্চিত হলে ম্যাচের ফলাফল সবসময় নির্ধারিত <span class="rh">৩-০ (3-0)</span> স্কোরলাইনে রেকর্ড করা হবে — অন্য কোনো স্কোর প্রযোজ্য নয়।</div>
+        <div class="rule-row">ম্যাচ শুরুর প্রথম <span class="rh">০-১০ সেকেন্ডের মধ্যে</span> Pause দিয়ে ভিডিওসহ অভিযোগ করতে হবে।</div>
+        <div class="rule-row"><span class="rl rl-red">⛔</span> Half Time বা Full Time-এর পরে অভিযোগ গ্রহণযোগ্য হবে না।</div>
       </div>
     </div>
 
@@ -3092,27 +3070,8 @@ if (document.readyState === 'loading') {
         <span class="rules-toggle">▼</span>
       </div>
       <div class="rules-body">
-        <div class="rule-row"><strong style="color:var(--red)">সকল অভিযোগ, প্রমাণ, শাস্তি, Auto Win, Rematch ও Card সংক্রান্ত বিষয়ে Admin Panel-এর সিদ্ধান্তই চূড়ান্ত</strong> এবং সর্বশেষ সিদ্ধান্ত হিসেবে গণ্য হবে।</div>
-      </div>
-    </div>
-
-    <!-- 20 -->
-    <div class="rules-section collapsed" id="rs20">
-      <div class="rules-header" onclick="toggleRule(this)">
-        <span style="font-size:1.2rem">🎮</span>
-        <span class="rules-title">TYP Room Create Rules</span>
-        <span class="rules-toggle">▼</span>
-      </div>
-      <div class="rules-body">
-        <div class="rule-row">Room Create করার সময় নিচের সেটিংসগুলো অবশ্যই ব্যবহার করতে হবে — কোনো ভিন্নতা গ্রহণযোগ্য নয়:</div>
-        <div class="rule-row">🎯 Match Type: <span class="rh">Standard</span></div>
-        <div class="rule-row">⏱️ Match Time: <span class="rh">8 Minutes</span></div>
-        <div class="rule-row">🩹 Injury Time: <span class="rh">ON</span></div>
-        <div class="rule-row">⚽ Penalty: <span class="rh">OFF</span></div>
-        <div class="rule-row">➕ Extra Time: <span class="rh">OFF</span></div>
-        <div class="rule-row">🔄 Substitutions: <span class="rh">5/5</span></div>
-        <div class="rule-row">🏃 Player Condition: <span class="rh">Normal</span></div>
-        <div class="rule-row">🧠 Smart Assist: <span class="rh">OFF</span></div>
+        <div class="rule-row"><strong style="color:var(--red)">সকল অভিযোগ, প্রমাণ, শাস্তি, Auto Win, Rematch এবং Card সংক্রান্ত বিষয়ে Admin Panel-এর সিদ্ধান্তই চূড়ান্ত।</strong></div>
+        <div class="rule-row">Tournament Authority প্রয়োজনে Tournament-এর স্বার্থে অতিরিক্ত সিদ্ধান্ত নেওয়ার অধিকার সংরক্ষণ করে।</div>
       </div>
     </div>
 
@@ -3983,6 +3942,9 @@ if (document.readyState === 'loading') {
       <input class="form-input" id="f4mSqManager" placeholder="Manager Name">
     </div>
     <div style="margin-bottom:10px">
+      <input type="text" class="form-input" id="f4mSqManagerPass" placeholder="🔑 Manager Panel Password (দিলে Manager নিজে Login করে Lineup দিতে পারবে)">
+    </div>
+    <div style="margin-bottom:10px">
       <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Group (16-Team ফরম্যাটের জন্য — 4 Group × 4 Team)</label>
       <select class="form-input" id="f4mSqGroup">
         <option value="">-- কোনো Group নেই (friendly squad) --</option>
@@ -4224,6 +4186,55 @@ if (document.readyState === 'loading') {
     <div style="display:flex;gap:10px">
       <button class="btn btn-gold" style="flex:1" onclick="pcConfirm()">✅ Confirm Change</button>
       <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('playerChangeModal').classList.remove('show')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4-MAN: MANAGER LOGIN MODAL -->
+<div class="modal-overlay" id="f4mMgrLoginModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-title">👔 4-Man Manager Panel Login</div>
+    <div class="form-group">
+      <label class="form-label">Squad বাছাই করো</label>
+      <select class="form-input" id="f4mMgrLoginSquad"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Manager Password</label>
+      <input type="password" class="form-input" id="f4mMgrLoginPass" placeholder="Password দিন" onkeydown="if(event.key==='Enter')f4mManagerLoginSubmit()">
+    </div>
+    <div id="f4mMgrLoginError" style="font-size:13px;color:var(--red);margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="f4mManagerLoginSubmit()">🔓 Login</button>
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('f4mMgrLoginModal').classList.remove('show')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4-MAN: MANAGER PANEL MODAL -->
+<div class="modal-overlay" id="f4mMgrPanelModal">
+  <div class="modal-box" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="modal-title" id="f4mMgrPanelTitle" style="margin-bottom:0">👔 Manager Panel</div>
+      <button class="btn btn-outline" onclick="document.getElementById('f4mMgrPanelModal').classList.remove('show')" style="padding:6px 12px;font-size:12px">✕ Close</button>
+    </div>
+    <div id="f4mMgrPanelBody"></div>
+  </div>
+</div>
+
+<!-- 4-MAN: PLAYER CHANGE (SUB/SWAP) MODAL -->
+<div class="modal-overlay" id="f4mPcModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-title">🔁 Change Player</div>
+    <input type="hidden" id="f4mPcMid"><input type="hidden" id="f4mPcBout"><input type="hidden" id="f4mPcSide"><input type="hidden" id="f4mPcRole">
+    <div id="f4mPcInfo" style="font-size:12px;color:var(--text3);margin-bottom:10px"></div>
+    <div class="form-group">
+      <label class="form-label">নতুন Player বাছাই করো</label>
+      <select class="form-input" id="f4mPcPlayerSelect"></select>
+    </div>
+    <div id="f4mPcError" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="f4mPcConfirm()">✅ Confirm Change</button>
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('f4mPcModal').classList.remove('show')">Cancel</button>
     </div>
   </div>
 </div>
@@ -9048,6 +9059,41 @@ window.selectCmpPlayer = async function(uid2) {
   document.getElementById('cmpSearch').value = p2.name;
 };
 
+// ── Trim transparent padding off a logo image so the real mark sits flush
+// against whichever corner it's drawn in, instead of looking off-center
+// because of empty margin baked into the source file. Result is cached per
+// image so repeated card generations don't redo the pixel scan.
+function bdTrimTransparentEdges(img) {
+  if (!img) return null;
+  if (img._bdTrimCache) return img._bdTrimCache;
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const cx = c.getContext('2d');
+    cx.drawImage(img, 0, 0);
+    const { data } = cx.getImageData(0, 0, c.width, c.height);
+    let minX = c.width, minY = c.height, maxX = 0, maxY = 0, found = false;
+    for (let y = 0; y < c.height; y++) {
+      for (let x = 0; x < c.width; x++) {
+        const alpha = data[(y * c.width + x) * 4 + 3];
+        if (alpha > 8) {
+          found = true;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (!found) { img._bdTrimCache = null; return null; }
+    const result = { canvas: c, x: minX, y: minY, w: (maxX - minX + 1), h: (maxY - minY + 1) };
+    img._bdTrimCache = result;
+    return result;
+  } catch (e) {
+    return null; // e.g. canvas got tainted — fall back to drawing the raw image elsewhere
+  }
+}
+
 // ── DOWNLOAD STATS CARD — Full-photo overlay style ──
 window.downloadStatsCard = async function() {
   const p = window._ppCurrentPlayer;
@@ -9137,24 +9183,33 @@ window.downloadStatsCard = async function() {
   }
 
   // ════════════════════════════════════════════
-  // LAYER 5: TYP LOGO — centered, lower-mid (badge circle removed)
+  // LAYER 5: TYP LOGO — real colors, top-RIGHT corner (opposite the rank number)
+  // The raw logo file has empty transparent margin on one side, which made the
+  // visible mark look pushed off to one side. We trim that transparent margin
+  // first, then draw only the real logo shape.
   // ════════════════════════════════════════════
-  const badgeX = W / 2, badgeY = H * 0.62, badgeR = 68;
+  const badgeX = W / 2, badgeY = H * 0.62, badgeR = 68; // kept only to anchor name/pill layout below
 
-  if (typLogoImg) {
-    const lh = badgeR * 1.7;
-    const lw = typLogoImg.width * (lh / typLogoImg.height);
+  const logoH = 84;
+  const logoY = 40; // same top line as the rank number, but on the other side
+
+  const trimmedLogo = typLogoImg ? bdTrimTransparentEdges(typLogoImg) : null;
+
+  if (trimmedLogo) {
+    const lw = trimmedLogo.w * (logoH / trimmedLogo.h);
+    const logoX = W - 32 - lw; // right-aligned, mirrors the rank number's left margin
     ctx.save();
-    ctx.filter = 'brightness(0) invert(1) drop-shadow(0 2px 10px rgba(0,0,0,0.9))';
-    ctx.drawImage(typLogoImg, badgeX - lw / 2, badgeY - lh / 2, lw, lh);
+    ctx.filter = 'drop-shadow(0 2px 10px rgba(0,0,0,0.9))';
+    ctx.drawImage(trimmedLogo.canvas, trimmedLogo.x, trimmedLogo.y, trimmedLogo.w, trimmedLogo.h, logoX, logoY, lw, logoH);
     ctx.restore();
   } else {
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 44px Arial Black, Arial, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = 'bold 34px Arial Black, Arial, sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
     ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 10;
-    ctx.fillText('⚡ TYP', badgeX, badgeY);
+    ctx.fillText('⚡ TYP', W - 32, logoY);
     ctx.shadowBlur = 0;
+    ctx.textAlign = 'left';
   }
 
   // ════════════════════════════════════════════
@@ -9480,6 +9535,7 @@ window.loadF4mMatchdaysList = async function() {
         <span style="font-size:16px;font-weight:800">${m.status === 'completed' ? (m.aggScoreA + ' - ' + m.aggScoreB) : 'VS'}</span>
         <span style="font-weight:800;color:var(--primary)">${f4mSquadName(m.squadB)}</span>
       </div>
+      ${m.status !== 'completed' ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">${m.drawn ? '🎲 Draw সম্পন্ন — bout pairing ঠিক হয়ে গেছে' : ((m.lineupA && m.lineupA.length === 3 && m.lineupB && m.lineupB.length === 3) ? '✅ দুই দলের Lineup জমা — Draw বাকি' : '⏳ Manager-দের Lineup জমা দেওয়ার অপেক্ষায়')}</div>` : ''}
       ${boutRows}
     </div>`;
   }).join('');
@@ -9589,8 +9645,11 @@ function renderF4mAdminSquadsList() {
     const logoHtml = s.logo ? `<img src="${s.logo}" style="width:26px;height:26px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:6px">` : '';
     const groupHtml = s.group ? `<span style="background:rgba(212,175,55,0.15);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px">GRP ${s.group}</span>` : '';
     return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px">
-      <div>${logoHtml}<strong>${s.tag ? ('[' + s.tag + '] ') : ''}${s.name}</strong>${groupHtml}${s.manager ? ` <span style="color:var(--text3);font-size:11px">👑 ${s.manager}</span>` : ''}<div style="font-size:12px;color:var(--text3)">⚽ ${players}</div></div>
-      <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteF4mSquad('${s.id}')">🗑️ Delete</button>
+      <div>${logoHtml}<strong>${s.tag ? ('[' + s.tag + '] ') : ''}${s.name}</strong>${groupHtml}${s.manager ? ` <span style="color:var(--text3);font-size:11px">👑 ${s.manager}</span>` : ''} <span style="font-size:10px;color:${s.managerPassword ? 'var(--green)' : 'var(--text3)'}">${s.managerPassword ? '🔑 Password Set' : '🔓 No Password'}</span><div style="font-size:12px;color:var(--text3)">⚽ ${players}</div></div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-outline" style="padding:5px 12px;font-size:11px" onclick="f4mSetManagerPassword('${s.id}')">🔑 Password</button>
+        <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteF4mSquad('${s.id}')">🗑️ Delete</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -9599,6 +9658,7 @@ window.createF4mSquad = async function() {
   const name = document.getElementById('f4mSqName').value.trim();
   const tag = document.getElementById('f4mSqTag').value.trim().toUpperCase();
   const manager = document.getElementById('f4mSqManager').value.trim();
+  const managerPassword = document.getElementById('f4mSqManagerPass').value.trim();
   const group = document.getElementById('f4mSqGroup').value;
   const status = document.getElementById('f4mSqStatus');
   if (!name || _f4mSqPlayerPickSelected.length !== 4) { status.textContent = '⚠️ Squad name দাও এবং ঠিক ৪ জন প্লেয়ার বাছাই করো।'; status.style.color = 'var(--red)'; return; }
@@ -9609,10 +9669,11 @@ window.createF4mSquad = async function() {
     if (totalGrouped >= 16) { status.textContent = '⚠️ ইতিমধ্যে 16টা group-team তৈরি হয়ে গেছে।'; status.style.color = 'var(--red)'; return; }
   }
   status.textContent = '⏳ Saving...'; status.style.color = 'var(--text3)';
-  await fetch(`${F4M_DB}/typ4man/squads.json`, { method: 'POST', body: JSON.stringify({ name, tag, logo: _f4mSqLogoDataUrl || '', manager, group: group || '', playerUids: [..._f4mSqPlayerPickSelected], createdAt: new Date().toISOString() }) });
+  await fetch(`${F4M_DB}/typ4man/squads.json`, { method: 'POST', body: JSON.stringify({ name, tag, logo: _f4mSqLogoDataUrl || '', manager, managerPassword: managerPassword || '', group: group || '', playerUids: [..._f4mSqPlayerPickSelected], createdAt: new Date().toISOString() }) });
   document.getElementById('f4mSqName').value = '';
   document.getElementById('f4mSqTag').value = '';
   document.getElementById('f4mSqManager').value = '';
+  document.getElementById('f4mSqManagerPass').value = '';
   document.getElementById('f4mSqGroup').value = '';
   document.getElementById('f4mSqLogoInput').value = '';
   document.getElementById('f4mSqPlayerSearch').value = '';
@@ -9879,12 +9940,16 @@ window.loadF4mAdminMatchdays = async function() {
   if (area) area.innerHTML = '';
 };
 
-window.loadF4mMatchdayForEntry = function() {
+window.loadF4mMatchdayForEntry = async function() {
   const id = document.getElementById('f4mMdSelect').value;
   const area = document.getElementById('f4mMdEntryArea');
   if (!id) { area.innerHTML = ''; return; }
   const m = f4mMatchdaysCache.find(x => x.id === id);
   if (!m) { area.innerHTML = ''; return; }
+  let mdSubs = {};
+  if (m.drawn) {
+    try { const r = await fetch(`${F4M_DB}/typ4man/matchdaySubs/${id}.json`); mdSubs = (await r.json()) || {}; } catch (e) {}
+  }
   const uName = (uid) => (f4mUsersCache.find(u => u.uid === uid) || {}).name || 'Unknown';
   const squadA = f4mSquadsCache.find(s => s.id === m.squadA);
   const squadB = f4mSquadsCache.find(s => s.id === m.squadB);
@@ -9894,18 +9959,39 @@ window.loadF4mMatchdayForEntry = function() {
   const isKnockout = m.stage === 'qf' || m.stage === 'sf' || m.stage === 'final';
   const r = f4mMatchdayResult(m);
   const showTieBreakBtn = isKnockout && r && r.draw;
+  const lineupAOk = m.lineupA && m.lineupA.length === 3;
+  const lineupBOk = m.lineupB && m.lineupB.length === 3;
+  const canDraw = lineupAOk && lineupBOk && !m.drawn;
+  const drawBlock = `
+    <div style="margin-bottom:14px;padding:12px;background:var(--bg2);border:1px dashed var(--primary);border-radius:10px">
+      <div style="font-weight:700;font-size:12.5px;color:var(--primary);margin-bottom:6px">🎲 Manager Lineup & Draw</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${f4mSquadName(m.squadA)}: ${lineupAOk ? '✅ Lineup জমা (' + m.lineupA.map(uName).join(', ') + ')' : '⏳ Lineup বাকি'}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${f4mSquadName(m.squadB)}: ${lineupBOk ? '✅ Lineup জমা (' + m.lineupB.map(uName).join(', ') + ')' : '⏳ Lineup বাকি'}</div>
+      ${m.drawn
+        ? `<div style="font-size:12px;color:var(--green);margin-bottom:6px">✅ Draw সম্পন্ন — নিচে bout pairing দেখা যাচ্ছে, প্রয়োজনে 🔁 দিয়ে Change Player করা যাবে (Admin unlimited)।</div>
+           <div style="font-size:10.5px;color:var(--text3);margin-bottom:8px">${f4mSquadName(m.squadA)}: ${(mdSubs[m.squadA] || {}).subsUsed || 0}/2 Sub, ${(mdSubs[m.squadA] || {}).swapsUsed || 0}/2 Swap · ${f4mSquadName(m.squadB)}: ${(mdSubs[m.squadB] || {}).subsUsed || 0}/2 Sub, ${(mdSubs[m.squadB] || {}).swapsUsed || 0}/2 Swap</div>
+           <div style="display:flex;gap:8px;flex-wrap:wrap">
+             <button class="btn btn-outline" style="padding:6px 14px;font-size:12px" onclick="f4mCopyFixtureText('${id}')">📋 Copy as Text (Messenger)</button>
+             <button class="btn" style="padding:6px 14px;font-size:12px;background:rgba(248,113,113,0.08);border:1px solid var(--red);color:var(--red)" onclick="f4mUndoDraw('${id}')">🗑️ Undo Draw</button>
+           </div>`
+        : `<button class="btn btn-gold" style="padding:7px 16px;font-size:12px" ${canDraw ? '' : 'disabled style="opacity:0.5"'} onclick="f4mStartDraw('${id}')">🎲 Start Matchday (Draw করো)</button>
+           ${!canDraw ? '<div style="font-size:11px;color:var(--text3);margin-top:4px">দুই squad-এর manager Lineup জমা না দেওয়া পর্যন্ত Draw করা যাবে না।</div>' : ''}`}
+    </div>`;
   area.innerHTML = `
     <div style="margin:16px 0;padding:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px">
       <div style="font-weight:700;margin-bottom:4px;color:var(--gold)">${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)}</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">প্রতিটা bout-এ দুই squad থেকে কে খেলেছে সেটা বাছাই করো — ৪ জনের মধ্যে যে খেলেনি সে auto বেঞ্চে থেকে যাবে।</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Draw হয়ে গেলে নিচের dropdown-এ pairing auto বসে যাবে — চাইলে ম্যানুয়ালি বদলেও দিতে পারো।</div>
+      ${drawBlock}
       ${boutKeys.map(k => {
         const b = m.bouts[k];
+        const chBtnA = m.drawn ? `<button class="btn btn-outline" onclick="f4mChangePlayerAdmin('${id}','${k}','A')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+        const chBtnB = m.drawn ? `<button class="btn btn-outline" onclick="f4mChangePlayerAdmin('${id}','${k}','B')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
         return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-          <select class="form-input f4m-player-a" data-bout="${k}" data-mid="${id}" style="flex:1;min-width:110px;font-size:12px;padding:6px">${optsFor(squadA, b.playerAUid)}</select>
+          <select class="form-input f4m-player-a" data-bout="${k}" data-mid="${id}" style="flex:1;min-width:110px;font-size:12px;padding:6px">${optsFor(squadA, b.playerAUid)}</select>${chBtnA}
           <input type="number" min="0" class="form-input f4m-score-a" data-bout="${k}" data-mid="${id}" value="${b.scoreA ?? ''}" style="width:52px;text-align:center">
           <span style="color:var(--text3)">-</span>
           <input type="number" min="0" class="form-input f4m-score-b" data-bout="${k}" data-mid="${id}" value="${b.scoreB ?? ''}" style="width:52px;text-align:center">
-          <select class="form-input f4m-player-b" data-bout="${k}" data-mid="${id}" style="flex:1;min-width:110px;font-size:12px;padding:6px">${optsFor(squadB, b.playerBUid)}</select>
+          ${chBtnB}<select class="form-input f4m-player-b" data-bout="${k}" data-mid="${id}" style="flex:1;min-width:110px;font-size:12px;padding:6px">${optsFor(squadB, b.playerBUid)}</select>
         </div>`;
       }).join('')}
       ${showTieBreakBtn ? `<div style="margin:6px 0;font-size:12px;color:var(--yellow)">⚖️ Aggregate টাই (${r.aggA}-${r.aggB}) — Knockout-এ টাই চলবে না, নিচে থেকে একটা Tie-Break bout যোগ করো।</div>
@@ -10629,6 +10715,324 @@ window.saveF4mMatchdayResults = async function(mid) {
   statusEl.textContent = `✅ Saved! ${Object.keys(statDelta).length} player profile updated.`;
   statusEl.style.color = 'var(--green)';
   await loadF4mAdminMatchdays();
+};
+
+// ════════════════════════════════════════════════════════
+// 4-MAN: MANAGER PANEL + AUCTION-STYLE DRAW SYSTEM
+// Prottek Squad-er manager nijer password diye login kore, tar
+// squad-er upcoming matchday-r jonno 4 jon-er moddhe thik 3 jon
+// (3v3 bout-er lineup) select kore submit kore. Duijon manager-i
+// lineup dile Admin "Start Matchday" chaple random-e opponent-er
+// shathe pair (draw) hoye bouts b1/b2/b3-e boshe jay — thik Auction
+// Tournament-er Bout Draw tool-er moto. Draw-er por Admin/Manager
+// dujon-i 2টা Sub + 2টা Swap (auto-detect) korte pare, ar fixture-
+// ta "Copy as Text" kore Messenger-e paste kora jay.
+// ════════════════════════════════════════════════════════
+
+// ── Manager: Login ──
+window._f4mMgrSquadId = null;
+window._f4mMgrSquad = null;
+window._f4mLineupDraft = [];
+
+window.f4mOpenManagerLogin = async function() {
+  await fetchF4mData();
+  const sel = document.getElementById('f4mMgrLoginSquad');
+  sel.innerHTML = f4mSquadsCache.map(s => `<option value="${s.id}">${s.tag ? ('[' + s.tag + '] ') : ''}${s.name}</option>`).join('');
+  document.getElementById('f4mMgrLoginPass').value = '';
+  document.getElementById('f4mMgrLoginError').textContent = '';
+  document.getElementById('f4mMgrLoginModal').classList.add('show');
+};
+
+window.f4mManagerLoginSubmit = async function() {
+  const squadId = document.getElementById('f4mMgrLoginSquad').value;
+  const pass = document.getElementById('f4mMgrLoginPass').value;
+  const errEl = document.getElementById('f4mMgrLoginError');
+  errEl.textContent = '';
+  try {
+    const res = await fetch(`${F4M_DB}/typ4man/squads/${squadId}.json`);
+    const squad = await res.json();
+    if (!squad) { errEl.textContent = '❌ Squad পাওয়া যায়নি।'; return; }
+    if (!squad.managerPassword) { errEl.textContent = '❌ এই Squad-এর জন্য এখনো password সেট করা হয়নি — Admin-কে জানাও।'; return; }
+    if (pass !== squad.managerPassword) { errEl.textContent = '❌ ভুল Password।'; return; }
+    document.getElementById('f4mMgrLoginModal').classList.remove('show');
+    window._f4mMgrSquadId = squadId;
+    window._f4mMgrSquad = { id: squadId, ...squad };
+    document.getElementById('f4mMgrPanelTitle').textContent = `👔 ${squad.name} — Manager Panel`;
+    document.getElementById('f4mMgrPanelModal').classList.add('show');
+    await f4mMgrRenderMatchdayList();
+  } catch (e) {
+    errEl.textContent = '❌ ' + e.message;
+  }
+};
+
+// ── Manager: Matchday list (lineup submission / fixture view) ──
+window.f4mMgrRenderMatchdayList = async function() {
+  const body = document.getElementById('f4mMgrPanelBody');
+  body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
+  await fetchF4mData();
+  if (!f4mUsersCache.length) f4mUsersCache = await getAllUsers();
+  const squadId = window._f4mMgrSquadId;
+  const my = f4mMatchdaysCache.filter(m => (m.squadA === squadId || m.squadB === squadId) && m.status !== 'completed');
+  if (!my.length) { body.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)">এই মুহূর্তে কোনো pending matchday নেই।</div>'; return; }
+  const sorted = my.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  body.innerHTML = sorted.map(m => {
+    const isA = m.squadA === squadId;
+    const oppId = isA ? m.squadB : m.squadA;
+    const myLineup = isA ? m.lineupA : m.lineupB;
+    const submitted = myLineup && myLineup.length === 3;
+    let statusLabel = '⏳ Lineup দাও';
+    if (m.drawn) statusLabel = '✅ Draw সম্পন্ন — Fixture দেখো';
+    else if (submitted) statusLabel = '✅ Lineup জমা — Draw-এর অপেক্ষায়';
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;font-size:13px;color:var(--text)">${m.label || 'Matchday'} — vs ${f4mSquadName(oppId)}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${statusLabel}</div>
+      </div>
+      ${m.drawn
+        ? `<button class="btn btn-outline" onclick="f4mMgrRenderFixtureView('${m.id}')" style="padding:7px 14px;font-size:11px">🆚 Fixture দেখো</button>`
+        : `<button class="btn btn-gold" onclick="f4mMgrOpenLineupEditor('${m.id}')" style="padding:7px 14px;font-size:11px">📋 ${submitted ? 'Lineup বদলাও' : 'Lineup দাও'}</button>`}
+    </div>`;
+  }).join('');
+};
+
+window.f4mMgrOpenLineupEditor = function(mid) {
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  const squad = window._f4mMgrSquad;
+  if (!m || !squad) return;
+  const isA = m.squadA === squad.id;
+  const existing = (isA ? m.lineupA : m.lineupB) || [];
+  window._f4mLineupDraft = [...existing];
+  window._f4mLineupMid = mid;
+  const body = document.getElementById('f4mMgrPanelBody');
+  const roster = squad.playerUids || [];
+  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || 'Unknown';
+  body.innerHTML = `
+    <button class="btn btn-outline" onclick="f4mMgrRenderMatchdayList()" style="padding:6px 12px;font-size:11px;margin-bottom:12px">← ফিরে যাও</button>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">📋 3v3 Bout Lineup — ৪ জনের মধ্যে ঠিক ৩ জন বাছাই করো</div>
+    <div id="f4mLineupList" style="margin-bottom:14px"></div>
+    <div id="f4mLineupError" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <button class="btn btn-gold" onclick="f4mMgrSubmitLineup('${mid}')" style="padding:10px 20px;width:100%">💾 Lineup জমা দাও</button>
+  `;
+  const render = () => {
+    document.getElementById('f4mLineupList').innerHTML = roster.map(uid => {
+      const sel = window._f4mLineupDraft.includes(uid);
+      return `<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${sel ? 'var(--primary)' : 'var(--border)'};border-radius:7px;margin-bottom:5px;cursor:pointer;background:${sel ? 'rgba(99,102,241,0.08)' : 'transparent'}" onclick="f4mMgrTogglePick(event,'${uid}')">
+        <input type="checkbox" ${sel ? 'checked' : ''} style="pointer-events:none">
+        <span style="font-size:13px">${nameOf(uid)}</span>
+      </label>`;
+    }).join('');
+  };
+  window._f4mRenderLineupPickers = render;
+  render();
+};
+
+window.f4mMgrTogglePick = function(ev, uid) {
+  ev.preventDefault();
+  const arr = window._f4mLineupDraft;
+  const idx = arr.indexOf(uid);
+  if (idx === -1) {
+    if (arr.length >= 3) { alert('❌ সর্বোচ্চ ৩ জন বাছাই করা যাবে (৪র্থ জন বেঞ্চে থাকবে)।'); return; }
+    arr.push(uid);
+  } else { arr.splice(idx, 1); }
+  if (window._f4mRenderLineupPickers) window._f4mRenderLineupPickers();
+};
+
+window.f4mMgrSubmitLineup = async function(mid) {
+  const errEl = document.getElementById('f4mLineupError');
+  const draft = window._f4mLineupDraft;
+  if (draft.length !== 3) { errEl.textContent = '❌ ঠিক ৩ জন বাছাই করো।'; return; }
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  const squad = window._f4mMgrSquad;
+  if (!m || !squad) return;
+  const isA = m.squadA === squad.id;
+  const field = isA ? 'lineupA' : 'lineupB';
+  const tsField = isA ? 'lineupASubmittedAt' : 'lineupBSubmittedAt';
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ [field]: draft, [tsField]: new Date().toISOString() }) });
+  alert('✅ Lineup জমা হয়েছে!');
+  await fetchF4mData();
+  f4mMgrRenderMatchdayList();
+};
+
+window.f4mMgrRenderFixtureView = async function(mid) {
+  const body = document.getElementById('f4mMgrPanelBody');
+  body.innerHTML = '<div style="text-align:center;padding:20px"><span class="spinner"></span></div>';
+  await fetchF4mData();
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m) { body.innerHTML = '<div style="color:var(--text3);padding:20px">Matchday পাওয়া যায়নি।</div>'; return; }
+  const squadId = window._f4mMgrSquadId;
+  const mySide = m.squadA === squadId ? 'A' : 'B';
+  const subsRes = await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}.json`);
+  window._f4mSubsCache = { [mid]: (await subsRes.json()) || {} };
+  body.innerHTML = `<button class="btn btn-outline" onclick="f4mMgrRenderMatchdayList()" style="padding:6px 12px;font-size:11px;margin-bottom:12px">← ফিরে যাও</button>` +
+    f4mRenderFixtureBlock(mid, mySide, false);
+};
+
+// ── Shared fixture block: isAdminView controls score-inputs + free change-player.
+// Manager view (isAdminView=false) can only 🔁 their own side, within 2 sub + 2 swap limit. ──
+function f4mRenderFixtureBlock(mid, mySide, isAdminView) {
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m) return '<div style="color:var(--text3);font-size:12px">Matchday পাওয়া যায়নি।</div>';
+  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || '—';
+  const boutKeys = Object.keys(m.bouts || {}).sort();
+  const subs = (window._f4mSubsCache || {})[mid] || {};
+  const subsA = subs[m.squadA] || { subsUsed: 0, swapsUsed: 0 };
+  const subsB = subs[m.squadB] || { subsUsed: 0, swapsUsed: 0 };
+  const rows = boutKeys.map((k, i) => {
+    const b = m.bouts[k];
+    const showBtnA = isAdminView || mySide === 'A';
+    const showBtnB = isAdminView || mySide === 'B';
+    const btnA = showBtnA ? `<button class="btn btn-outline" onclick="${isAdminView ? `f4mChangePlayerAdmin('${mid}','${k}','A')` : `f4mChangePlayerMgr('${mid}','${k}','A')`}" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    const btnB = showBtnB ? `<button class="btn btn-outline" onclick="${isAdminView ? `f4mChangePlayerAdmin('${mid}','${k}','B')` : `f4mChangePlayerMgr('${mid}','${k}','B')`}" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--text3);min-width:44px;font-size:10px">Bout ${i + 1}${b.done ? ' ✅' : ''}</span>
+      <span style="flex:1">${nameOf(b.playerAUid)}</span>${btnA}
+      <span style="color:var(--text3);padding:0 4px">${b.done ? (b.scoreA + '-' + b.scoreB) : 'vs'}</span>
+      ${btnB}<span style="flex:1;text-align:right">${nameOf(b.playerBUid)}</span>
+    </div>`;
+  }).join('');
+  const subInfo = isAdminView
+    ? `<div style="font-size:10.5px;color:var(--text3);margin-top:6px">${f4mSquadName(m.squadA)}: ${subsA.subsUsed || 0}/2 Sub, ${subsA.swapsUsed || 0}/2 Swap ব্যবহার হয়েছে · ${f4mSquadName(m.squadB)}: ${subsB.subsUsed || 0}/2 Sub, ${subsB.swapsUsed || 0}/2 Swap</div>`
+    : `<div style="font-size:10.5px;color:var(--text3);margin-top:6px">তোমার Squad: ${(mySide === 'A' ? subsA : subsB).subsUsed || 0}/2 Sub, ${(mySide === 'A' ? subsA : subsB).swapsUsed || 0}/2 Swap ব্যবহার হয়েছে</div>`;
+  return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--gold)">${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)}</div>
+    ${rows}
+    ${subInfo}
+    <button class="btn btn-outline" onclick="f4mCopyFixtureText('${mid}')" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>
+  </div>`;
+}
+
+// ── Admin: Start Matchday (random draw) ──
+window.f4mStartDraw = async function(mid) {
+  await fetchF4mData();
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m) { alert('❌ Matchday পাওয়া যায়নি।'); return; }
+  if (!m.lineupA || m.lineupA.length !== 3 || !m.lineupB || m.lineupB.length !== 3) {
+    alert(`❌ Lineup অসম্পূর্ণ।\n${f4mSquadName(m.squadA)}: ${m.lineupA ? m.lineupA.length : 0}/3\n${f4mSquadName(m.squadB)}: ${m.lineupB ? m.lineupB.length : 0}/3`);
+    return;
+  }
+  if (!confirm(`🎲 ${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)} — Draw করা হবে?\n\nদুই squad-এর ৩ জন করে lineup থেকে random pairing হয়ে 3টা bout fixture তৈরি হবে।`)) return;
+  const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const shuffledB = shuffle(m.lineupB);
+  const bouts = {};
+  m.lineupA.forEach((uid, i) => { bouts['b' + (i + 1)] = { playerAUid: uid, playerBUid: shuffledB[i], scoreA: null, scoreB: null, done: false }; });
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts, drawn: true, drawnAt: new Date().toISOString() }) });
+  await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}.json`, { method: 'PUT', body: JSON.stringify({ [m.squadA]: { subsUsed: 0, swapsUsed: 0 }, [m.squadB]: { subsUsed: 0, swapsUsed: 0 } }) });
+  alert('✅ Draw সম্পন্ন! Fixture তৈরি হয়ে গেছে।');
+  await loadF4mAdminMatchdays();
+  document.getElementById('f4mMdSelect').value = mid;
+  loadF4mMatchdayForEntry();
+};
+
+// ── Admin: Undo a draw (clears pairing, keeps submitted lineups) ──
+window.f4mUndoDraw = async function(mid) {
+  if (!confirm('⚠️ এই matchday-এর drawn fixture (player pairing) মুছে দেওয়া হবে। Lineup ঠিকই থাকবে, পরে আবার Draw করা যাবে। Continue?')) return;
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts: f4mEmptyBouts(), drawn: false }) });
+  await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}.json`, { method: 'DELETE' });
+  alert('✅ Draw undo হয়েছে।');
+  await loadF4mAdminMatchdays();
+  document.getElementById('f4mMdSelect').value = mid;
+  loadF4mMatchdayForEntry();
+};
+
+// ── Sub/Swap: shared change-player flow (mirrors the Auction Tournament's pcConfirm pattern) ──
+window.f4mChangePlayerAdmin = function(mid, boutKey, side) { f4mOpenPlayerChangeModal(mid, boutKey, side, 'admin'); };
+window.f4mChangePlayerMgr = function(mid, boutKey, side) { f4mOpenPlayerChangeModal(mid, boutKey, side, window._f4mMgrSquadId); };
+
+function f4mOpenPlayerChangeModal(mid, boutKey, side, role) {
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m) return;
+  const squadId = side === 'A' ? m.squadA : m.squadB;
+  const squad = f4mSquadsCache.find(s => s.id === squadId) || {};
+  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || '—';
+  const b = m.bouts[boutKey];
+  const currentUid = side === 'A' ? b.playerAUid : b.playerBUid;
+  document.getElementById('f4mPcMid').value = mid;
+  document.getElementById('f4mPcBout').value = boutKey;
+  document.getElementById('f4mPcSide').value = side;
+  document.getElementById('f4mPcRole').value = role;
+  document.getElementById('f4mPcError').textContent = '';
+  document.getElementById('f4mPcInfo').textContent = `${squad.name || 'Squad'} — এখন খেলছে: ${nameOf(currentUid)}`;
+  const sel = document.getElementById('f4mPcPlayerSelect');
+  sel.innerHTML = (squad.playerUids || []).map(uid => `<option value="${uid}" ${uid === currentUid ? 'selected' : ''}>${nameOf(uid)}</option>`).join('');
+  document.getElementById('f4mPcModal').classList.add('show');
+}
+
+window.f4mPcConfirm = async function() {
+  const mid = document.getElementById('f4mPcMid').value;
+  const boutKey = document.getElementById('f4mPcBout').value;
+  const side = document.getElementById('f4mPcSide').value;
+  const role = document.getElementById('f4mPcRole').value; // 'admin' or a squadId
+  const newUid = document.getElementById('f4mPcPlayerSelect').value;
+  const errEl = document.getElementById('f4mPcError');
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m || !newUid) return;
+  const squadId = side === 'A' ? m.squadA : m.squadB;
+  const field = side === 'A' ? 'playerAUid' : 'playerBUid';
+  const oldUid = m.bouts[boutKey][field];
+  if (newUid === oldUid) { errEl.textContent = 'একই player — কোনো পরিবর্তন হয়নি।'; return; }
+
+  // ── Auto-detect: naya player onno kono bout-e ei-i squad-er hoye already
+  // khelchhe kina — thakle eta SWAP (dujon-er slot bodol), na thakle SUB
+  // (bench theke tule ana), thik Auction Tournament-er pattern-er moto. ──
+  let swapBoutKey = null;
+  Object.keys(m.bouts).forEach(k => {
+    if (k === boutKey) return;
+    if (m.bouts[k][field] === newUid) swapBoutKey = k;
+  });
+  const isSwap = !!swapBoutKey;
+  const isAdmin = role === 'admin';
+
+  if (!isAdmin) {
+    const subsRes = await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}/${squadId}.json`);
+    const subsData = await subsRes.json() || { subsUsed: 0, swapsUsed: 0 };
+    if (isSwap && (subsData.swapsUsed || 0) >= 2) { errEl.textContent = '❌ 2টা Swap Card ব্যবহার হয়ে গেছে।'; return; }
+    if (!isSwap && (subsData.subsUsed || 0) >= 2) { errEl.textContent = '❌ 2টা Substitution Card ব্যবহার হয়ে গেছে।'; return; }
+    const upd = isSwap ? { swapsUsed: (subsData.swapsUsed || 0) + 1 } : { subsUsed: (subsData.subsUsed || 0) + 1 };
+    await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}/${squadId}.json`, { method: 'PATCH', body: JSON.stringify(upd) });
+  }
+
+  const bouts = { ...m.bouts, [boutKey]: { ...m.bouts[boutKey], [field]: newUid } };
+  if (isSwap) bouts[swapBoutKey] = { ...m.bouts[swapBoutKey], [field]: oldUid };
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts }) });
+
+  document.getElementById('f4mPcModal').classList.remove('show');
+  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || '—';
+  alert(`✅ ${isSwap ? 'Swap' : 'Substitution'} সম্পন্ন! ${nameOf(oldUid)} → ${nameOf(newUid)}`);
+  await fetchF4mData();
+  if (isAdmin) {
+    document.getElementById('f4mMdSelect').value = mid;
+    loadF4mMatchdayForEntry();
+  } else {
+    f4mMgrRenderFixtureView(mid);
+  }
+};
+
+// ── Copy fixture as text (Messenger-friendly) — usable by admin and managers ──
+window.f4mCopyFixtureText = async function(mid) {
+  await fetchF4mData();
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m || !m.drawn) { alert('❌ এই matchday এখনো draw হয়নি।'); return; }
+  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || '—';
+  const boutKeys = Object.keys(m.bouts || {}).sort();
+  const lines = boutKeys.map((k, i) => `Bout ${i + 1}: ${nameOf(m.bouts[k].playerAUid)}  vs  ${nameOf(m.bouts[k].playerBUid)}`);
+  const text = `🏆 TYP 4-MAN TOURNAMENT\n${m.label || 'Matchday'}\n\n${f4mSquadName(m.squadA)}  vs  ${f4mSquadName(m.squadB)}\n\n${lines.join('\n')}\n\nGood luck! ⚽`;
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
+  } catch (e) {
+    prompt('Copy করতে সমস্যা হলে ম্যানুয়ালি সিলেক্ট করে কপি করো:', text);
+  }
+};
+
+// ── Admin: Set/Change a squad's Manager Panel password ──
+window.f4mSetManagerPassword = async function(squadId) {
+  const squad = f4mSquadsCache.find(s => s.id === squadId);
+  if (!squad) return;
+  const pass = prompt(`"${squad.name}"-এর জন্য নতুন Manager Panel Password দাও (ফাঁকা রাখলে বাতিল হবে):`, squad.managerPassword || '');
+  if (pass === null) return;
+  await fetch(`${F4M_DB}/typ4man/squads/${squadId}.json`, { method: 'PATCH', body: JSON.stringify({ managerPassword: pass.trim() }) });
+  alert(pass.trim() ? '✅ Password সেট হয়েছে।' : '✅ Password মুছে ফেলা হয়েছে।');
+  await loadF4mAdminSquads();
 };
 
 // ════════════════════════════════════════════════════════
@@ -15542,41 +15946,26 @@ Substitutions: 5/5
 Player Condition: Normal
 Smart Assist: OFF
 OFFICIAL DOCUMENT
-TYP AUCTION TOURNAMENT
+TYP CHAMPIONSHIP
 RULES & REGULATIONS
 📋
 Squad Line-up Submission
 ▼
-A প্রত্যেক Match Day-এর জন্য Squad Line-up ম্যাচের দিন দুপুর ১:০০ টার আগে Admin-এর Inbox-এ জমা দিতে হবে।
-B Line-up জমা দেওয়ার দায়িত্ব সংশ্লিষ্ট Team Manager অথবা Captain -এর।
-C Line-up জমা দিতে ব্যর্থ হলে: দুপুর ১:০০ টার মধ্যে জমা দিতে ব্যর্থ হলে আগের Match Day-এর Line-up স্বয়ংক্রিয়ভাবে কার্যকর বলে গণ্য হবে এবং উক্ত Line-up ব্যবহার করে Official Draw সম্পন্ন করা হবে। পরবর্তীতে কোনো আপত্তি গ্রহণযোগ্য হবে না।
-👥
-Match Day Group Creation
-▼
-যে দল Fixture-এ Home Team হিসেবে থাকবে, সেই দলের Manager অথবা Captain Match Day Group তৈরি করবে।
-Group তৈরির পর অবশ্যই নিম্নলিখিত ব্যক্তিদের Add করতে হবে: ✅ Tournament Official এবং ✅ Opponent Team-এর Manager অথবা Captain ।
-🗂️
-Match Fixture Creation
-▼
-Official Draw সম্পন্ন হওয়ার পর Home Team -এর Manager অথবা Captain Match Fixture তৈরি করবে।
+A প্রত্যেক Match Day-এর জন্য Squad Line-up ম্যাচের দিন দুপুর ৩:০০ টার আগে Admin-এর Inbox-এ জমা দিতে হবে।
+B Line-up জমা দেওয়ার দায়িত্ব সংশ্লিষ্ট Team Manager অথবা Captain-এর।
+C Line-up জমা দিতে ব্যর্থ হলে: দুপুর ৩:০০ টার মধ্যে জমা দিতে ব্যর্থ হলে আগের Match Day-এর Line-up স্বয়ংক্রিয়ভাবে কার্যকর বলে গণ্য হবে এবং উক্ত Line-up ব্যবহার করে Official Draw সম্পন্ন করা হবে। পরবর্তীতে কোনো আপত্তি গ্রহণযোগ্য হবে না।
 🔄
 Substitution & Swap Rules
 ▼
-প্রত্যেক Match Day-এ খেলোয়াড়দের উপস্থিতি, Substitution এবং Swap নির্ধারিত Deadline-এর মধ্যে সম্পন্ন করতে হবে।
-🕚 1ST DEADLINE — রাত ১১:০০
-Attendance Deadline: রাত ১১:০০ । Priority Time: রাত ১০:৪৫ । Sub/Swap Deadline: রাত ১০:৪৪:৫৯ ।
-🕛 2ND DEADLINE — রাত ১২:০০
-Attendance Deadline: রাত ১২:০০ । Priority Time: রাত ১১:৪৫ । Sub/Swap Deadline: রাত ১১:৪৪:৫৯ ।
-🕐 3RD DEADLINE — রাত ১:০০
-Attendance Deadline: রাত ১:০০ । Priority Time: রাত ১২:৪৫ । Sub/Swap Deadline: রাত ১২:৪৪:৫৯ ।
-⚠️ নির্ধারিত Substitution/Swap Deadline অতিক্রম করার পর কোনো Substitution বা Swap গ্রহণযোগ্য হবে না। সকল Manager এবং Captain-কে নির্ধারিত সময়সীমা মেনে চলতে হবে।
-
-📍 Priority Time Rule
-Priority Time-এ অপোনেন্টকে মেনশন করার পর যদি আপনি অ্যাক্টিভ থাকেন, তাহলে অবশ্যই ডেডলাইনের আগেই ম্যাচ সম্পন্ন করতে হবে। ডেডলাইন অতিক্রম হলে কোনো অতিরিক্ত সময় দেওয়া হবে না এবং ম্যাচ Auto Loss হিসেবে গণ্য হবে।
+প্রত্যেক Match Day-এ খেলোয়াড়দের উপস্থিতি, Substitution এবং Swap নির্ধারিত Main Deadline-এর পূর্বে সম্পন্ন করতে হবে।
+📍 Substitution & Swap Deadline
+Main Deadline-এর ১০ মিনিট আগে Substitution ও Swap-এর Deadline শেষ হবে।
+📝 উদাহরণ: Main Deadline 12:00 AM হলে Sub/Swap Deadline 11:49:59 PM।
+⛔ নির্ধারিত Substitution/Swap Deadline অতিক্রম করার পর কোনো Substitution বা Swap গ্রহণযোগ্য হবে না। সকল Manager এবং Captain-কে নির্ধারিত সময়সীমা মেনে চলতে হবে।
 🃏
 Substitution & Swap Card Rules
 ▼
-প্রত্যেক Team-এর কাছে প্রত্যেক Match Day-তে থাকবে: 🔄 ২টি Swap Card ও 🔁 ২টি Substitution Card ।
+প্রত্যেক Team-এর কাছে প্রত্যেক Match Day-তে থাকবে: 🔄 ২টি Swap Card ও 🔁 ২টি Substitution Card।
 📍 Card Usage Rules
 Swap করার জন্য অবশ্যই "Typ: Swap Card" এবং Substitution করার জন্য অবশ্যই "Typ: Sub Card" ব্যবহার করতে হবে। নির্ধারিত TYP Card ব্যবহার না করে করা কোনো Swap বা Substitution গ্রহণযোগ্য হবে না।
 📍 Card Cancellation Rules
@@ -15594,15 +15983,23 @@ Match Fixing & Disciplinary Action
 ▼
 Tournament-এ Match Fixing সম্পূর্ণরূপে নিষিদ্ধ। কোনো Manager Match Fixing করার চেষ্টা করলে বা জড়িত থাকার প্রমাণ পাওয়া গেলে সরাসরি Red Card প্রদান করা হবে।
 📍 Mutual Match Fixing
-উভয় দলের Manager পারস্পরিক সমঝোতায় Match Fixing করলে: ❌ ম্যাচ ০-০ Null Result , 🟥 উভয় Manager-কে Red Card এবং 🚫 TYP Group থেকে ১ মাসের জন্য Ban ।
+উভয় দলের Manager পারস্পরিক সমঝোতায় Match Fixing করলে: ❌ ম্যাচ ০-০ Null Result, 🟥 উভয় Manager-কে Red Card এবং 🚫 TYP Group থেকে ১ মাসের জন্য Ban।
 Tournament Authority প্রয়োজনে অতিরিক্ত শাস্তিমূলক ব্যবস্থা নিতে পারবে। সকল সিদ্ধান্ত তদন্তের ভিত্তিতে নেওয়া হবে এবং চূড়ান্ত বলে গণ্য হবে।
+🚫
+Proxy Player Rules
+▼
+Tournament চলাকালীন কোনো Player-এর পরিবর্তে অন্য কোনো ব্যক্তি Proxy হিসেবে ম্যাচ খেললে তা সম্পূর্ণরূপে নিষিদ্ধ।
+📍 Proxy Player ধরা পড়লে
+কোনো Player Proxy ব্যবহার করেছে বলে Official Review-এর মাধ্যমে প্রমাণিত হলে সংশ্লিষ্ট Player-কে TYP Community থেকে Permanent Ban করা হবে।
+Permanent Ban-এর পর সংশ্লিষ্ট Player ভবিষ্যতে TYP Community-এর কোনো Tournament বা কার্যক্রমে অংশগ্রহণ করতে পারবে না।
+★ Proxy সংক্রান্ত সকল অভিযোগ প্রমাণ ও Official Review-এর ভিত্তিতে যাচাই করা হবে। Tournament Authority-এর সিদ্ধান্তই চূড়ান্ত।
 📲
 Communication, User ID & Device Change
 ▼
 📍 Admin Communication
 Match Day চলাকালীন যেকোনো সমস্যা বা গুরুত্বপূর্ণ বিষয় Match Day Group-এ Admin-কে Mention করে জানাতে হবে। সিদ্ধান্তের আগে Admin-এর নির্দেশনার জন্য অপেক্ষা করতে হবে। Admin Active না থাকলে সরাসরি Admin-এর Inbox-এ যোগাযোগ করতে হবে।
 📍 User ID Information Change
-User ID পরিবর্তনের প্রয়োজন হলে বিকাল ৫:০০ টার মধ্যে Manager Group-এ নতুন User ID Submit করতে হবে। নির্ধারিত সময়ের পরে আবেদন গ্রহণযোগ্য হবে না, যদি না Tournament Authority বিশেষ অনুমতি দেয়।
+User ID পরিবর্তনের প্রয়োজন হলে বিকাল ৫:০০ টার মধ্যে নতুন User ID Submit করতে হবে। নির্ধারিত সময়ের পরে আবেদন গ্রহণযোগ্য হবে না, যদি না Tournament Authority বিশেষ অনুমতি দেয়।
 📍 Device Change Rules
 Running Tournament চলাকালীন কোনো Player নিজের Device পরিবর্তন করতে পারবে না। Tournament শুরুতে জমা দেওয়া Device Information-ই শেষ পর্যন্ত বৈধ বলে গণ্য হবে।
 📍 Emergency Device Change
@@ -15612,95 +16009,88 @@ Device নষ্ট/হারিয়ে গেলে বা বাস্তব
 Match Result Video Rules
 ▼
 🏅 Win / 🤝 Draw Match
-বিজয়ী/ড্র উভয় প্লেয়ারকে ভিডিওতে অবশ্যই দেখাতে হবে: ✅ Match Result , ✅ SMART Assist OFF , ✅ User ID , ✅ Device Name । ভিডিও ম্যাচ ডে গ্রুপে জমা দিতে হবে।
+বিজয়ী/ড্র উভয় Player-কে ভিডিওতে অবশ্যই দেখাতে হবে: ✅ Match Result, ✅ SMART Assist OFF, ✅ User ID, ✅ Device Name। ভিডিও Match Day Group-এ জমা দিতে হবে।
 📍 Black Screen / Loading Issue
-এই সমস্যায় Match Result দেখা না গেলে সেই অবস্থা থেকেই রেকর্ডিং শুরু করতে হবে এবং বের হয়ে SMART Assist OFF, Device Name, User ID, Match History দেখাতে হবে।
+এই সমস্যায় Match Result দেখা না গেলে সেই অবস্থা থেকেই Recording শুরু করতে হবে এবং বের হয়ে SMART Assist OFF, Device Name, User ID, Match History দেখাতে হবে।
 📍 Video Submission Time
-ম্যাচ শেষের ১৫ মিনিটের মধ্যে ভিডিও জমা দিতে হবে। নেটওয়ার্ক সমস্যায় Sending অবস্থার স্ক্রিনশট দিতে হবে।
-⛔ ১৫ মিনিটের মধ্যে জমা না দিলে: Win Match হলে Rematch ; Draw Match হলে Opponent ১ গোল লিড নিয়ে Rematch শুরু করবে। কোনো অজুহাত গ্রহণযোগ্য নয়।
-
-📍 Video Submission Rule (Invalid/Incomplete Video)
-যদি কোনো খেলোয়াড় অসম্পূর্ণ (Incomplete) বা ভুল ভিডিও সাবমিট করে — অর্থাৎ ভিডিওতে ম্যাচ ভেরিফাই করার জন্য প্রয়োজনীয় অংশ সম্পূর্ণভাবে না থাকে — তাহলে সেই ভিডিও Invalid হিসেবে গণ্য হবে। এরপর সিদ্ধান্ত হবে নিচের নিয়ম অনুযায়ী:
-• যদি ওই খেলোয়াড় Winning Position-এ থাকে, তাহলে ম্যাচটি Replay (Re-Match) করতে হবে।
-• যদি ম্যাচটি Draw Position-এ থাকে, তাহলে প্রতিপক্ষকে ১ গোল লিড দিয়ে Replay (Re-Match) খেলতে হবে।
-সকল খেলোয়াড়ের দায়িত্ব সম্পূর্ণ ও পরিষ্কার ভিডিও রেকর্ড করে সাবমিট করা। ভুল বা অসম্পূর্ণ ভিডিওর দায়ভার সম্পূর্ণভাবে সংশ্লিষ্ট খেলোয়াড়ের।
+ম্যাচ শেষের ১৫ মিনিটের মধ্যে ভিডিও জমা দিতে হবে। Network সমস্যায় Sending অবস্থার Screenshot দিতে হবে।
+⛔ Video Submit করতে ব্যর্থ হলে: Win Match হলে Winning Player-কে Rematch খেলতে হবে; Draw Match হলে Opponent ১ গোল লিড নিয়ে Rematch খেলবে। কোনো অজুহাত গ্রহণযোগ্য নয়।
+📍 Video Submission Rule — Invalid/Incomplete Video
+যদি কোনো Player অসম্পূর্ণ (Incomplete) বা ভুল ভিডিও Submit করে — অর্থাৎ ভিডিওতে ম্যাচ Verify করার জন্য প্রয়োজনীয় অংশ সম্পূর্ণভাবে না থাকে — তাহলে সেই ভিডিও Invalid হিসেবে গণ্য হবে।
+• যদি ওই Player Winning Position-এ থাকে, তাহলে ম্যাচটি Replay (Re-Match) করতে হবে।
+• যদি ম্যাচটি Draw Position-এ থাকে, তাহলে Opponent-কে ১ গোল লিড দিয়ে Replay (Re-Match) খেলতে হবে।
+সকল Player-এর দায়িত্ব সম্পূর্ণ ও পরিষ্কার Video Record করে Submit করা। ভুল বা অসম্পূর্ণ ভিডিওর দায়ভার সম্পূর্ণভাবে সংশ্লিষ্ট Player-এর।
 📡
 Match Exit / Disconnect Rules
 ▼
-ম্যাচ শেষ হওয়ার আগে Exit করলে শুধুমাত্র Exit করা প্লেয়ারকে ভিডিও প্রমাণ দিতে হবে — সমস্যার প্রমাণ, কেন Exit করেছে, SMART Assist OFF, Device Name, User ID দেখাতে হবে।
+ম্যাচ শেষ হওয়ার আগে Exit করলে শুধুমাত্র Exit করা Player-কে Video Proof দিতে হবে — সমস্যার প্রমাণ, কেন Exit করেছে, SMART Assist OFF, Device Name, User ID দেখাতে হবে।
 📍 প্রমাণ দিতে না পারলে
 📈 Lead অবস্থায় Exit: 0-0 থেকে Rematch + 🟨 ১টি Yellow Card।
 🤝 Draw অবস্থায় Exit: Opponent ১ গোল লিড নিয়ে Rematch + 🟨 ১টি Yellow Card।
 📉 Opponent Lead অবস্থায় Exit: শুধুমাত্র 🟨 ১টি Yellow Card, বাকি সময় থেকে ম্যাচ সম্পন্ন করতে হবে।
-🚪 যাকে Winner দেখাবে সে-ই Room Create করবে এবং তাকে ভিডিও দিতে হবে না — শুধু Winner Result-এর Screenshot দিলেই যথেষ্ট।
-গেমের টেকনিক্যাল সমস্যায় বের করে দিলে সেটিও ভিডিওতে স্পষ্টভাবে দেখাতে হবে।
+🚪 যাকে Winner দেখাবে সে-ই Room Create করবে এবং তাকে Video দিতে হবে না — শুধু Winner Result-এর Screenshot দিলেই যথেষ্ট।
+গেমের Technical সমস্যায় বের করে দিলে সেটিও Video-তে স্পষ্টভাবে দেখাতে হবে।
 ⛔ সঠিক প্রমাণ দিতে ব্যর্থ হলে Opponent ১ গোল লিড নিয়ে বাকি সময় থেকে ম্যাচ সম্পন্ন করবে।
 ⏱️ সকল Disconnect Match, Resume Match ও Rematch সর্বোচ্চ ১৫ মিনিটের মধ্যে সম্পন্ন করতে হবে। সকল Rematch-এও Video Rules বাধ্যতামূলক।
 🎮
 SMART Assist Rules
 ▼
-⛔ কোনো প্লেয়ার SMART Assist ON করে খেললে সেই ম্যাচ ❌ Auto Loss এবং 🟨 ১টি Yellow Card ।
+⛔ কোনো Player SMART Assist ON করে খেললে সেই ম্যাচ ❌ Auto Loss এবং 🟨 ১টি Yellow Card।
 🪪
 User ID & Device Verification
 ▼
-ম্যাচ শেষে দেখানো User ID বা Device Name ম্যাচে ব্যবহৃত তথ্যের সাথে না মিললে ❌ Auto Loss ।
-ভিডিওতে অবশ্যই দেখাতে হবে: ✅ SMART Assist OFF , ✅ User ID , ✅ Device Name , ✅ Match Result ।
+ম্যাচ শেষে দেখানো User ID বা Device Name ম্যাচে ব্যবহৃত তথ্যের সাথে না মিললে ❌ Auto Loss।
+ভিডিওতে অবশ্যই দেখাতে হবে: ✅ SMART Assist OFF, ✅ User ID, ✅ Device Name, ✅ Match Result।
 🟥
 In-Game Red Card Rules
 ▼
-কোনো প্লেয়ার ম্যাচ চলাকালীন Red Card পেয়ে Disconnect হলে: Opponent অতিরিক্ত ১ গোল লিড নিয়ে বাকি সময় খেলবে। Opponent আগে থেকেই Lead-এ থাকলে সেই Lead-এর সাথে আরও ১ গোল যুক্ত হবে।
-📝 উদাহরণ: স্কোর 2-1 অবস্থায় Red Card পাওয়া প্লেয়ার Disconnect করলে ম্যাচ 3-1 স্কোর থেকে Resume হবে।
+কোনো Player ম্যাচ চলাকালীন Red Card পেয়ে Disconnect হলে: Opponent অতিরিক্ত ১ গোল লিড নিয়ে বাকি সময় খেলবে। Opponent আগে থেকেই Lead-এ থাকলে সেই Lead-এর সাথে আরও ১ গোল যুক্ত হবে।
+📝 উদাহরণ: স্কোর 2-1 অবস্থায় Red Card পাওয়া Player Disconnect করলে ম্যাচ 3-1 স্কোর থেকে Resume হবে।
 🟨
 Card System
 ▼
 🟨 Yellow Card পাওয়ার কারণ
-প্রমাণ ছাড়া Disconnect • সময়মতো ম্যাচ না খেলা • অসহযোগিতা • অযৌক্তিক আচরণ • গালিগালাজ • ব্যক্তিগত আক্রমণ • হাহা রিঅ্যাক্ট, ইত্যাদি।
+প্রমাণ ছাড়া Disconnect • সময়মতো ম্যাচ না খেলা • অসহযোগিতা • অযৌক্তিক আচরণ • গালিগালাজ • ব্যক্তিগত আক্রমণ • Haha React, ইত্যাদি।
 🟥 Red Card পাওয়ার কারণ
-গুরুতর অসদাচরণ • অফিসিয়ালদের অসম্মান, ইত্যাদি।
+গুরুতর অসদাচরণ • Officials-এর অসম্মান • গুরুতর Rule Violation।
 📍 Card Rules
 🟨 ২টি Yellow Card = ১টি Red Card। ❌ Match Result-এর আগে Red Card = Auto Loss। ✅ Match Result-এর পরে Red Card = Result বহাল থাকবে।
 ⏳ Yellow Card ২ দিন পর্যন্ত কার্যকর থাকবে — এই সময়ে আরেকটি Yellow Card পেলে Red Card হবে। 🚫 Red Card পেলে পরবর্তী ২ ম্যাচ নিষিদ্ধ।
-🛡️
-Formation Rules
-▼
-Wall Formation Rules
-1. Wall Formation সম্পূর্ণ নিষিদ্ধ। কোনো খেলোয়াড় Wall Formation ব্যবহার করেছে বলে অফিসিয়াল যাচাইয়ে প্রমাণিত হলে, তার প্রতিপক্ষকে ১ গোল লিড দেওয়া হবে।
-2. ৫ CB Allowed, তবে শুধুমাত্র গেমের ডিফল্ট (Default) Formation ব্যবহার করা যাবে। ৫ CB দিয়ে Custom Formation তৈরি করা সম্পূর্ণ নিষিদ্ধ।
-3. কোনো খেলোয়াড় যদি ৫ CB দিয়ে Custom Formation ব্যবহার করে, তাহলে সেটিকে Wall Formation হিসেবে গণ্য করা হবে এবং শাস্তি প্রযোজ্য হবে।
-4. ম্যাচ শুরুর পর যদি প্রতিপক্ষের Wall Formation নিয়ে অভিযোগ থাকে, তাহলে In-Game Time-এর প্রথম ১০ মিনিটের মধ্যে স্ক্রিনশট (SS) নিয়ে গ্রুপে অফিসিয়ালদের ট্যাগ করে আপিল করতে হবে।
-5. In-Game Time ১০ মিনিট পার হয়ে গেলে ওই অভিযোগ গ্রহণ করা হবে না।
-6. ম্যাচ চলাকালীন যদি কোনো খেলোয়াড় Formation পরিবর্তন করে Wall Formation ব্যবহার করে, তাহলে সঙ্গে সঙ্গে স্ক্রিনশট নিয়ে গ্রুপে অ্যাডমিন/অফিসিয়ালকে জানাতে হবে। দেরিতে করা অভিযোগ গ্রহণযোগ্য হবে না।
-7. সকল অভিযোগের চূড়ান্ত সিদ্ধান্ত TYP Officials-এর যাচাই (Official Review) অনুযায়ী নেওয়া হবে।
-📍 Appeal Rule
-ম্যাচ শুরুর প্রথম ০-১০ সেকেন্ডের মধ্যে Pause দিয়ে ভিডিওসহ অভিযোগ করতে হবে। Half Time বা Full Time-এর পরে অভিযোগ গ্রহণযোগ্য হবে না।
-✅ Double Defence Allowed  |  ✅ Double Attack Allowed
-⛔
-Backpass Rules
-▼
-🚫 ইচ্ছাকৃত Backpass সম্পূর্ণ নিষিদ্ধ। Opponent ভিডিও প্রমাণ দিলে Admin Panel যাচাই করবে। অভিযোগ প্রমাণিত হলে যত মিনিট Backpass খেলা হয়েছে, ঠিক তত মিনিট পুনরায় খেলতে হবে। ভিডিও প্রমাণ ছাড়া অভিযোগ গ্রহণযোগ্য হবে না।
 ⚡
 Auto Win & Activity Rules
 ▼
-📍 Activity Verification
-প্লেয়ার ক্যাটাগরি অনুযায়ী Priority Time-এর Activity বিবেচনা করে Result Count করা হবে। Priority Time-এর মধ্যে প্রতিপক্ষকে কমপক্ষে ২ বার Mention করতে হবে, প্রতিটি Mention-এর মধ্যে ন্যূনতম ২ মিনিটের ব্যবধান থাকতে হবে।
-২ বারের কম Mention হলে ডেডলাইন শেষ হওয়ার পরও এক্সটা ৫ মিনিট দেওয়া হবে। সেই ৫ মিনিটের মধ্যেও অপোনেন্ট না আসলে Auto Win আবেদন গ্রহণযোগ্য হবে।
-📍 Inactive Rules
-Fixed Time শেষ হওয়ার পর সর্বোচ্চ ২০ মিনিটের মধ্যে Mention না করলে সংশ্লিষ্ট প্লেয়ারকে Inactive ধরা হবে।
-★ Activity Record ও Mention যাচাই করে Admin Panel Auto Win-এর সিদ্ধান্ত দেবে — যা চূড়ান্ত।
-
+📍 Priority Time Rule
+Priority Time Main Deadline-এর ১০ মিনিট আগে থেকে শুরু হবে।
+📝 উদাহরণ: Main Deadline 12:00 AM হলে Priority Time শুরু 11:50 PM।
+Priority Time-এর মধ্যে Opponent-এর Response না পেলে, Main Deadline শেষ হওয়ার পর Active Player Auto Win পাবে।
+তবে Priority Time-এর মধ্যে Opponent Response করলে, Main Deadline-এর পর ম্যাচ সম্পন্ন করার জন্য অতিরিক্ত ৫ মিনিট সময় দেওয়া হবে। অতিরিক্ত ৫ মিনিটের মধ্যেও Opponent ম্যাচে না এলে Active Player Auto Win পাবে।
 📍 Auto Win Scoreline
-Auto Win নিশ্চিত হলে ম্যাচের ফলাফল সবসময় নির্ধারিত ৩-০ (3-0) স্কোরলাইনে রেকর্ড করা হবে — অন্য কোনো স্কোর প্রযোজ্য নয়।
+Auto Win নিশ্চিত হলে ম্যাচের ফলাফল সবসময় নির্ধারিত ৩-০ (3-0) স্কোরলাইনে রেকর্ড করা হবে।
+★ Activity ও Response যাচাই করে Admin Panel Auto Win-এর সিদ্ধান্ত দেবে — Admin Panel-এর সিদ্ধান্তই চূড়ান্ত।
+🛡️
+Formation Rules
+▼
+✅ Double Defence — Allowed
+✅ Double Attack — Allowed
+⛔
+Backpass Rules
+▼
+🚫 ইচ্ছাকৃত Backpass সম্পূর্ণ নিষিদ্ধ। Opponent Video Proof দিলে Admin Panel যাচাই করবে। অভিযোগ প্রমাণিত হলে যত মিনিট Backpass খেলা হয়েছে, ঠিক তত মিনিট পুনরায় খেলতে হবে। ভিডিও প্রমাণ ছাড়া অভিযোগ গ্রহণযোগ্য হবে না।
+📍
+Appeal Rule
+▼
+ম্যাচ শুরুর প্রথম ০-১০ সেকেন্ডের মধ্যে Pause দিয়ে ভিডিওসহ অভিযোগ করতে হবে। Half Time বা Full Time-এর পরে অভিযোগ গ্রহণযোগ্য হবে না।
 📝
 Final Notes
 ▼
 📍 সকল Video Proof-এ বাধ্যতামূলক
-✅ SMART Assist OFF   ✅ Device Name   ✅ User ID   ✅ Match Result
+✅ SMART Assist OFF   ✅ Device Name   ✅ User ID   ✅ Match Result
 📍 সকল Rematch-এর ক্ষেত্রে
 ✅ Video Rules বাধ্যতামূলক এবং ✅ Disconnect Match ও Rematch ১৫ মিনিটের মধ্যে সম্পন্ন করতে হবে।
 🏛️
 Admin Authority
 ▼
-সকল অভিযোগ, প্রমাণ, শাস্তি, Auto Win, Rematch ও Card সংক্রান্ত বিষয়ে Admin Panel-এর সিদ্ধান্তই চূড়ান্ত এবং সর্বশেষ সিদ্ধান্ত হিসেবে গণ্য হবে।
+সকল অভিযোগ, প্রমাণ, শাস্তি, Auto Win, Rematch এবং Card সংক্রান্ত বিষয়ে Admin Panel-এর সিদ্ধান্তই চূড়ান্ত। Tournament Authority প্রয়োজনে Tournament-এর স্বার্থে অতিরিক্ত সিদ্ধান্ত নেওয়ার অধিকার সংরক্ষণ করে।
 CHAMPIONSHIP — PRESENT
 
 `;
@@ -15758,15 +16148,11 @@ const TYP_FAQ = [
   // ── Tournament Rules (Rules পেজ থেকে) ──
   {
     keywords: ['lineup', 'line-up', 'লাইনআপ', 'স্কোয়াড', 'squad'],
-    answer: '📋 Squad Line-up Submission:\n• প্রতিটা Match Day-এর Squad Line-up ম্যাচের দিন দুপুর ১:০০ টার আগে Admin-এর Inbox-এ জমা দিতে হবে।\n• এই দায়িত্ব Team Manager অথবা Captain-এর।\n• সময়মতো জমা দিতে ব্যর্থ হলে আগের Match Day-এর Line-up স্বয়ংক্রিয়ভাবে কার্যকর হবে এবং সেটা দিয়েই Official Draw হবে — পরে কোনো আপত্তি গ্রহণযোগ্য হবে না।'
+    answer: '📋 Squad Line-up Submission:\n• প্রতিটা Match Day-এর Squad Line-up ম্যাচের দিন দুপুর ৩:০০ টার আগে Admin-এর Inbox-এ জমা দিতে হবে।\n• এই দায়িত্ব Team Manager অথবা Captain-এর।\n• সময়মতো জমা দিতে ব্যর্থ হলে আগের Match Day-এর Line-up স্বয়ংক্রিয়ভাবে কার্যকর হবে এবং সেটা দিয়েই Official Draw হবে — পরে কোনো আপত্তি গ্রহণযোগ্য হবে না।'
   },
   {
-    keywords: ['match day group', 'গ্রুপ তৈরি', 'group creation'],
-    answer: '👥 Match Day Group Creation: Fixture-এ যে দল Home Team, সেই দলের Manager/Captain Match Day Group তৈরি করবে এবং সেই গ্রুপে অবশ্যই Tournament Official ও Opponent দলের Manager/Captain-কে Add করতে হবে।'
-  },
-  {
-    keywords: ['fixture', 'ড্র', 'draw', 'official draw'],
-    answer: '🆚 Match Fixture Creation: Official Draw সম্পন্ন হওয়ার পর Home Team-এর Manager অথবা Captain Match Fixture তৈরি করবে।'
+    keywords: ['proxy', 'প্রক্সি', 'অন্য কেউ খেলা'],
+    answer: '🚫 Proxy Player Rules: Tournament চলাকালীন কোনো Player-এর পরিবর্তে অন্য কেউ Proxy হিসেবে ম্যাচ খেললে তা সম্পূর্ণ নিষিদ্ধ। Official Review-এ প্রমাণিত হলে সংশ্লিষ্ট Player-কে TYP Community থেকে Permanent Ban করা হবে।'
   },
   {
     keywords: ['substitution', 'সাবস্টিটিউশন', 'পরিবর্তন', 'swap', 'সোয়াপ'],
@@ -15813,8 +16199,8 @@ const TYP_FAQ = [
     answer: '🟨🟥 Card System:\n• Yellow Card পাওয়ার কারণ: প্রমাণ ছাড়া Disconnect, সময়মতো না খেলা, অসহযোগিতা, গালিগালাজ ইত্যাদি।\n• ২টি Yellow Card = ১টি Red Card। Yellow Card ২ দিন পর্যন্ত কার্যকর থাকে।\n• Match Result-এর আগে Red Card পেলে Auto Loss; পরে পেলে Result বহাল থাকে।\n• Red Card পেলে পরবর্তী ২ ম্যাচ নিষিদ্ধ।'
   },
   {
-    keywords: ['formation', 'ফরমেশন', 'wall', 'ওয়াল'],
-    answer: '⚽ Wall Formation Rules: Wall Formation সম্পূর্ণ নিষিদ্ধ — প্রমাণিত হলে প্রতিপক্ষকে ১ গোল লিড দেওয়া হবে। ৫ CB Allowed তবে শুধু Default Formation-এ, Custom Formation দিয়ে ৫ CB করলে সেটাও Wall Formation হিসেবে গণ্য হবে। অভিযোগ থাকলে In-Game Time-এর প্রথম ১০ মিনিটের মধ্যে স্ক্রিনশটসহ গ্রুপে অফিসিয়ালদের জানাতে হবে, দেরি হলে গ্রহণযোগ্য হবে না। চূড়ান্ত সিদ্ধান্ত TYP Officials-এর Review অনুযায়ী হবে।'
+    keywords: ['formation', 'ফরমেশন', 'wall', 'ওয়াল', 'double defence', 'double attack'],
+    answer: '🛡️ Formation Rules: ✅ Double Defence Allowed এবং ✅ Double Attack Allowed — উভয়ই সম্পূর্ণভাবে বৈধ।'
   },
   {
     keywords: ['backpass', 'ব্যাকপাস'],
@@ -15826,7 +16212,7 @@ const TYP_FAQ = [
   },
   {
     keywords: ['রুলস', 'rule', 'rules', 'নিয়মাবলী', 'নিয়ম কি'],
-    answer: 'TYP Championship-এর পূর্ণাঙ্গ নিয়মাবলী উপরের মেনু থেকে "Rules" পেজে আছে — মোট ১৯টা বিভাগে (Line-up, Substitution, Video Rules, Card System, Formation, Backpass, Auto Win ইত্যাদি)। নির্দিষ্ট কোনো নিয়ম জানতে চাইলে সরাসরি জিজ্ঞেস করো — যেমন "video rules", "card system", "backpass rule", "formation" ইত্যাদি।'
+    answer: 'TYP Championship-এর পূর্ণাঙ্গ নিয়মাবলী উপরের মেনু থেকে "Rules" পেজে আছে — মোট ২০টা বিভাগে (Line-up, Substitution, Video Rules, Card System, Formation, Backpass, Auto Win, Proxy Player, Appeal ইত্যাদি)। নির্দিষ্ট কোনো নিয়ম জানতে চাইলে সরাসরি জিজ্ঞেস করো — যেমন "video rules", "card system", "backpass rule", "formation" ইত্যাদি।'
   }
 ];
 
