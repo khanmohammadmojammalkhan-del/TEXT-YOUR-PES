@@ -9435,6 +9435,25 @@ function f4mMdRoundOf(m) {
   const mt = /Round\s*(\d+)/i.exec(m.label || '');
   return mt ? parseInt(mt[1], 10) : 0;
 }
+// Which "day" a matchday belongs to for day-wise grouping: all Group
+// A/B/C/D matches of the same Round happen on the same day, and each
+// knockout round is its own day.
+function f4mMdDayLabel(m) {
+  if (m.stage === 'qf') return '🏆 Quarterfinal';
+  if (m.stage === 'sf') return '🏆 Semifinal';
+  if (m.stage === 'final') return '🏆 Final';
+  return `📅 Matchday ${f4mMdRoundOf(m)}`;
+}
+function f4mMdGroupByDay(sortedMatchdays) {
+  const days = [];
+  sortedMatchdays.forEach(m => {
+    const lbl = f4mMdDayLabel(m);
+    let day = days.find(d => d.label === lbl);
+    if (!day) { day = { label: lbl, matches: [] }; days.push(day); }
+    day.matches.push(m);
+  });
+  return days;
+}
 function f4mMdCompare(a, b) {
   const stageOrder = { group: 0, qf: 1, sf: 2, final: 3 };
   const soA = stageOrder[a.stage] ?? 9, soB = stageOrder[b.stage] ?? 9;
@@ -9540,27 +9559,39 @@ window.loadF4mMatchdaysList = async function() {
   if (!wrap) return;
   if (!f4mMatchdaysCache.length) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">এখনো কোনো matchday তৈরি হয়নি।</div>`; return; }
   const sorted = [...f4mMatchdaysCache].sort(f4mMdCompare);
-  wrap.innerHTML = sorted.map(m => {
-    const boutRows = Object.keys(m.bouts || {}).sort().map(k => {
-      const b = m.bouts[k];
-      const pa = f4mUsersCache.find(u => u.uid === b.playerAUid);
-      const pb = f4mUsersCache.find(u => u.uid === b.playerBUid);
-      return `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text2);padding:4px 0;border-bottom:1px dashed var(--border)">
-        <span>${pa ? pa.name : '—'}</span><span style="font-weight:700">${b.done ? (b.scoreA + ' - ' + b.scoreB) : 'vs'}</span><span>${pb ? pb.name : '—'}</span>
+
+  // ── Group matches "day-wise": all Group-A/B/C/D Round-N matches played on
+  // the same day sit under one "Matchday N" header (mirrors the Auction
+  // Tournament's day-wise fixture list); knockout rounds get their own day. ──
+  const days = f4mMdGroupByDay(sorted);
+
+  wrap.innerHTML = days.map(day => {
+    const cards = day.matches.map(m => {
+      const boutRows = Object.keys(m.bouts || {}).sort().map(k => {
+        const b = m.bouts[k];
+        const pa = f4mUsersCache.find(u => u.uid === b.playerAUid);
+        const pb = f4mUsersCache.find(u => u.uid === b.playerBUid);
+        return `<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--text2);padding:4px 0;border-bottom:1px dashed var(--border)">
+          <span>${pa ? pa.name : '—'}</span><span style="font-weight:700">${b.done ? (b.scoreA + ' - ' + b.scoreB) : 'vs'}</span><span>${pb ? pb.name : '—'}</span>
+        </div>`;
+      }).join('');
+      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-weight:700;color:var(--text)">${m.label || 'Matchday'}</div>
+          <div style="font-size:11px;padding:3px 10px;border-radius:20px;background:${m.status === 'completed' ? 'rgba(52,211,153,0.15)' : 'rgba(245,166,35,0.15)'};color:${m.status === 'completed' ? 'var(--green)' : 'var(--gold)'}">${m.status === 'completed' ? '✅ Completed' : '⏳ Pending'}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:'Libre Caslon Text',sans-serif">
+          <span style="font-weight:800;color:var(--primary)">${f4mSquadName(m.squadA)}</span>
+          <span style="font-size:16px;font-weight:800">${m.status === 'completed' ? (m.aggScoreA + ' - ' + m.aggScoreB) : 'VS'}</span>
+          <span style="font-weight:800;color:var(--primary)">${f4mSquadName(m.squadB)}</span>
+        </div>
+        ${m.status !== 'completed' ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">${m.drawn ? '🎲 Draw সম্পন্ন — bout pairing ঠিক হয়ে গেছে' : ((m.lineupA && m.lineupA.length === 3 && m.lineupB && m.lineupB.length === 3) ? '✅ দুই দলের Lineup জমা — Draw বাকি' : '⏳ Manager-দের Lineup জমা দেওয়ার অপেক্ষায়')}</div>` : ''}
+        ${boutRows}
       </div>`;
     }).join('');
-    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-weight:700;color:var(--text)">${m.label || 'Matchday'}</div>
-        <div style="font-size:11px;padding:3px 10px;border-radius:20px;background:${m.status === 'completed' ? 'rgba(52,211,153,0.15)' : 'rgba(245,166,35,0.15)'};color:${m.status === 'completed' ? 'var(--green)' : 'var(--gold)'}">${m.status === 'completed' ? '✅ Completed' : '⏳ Pending'}</div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:'Libre Caslon Text',sans-serif">
-        <span style="font-weight:800;color:var(--primary)">${f4mSquadName(m.squadA)}</span>
-        <span style="font-size:16px;font-weight:800">${m.status === 'completed' ? (m.aggScoreA + ' - ' + m.aggScoreB) : 'VS'}</span>
-        <span style="font-weight:800;color:var(--primary)">${f4mSquadName(m.squadB)}</span>
-      </div>
-      ${m.status !== 'completed' ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">${m.drawn ? '🎲 Draw সম্পন্ন — bout pairing ঠিক হয়ে গেছে' : ((m.lineupA && m.lineupA.length === 3 && m.lineupB && m.lineupB.length === 3) ? '✅ দুই দলের Lineup জমা — Draw বাকি' : '⏳ Manager-দের Lineup জমা দেওয়ার অপেক্ষায়')}</div>` : ''}
-      ${boutRows}
+    return `<div class="matchday-group">
+      <div class="matchday-group-label">${day.label}</div>
+      ${cards}
     </div>`;
   }).join('');
 };
@@ -9955,7 +9986,10 @@ window.loadF4mAdminMatchdays = async function() {
   f4mPopulateSquadSelects();
   const sel = document.getElementById('f4mMdSelect');
   const sorted = [...f4mMatchdaysCache].sort(f4mMdCompare);
-  const opts = '<option value="">-- Matchday বাছাই করো --</option>' + sorted.map(m => `<option value="${m.id}">${m.label} — ${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)} ${m.status === 'completed' ? '✅' : '⏳'}</option>`).join('');
+  const days = f4mMdGroupByDay(sorted);
+  const opts = '<option value="">-- Matchday বাছাই করো --</option>' + days.map(day =>
+    `<optgroup label="${day.label}">${day.matches.map(m => `<option value="${m.id}">${m.label} — ${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)} ${m.status === 'completed' ? '✅' : '⏳'}</option>`).join('')}</optgroup>`
+  ).join('');
   if (sel) sel.innerHTML = opts;
   renderF4mAdminSquadsList();
   renderF4mGroupStandings();
