@@ -1796,9 +1796,20 @@ if (document.readyState === 'loading') {
 /* Numerals — condensed sport-card typeface for every stat value */
 .pp-num { font-family:'Libre Caslon Text',sans-serif;font-weight:700;letter-spacing:0.01em; }
 
-/* ── Hero / cover ── */
+/* Entrance animation — cards rise in, staggered */
+@keyframes ppRise { from { opacity:0;transform:translateY(14px); } to { opacity:1;transform:translateY(0); } }
+#page-player .pp-sheet,
+#page-player .pp-form-card,
+#page-player .pp-section { animation:ppRise 0.5s cubic-bezier(0.22,1,0.36,1) backwards; }
+#page-player .pp-sheet      { animation-delay:0.05s; }
+#page-player .pp-form-card  { animation-delay:0.12s; }
+#page-player .pp-section:nth-of-type(1) { animation-delay:0.18s; }
+#page-player .pp-section:nth-of-type(2) { animation-delay:0.24s; }
+#page-player .pp-section:nth-of-type(3) { animation-delay:0.3s; }
+
+/* ── Hero / cover — floodlit stadium night ── */
 .pp-cover {
-  height:150px;
+  height:172px;
   background:
     radial-gradient(ellipse 90% 140% at 15% 0%, var(--tier-glow) 0%, transparent 60%),
     linear-gradient(160deg,#050912 0%,#081208 55%,#06170f 100%);
@@ -1809,8 +1820,23 @@ if (document.readyState === 'loading') {
   content:'';position:absolute;right:-70px;top:-70px;width:220px;height:220px;
   border:1.5px solid rgba(255,255,255,0.08);border-radius:50%;
 }
+.pp-cover::after {
+  /* floodlight sweep beams from top corners */
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    conic-gradient(from 200deg at 0% -10%, rgba(255,255,255,0.10), transparent 28%),
+    conic-gradient(from -20deg at 100% -10%, rgba(255,255,255,0.08), transparent 28%);
+  mix-blend-mode:screen;
+}
 .pp-cover-glow1 { position:absolute;inset:0;background:radial-gradient(ellipse 55% 90% at 25% 30%,var(--tier-glow) 0%,transparent 70%); }
 .pp-cover-glow2 { position:absolute;inset:0;background:radial-gradient(ellipse 40% 60% at 85% 20%,rgba(255,255,255,0.06) 0%,transparent 60%); }
+/* subtle drifting sheen across the whole cover */
+.pp-cover-glow2::after {
+  content:'';position:absolute;inset:-40% -20%;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,0.06) 50%,transparent 60%);
+  animation:ppSheen 6s ease-in-out infinite;
+}
+@keyframes ppSheen { 0%,100% { transform:translateX(-30%); } 50% { transform:translateX(30%); } }
 
 .pp-cover-actions {
   position:absolute;top:14px;left:14px;right:14px;z-index:2;
@@ -1822,35 +1848,51 @@ if (document.readyState === 'loading') {
   padding:7px 14px;border-radius:20px;cursor:pointer;
   font-size:12px;font-weight:600;font-family:'Libre Caslon Text',sans-serif;
   display:flex;align-items:center;gap:5px;letter-spacing:0.02em;
+  transition:background 0.2s,transform 0.15s;
 }
+.pp-back-btn:active { transform:scale(0.95); }
 .pp-dl-btn {
   background:linear-gradient(120deg,var(--tier-b),var(--tier-a));border:none;color:#0e0c1e;
-  padding:7px 14px;border-radius:20px;cursor:pointer;
+  padding:7px 15px;border-radius:20px;cursor:pointer;
   font-size:11px;font-weight:800;letter-spacing:0.08em;font-family:'Libre Caslon Text',sans-serif;
+  box-shadow:0 4px 16px var(--tier-glow);
+  transition:transform 0.15s,box-shadow 0.15s;
 }
+.pp-dl-btn:active { transform:scale(0.95); }
 
-/* Rating corner — sits over the cover, top right, like a card's OVR */
+/* Rating corner — glass shield badge, top right of the cover */
 .pp-rating-corner {
   position:absolute;right:14px;bottom:12px;z-index:2;
-  display:flex;align-items:baseline;gap:4px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;background:rgba(10,12,20,0.5);backdrop-filter:blur(10px);
+  border:1.5px solid rgba(255,255,255,0.18);
+  border-radius:14px;padding:6px 16px 8px;
+  box-shadow:0 6px 22px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
 /* Identity row */
 .pp-identity {
   max-width:700px;margin:0 auto;padding:0 16px 14px;
-  position:relative;z-index:2;margin-top:-40px;
+  position:relative;z-index:2;margin-top:-44px;
 }
 .pp-identity-top {
   display:flex;align-items:flex-end;justify-content:space-between;
   margin-bottom:10px;
 }
-/* Hexagonal, tier-ringed avatar frame */
+/* Hexagonal, tier-ringed avatar frame with a soft pulsing halo */
 .pp-avatar-frame {
-  width:88px;height:88px;flex-shrink:0;
+  width:92px;height:92px;flex-shrink:0;position:relative;
   clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
   background:linear-gradient(150deg,var(--tier-b),var(--tier-a));
-  padding:3px;box-shadow:0 6px 20px var(--tier-glow);
+  padding:3px;box-shadow:0 8px 24px var(--tier-glow);
 }
+.pp-avatar-frame::before {
+  content:'';position:absolute;inset:-8px;z-index:-1;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:radial-gradient(circle,var(--tier-glow) 0%,transparent 72%);
+  animation:ppHalo 2.6s ease-in-out infinite;
+}
+@keyframes ppHalo { 0%,100% { opacity:0.6;transform:scale(0.94); } 50% { opacity:1;transform:scale(1.04); } }
 #ppAvatar {
   width:100%;height:100%;
   clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
@@ -1862,13 +1904,16 @@ if (document.readyState === 'loading') {
 .pp-rank-row { display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap; }
 #ppRank { font-size:9px;color:var(--text2);letter-spacing:0.14em;text-transform:uppercase;font-weight:700; }
 .pp-tier-chip {
-  font-size:8px;font-weight:800;letter-spacing:0.1em;padding:2px 8px;border-radius:4px;
+  font-size:8px;font-weight:800;letter-spacing:0.1em;padding:3px 9px;border-radius:5px;
   background:linear-gradient(120deg,var(--tier-b),var(--tier-a));color:#0e0c1e;
-  text-transform:uppercase;
+  text-transform:uppercase;box-shadow:0 2px 8px var(--tier-glow);
 }
-#ppName { font-size:clamp(18px,5vw,28px);font-weight:800;color:var(--text);line-height:1.15;letter-spacing:-0.01em;word-break:break-word; }
-.pp-meta { display:flex;gap:10px;flex-wrap:wrap;margin-top:6px; }
-.pp-meta span { font-size:11px;color:var(--text3);display:flex;align-items:center;gap:3px; }
+#ppName { font-size:clamp(18px,5vw,28px);font-weight:800;color:var(--text);line-height:1.15;letter-spacing:-0.01em;word-break:break-word;text-shadow:0 1px 0 rgba(0,0,0,0.15); }
+.pp-meta { display:flex;gap:8px;flex-wrap:wrap;margin-top:7px; }
+.pp-meta span {
+  font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;
+}
 
 /* Compare button */
 .pp-cmp-wrap { flex-shrink:0;padding-bottom:4px; }
@@ -1878,12 +1923,17 @@ if (document.readyState === 'loading') {
 
 /* Milestone badges — earned / claimable / locked chips */
 .pp-ms-chip {
-  display:flex;align-items:center;gap:6px;border-radius:8px;padding:6px 12px;
+  display:flex;align-items:center;gap:6px;border-radius:9px;padding:7px 13px;
   font-size:11px;font-weight:700;letter-spacing:0.02em;font-family:'Libre Caslon Text',sans-serif;
-  border:1px solid var(--border);
+  border:1px solid var(--border);transition:transform 0.15s;
 }
-.pp-ms-earned { background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.4);color:var(--gold); }
-.pp-ms-locked { background:var(--bg2);color:var(--text3);opacity:0.55; }
+.pp-ms-chip:hover { transform:translateY(-2px); }
+.pp-ms-earned {
+  background:linear-gradient(135deg,rgba(201,168,76,0.16),rgba(201,168,76,0.05));
+  border:1px solid rgba(201,168,76,0.45);color:var(--gold);
+  box-shadow:0 3px 10px rgba(201,168,76,0.15);
+}
+.pp-ms-locked { background:var(--bg2);color:var(--text3);opacity:0.5; }
 .pp-ms-claim {
   background:rgba(0,229,255,0.12);border:1px dashed var(--cyan);color:var(--cyan);
   cursor:pointer;animation:ppMsPulse 1.6s ease-in-out infinite;
@@ -1899,8 +1949,14 @@ if (document.readyState === 'loading') {
 
 /* ── Match Sheet: record + output, ticket-style card ── */
 .pp-sheet {
-  position:relative;background:var(--card);border:1px solid var(--border);
-  border-radius:14px;padding:16px;margin-bottom:12px;overflow:visible;
+  position:relative;background:linear-gradient(180deg,var(--card),var(--bg2) 220%);
+  border:1px solid var(--border);
+  border-radius:16px;padding:18px;margin-bottom:14px;overflow:visible;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
+}
+.pp-sheet::before {
+  content:'';position:absolute;top:0;left:16px;right:16px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--tier-b),transparent);
 }
 .pp-sheet-title {
   font-size:9px;color:var(--tier-b);letter-spacing:0.14em;font-weight:800;
@@ -1919,74 +1975,95 @@ if (document.readyState === 'loading') {
 .pp-stats-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:8px; }
 @media(max-width:420px){ .pp-stats-grid { grid-template-columns:repeat(2,1fr); } }
 .pp-stat-card {
-  border-radius:10px;padding:12px 6px;text-align:center;
+  border-radius:12px;padding:13px 6px;text-align:center;
   background:var(--bg2);border:1px solid var(--border);
+  transition:transform 0.18s,box-shadow 0.18s;
 }
-.pp-stat-card .pp-sv { font-size:30px;line-height:1; }
-.pp-stat-card .pp-sl { font-size:8px;color:var(--text3);margin-top:3px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase; }
+.pp-stat-card:hover { transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,0.12); }
+.pp-stat-card .pp-sv { font-size:30px;line-height:1;text-shadow:0 2px 12px currentColor; filter:brightness(1); opacity:0.98; }
+.pp-stat-card .pp-sl { font-size:8px;color:var(--text3);margin-top:4px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase; }
 
 .pp-sec-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; }
 .pp-sec-card {
-  border-radius:10px;padding:14px 6px;text-align:center;
+  border-radius:12px;padding:15px 6px;text-align:center;
   background:var(--bg2);border:1px solid var(--border);
-  position:relative;overflow:hidden;
+  position:relative;overflow:hidden;transition:transform 0.18s,box-shadow 0.18s;
 }
-.pp-sec-card .pp-sv { font-size:34px;line-height:1;position:relative; }
+.pp-sec-card:hover { transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,0.12); }
+.pp-sec-card .pp-sv { font-size:34px;line-height:1;position:relative;text-shadow:0 2px 14px currentColor; }
 .pp-sec-card .pp-sl { font-size:9px;color:var(--text3);margin-top:4px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;position:relative; }
 
 /* Rating + Form card */
 .pp-form-card {
   background:var(--card);border:1px solid var(--border);
-  border-radius:14px;padding:16px;margin-bottom:12px;
+  border-radius:16px;padding:18px;margin-bottom:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
 }
 .pp-form-inner { display:flex;align-items:center;gap:16px;margin-bottom:14px; }
 .pp-form-right { flex:1;min-width:0; }
 .pp-form-label { font-size:9px;color:var(--text3);letter-spacing:0.1em;font-weight:700;text-transform:uppercase;margin-bottom:8px; }
 #ppFormBadges { display:flex;gap:5px;flex-wrap:wrap; }
+#ppFormBadges span { box-shadow:0 3px 8px rgba(0,0,0,0.2); }
 
-/* Win rate bar — pitch touchline style */
+/* Win rate bar — pitch touchline style with a subtle shimmer */
 .pp-wr-row { display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600; }
-.pp-wr-track { height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative; }
-#ppWPBar { height:100%;background:linear-gradient(90deg,var(--tier-a),var(--tier-b));border-radius:4px;transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);width:0%; }
+.pp-wr-track { height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative; }
+#ppWPBar {
+  height:100%;background:linear-gradient(90deg,var(--tier-a),var(--tier-b));
+  border-radius:4px;transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);width:0%;
+  position:relative;overflow:hidden;
+}
+#ppWPBar::after {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.35) 50%,transparent 70%);
+  animation:ppSheen 2.4s ease-in-out infinite;
+}
 
 /* Section cards (trend, friendly) */
 .pp-section {
   background:var(--card);border:1px solid var(--border);
-  border-radius:14px;padding:16px;margin-bottom:12px;
+  border-radius:16px;padding:18px;margin-bottom:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.1);
 }
 .pp-section-title {
   font-size:9px;color:var(--tier-b);letter-spacing:0.1em;font-weight:800;
   text-transform:uppercase;margin-bottom:12px;padding-bottom:10px;
   border-bottom:1px dashed var(--border);
+  display:flex;align-items:center;gap:6px;
 }
 
 /* Friendly mini stats */
 .pp-friendly-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px; }
-.pp-friendly-mini { border-radius:10px;padding:11px 6px;text-align:center;background:var(--bg2); }
+.pp-friendly-mini { border-radius:11px;padding:12px 6px;text-align:center;background:var(--bg2);transition:transform 0.15s; }
+.pp-friendly-mini:hover { transform:translateY(-2px); }
 .pp-friendly-mini .pp-sv { font-size:22px;line-height:1; }
 .pp-friendly-mini .pp-sl { font-size:8px;color:var(--text3);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em; }
 
 /* Friendly match history — ticket-stub rows */
 .pp-fl-row {
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:9px 12px;background:var(--bg2);border:1px dashed var(--border);
-  border-radius:8px;margin-bottom:6px;font-size:13px;
+  padding:10px 12px;background:var(--bg2);border:1px dashed var(--border);
+  border-radius:10px;margin-bottom:6px;font-size:13px;
+  transition:transform 0.15s,border-color 0.15s;
 }
+.pp-fl-row:hover { transform:translateX(2px);border-color:var(--tier-b); }
 .pp-fl-result {
   font-family:'Libre Caslon Text',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.04em;
   padding:3px 10px;border-radius:6px;color:#0e0c1e;flex-shrink:0;
+  box-shadow:0 3px 8px rgba(0,0,0,0.18);
 }
 
 /* Compare button — inline in identity row */
 #ppCompareBtn {
-  background:rgba(255,255,255,0.07) !important;
+  background:linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.03)) !important;
   border:1px solid var(--border) !important;
   color:var(--text2) !important;
-  padding:7px 13px !important;border-radius:20px !important;
+  padding:7px 14px !important;border-radius:20px !important;
   cursor:pointer;font-size:11px !important;font-weight:700 !important;
   letter-spacing:1px;font-family:'Libre Caslon Text',sans-serif;
-  white-space:nowrap;
+  white-space:nowrap;transition:transform 0.15s,border-color 0.15s;
 }
+#ppCompareBtn:hover { border-color:var(--tier-b) !important;transform:translateY(-2px); }
 </style>
 
 <div class="page pp-tier-gold" id="page-player">
@@ -10480,12 +10557,14 @@ window.saveF4mMatchdayResults = async function(mid) {
     if (!pa || !pb) { playersMissing = true; return; }
     usedA.push(pa); usedB.push(pb);
     const scoreA = parseInt(sa), scoreB = parseInt(sb);
-    bouts[k] = { ...bouts[k], playerAUid: pa, playerBUid: pb, scoreA, scoreB, done: true };
+    bouts[k] = { ...bouts[k], playerAUid: pa, playerBUid: pb, scoreA, scoreB, done: true, historyLogged: true };
     aggA += scoreA; aggB += scoreB;
 
-    // Shudhu notun (age theke 'done' na thaka) bout-er jonno stat delta o
-    // match-history record add hoy — tie-break bout pore jog korle purono
-    // bout-gulor stat abar count hobe na (double-counting thekabe).
+    // Shudhu notun (age theke 'done' na thaka) bout-er jonno stat delta add hoy —
+    // tie-break bout pore jog korle purono bout-gulor stat abar count hobe na
+    // (double-counting thekabe). History log-er jonno alada 'historyLogged' flag
+    // use kora hocche, jate age-theke-completed purono bout-gulo o eibar save
+    // dile match-history-te dhore jay (backfill), stat abar count na kore.
     if (!wasAlreadyDone) {
       if (userMap[pa] && userMap[pb]) {
         ensureDelta(pa); ensureDelta(pb);
@@ -10494,11 +10573,6 @@ window.saveF4mMatchdayResults = async function(mid) {
         if (scoreA > scoreB) { statDelta[pa].wins += 1; statDelta[pb].losses += 1; }
         else if (scoreB > scoreA) { statDelta[pb].wins += 1; statDelta[pa].losses += 1; }
         else { statDelta[pa].draws += 1; statDelta[pb].draws += 1; }
-        typRecordMatchHistory({
-          homeName: userMap[pa].name, awayName: userMap[pb].name,
-          homeScore: scoreA, awayScore: scoreB,
-          tournament: '4-Man', round: m.label || m.matchdayLabel || ''
-        });
       }
     }
   });
@@ -10511,6 +10585,21 @@ window.saveF4mMatchdayResults = async function(mid) {
   if (!allFilled) { statusEl.textContent = '⚠️ সব bout-এর score বসাও।'; statusEl.style.color = 'var(--red)'; return; }
 
   await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts, aggScoreA: aggA, aggScoreB: aggB, status: 'completed', updatedAt: new Date().toISOString() }) });
+
+  // ── Squad-level match-history record ──
+  // Match Results page-e squad vs squad result dekhabe (individual bout na),
+  // tai shob bout-er aggregate score diye ekbar-e ekta record log kora hoy,
+  // matchday-r nijer 'historyLogged' flag diye guard kore duplicate ThekAno hoy.
+  if (!m.historyLogged) {
+    try {
+      await typRecordMatchHistory({
+        homeName: f4mSquadName(m.squadA), awayName: f4mSquadName(m.squadB),
+        homeScore: aggA, awayScore: aggB,
+        tournament: '4-Man', round: m.label || m.matchdayLabel || ''
+      });
+      await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: true }) });
+    } catch (e) { console.warn('4-man history log failed', e); }
+  }
 
   // Flush player stat deltas — overall career stats + separate 4-Man breakdown
   for (const [uid, delta] of Object.entries(statDelta)) {
@@ -10808,24 +10897,25 @@ window.saveSoloMatchResult = async function(mid) {
   const m = soloMatchesCache.find(x => x.id === mid);
   if (!m) return;
   const alreadyCompleted = m.status === 'completed';
+  const alreadyLogged = !!m.historyLogged;
   const score1 = parseInt(s1), score2 = parseInt(s2);
 
-  await fetch(`${SOLO_DB}/typsolo/matches/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ player1Score: score1, player2Score: score2, status: 'completed', updatedAt: new Date().toISOString() }) });
+  await fetch(`${SOLO_DB}/typsolo/matches/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ player1Score: score1, player2Score: score2, status: 'completed', historyLogged: true, updatedAt: new Date().toISOString() }) });
 
-  if (!alreadyCompleted) {
-    const allUsers = await getAllUsers();
-    const userMap = {}; allUsers.forEach(u => userMap[u.uid] = u);
-    const p1 = m.player1Uid, p2 = m.player2Uid;
-    if (userMap[p1] && userMap[p2]) {
-      const result1 = score1 > score2 ? 'w' : score1 < score2 ? 'l' : 'd';
-      const result2 = score2 > score1 ? 'w' : score2 < score1 ? 'l' : 'd';
-      await soloApplyPlayerStat(userMap[p1], p1, score1, result1);
-      await soloApplyPlayerStat(userMap[p2], p2, score2, result2);
-      typRecordMatchHistory({
-        homeName: userMap[p1].name, awayName: userMap[p2].name,
-        homeScore: score1, awayScore: score2, tournament: 'Solo'
-      });
-    }
+  const allUsers = await getAllUsers();
+  const userMap = {}; allUsers.forEach(u => userMap[u.uid] = u);
+  const p1 = m.player1Uid, p2 = m.player2Uid;
+  if (!alreadyCompleted && userMap[p1] && userMap[p2]) {
+    const result1 = score1 > score2 ? 'w' : score1 < score2 ? 'l' : 'd';
+    const result2 = score2 > score1 ? 'w' : score2 < score1 ? 'l' : 'd';
+    await soloApplyPlayerStat(userMap[p1], p1, score1, result1);
+    await soloApplyPlayerStat(userMap[p2], p2, score2, result2);
+  }
+  if (!alreadyLogged && userMap[p1] && userMap[p2]) {
+    typRecordMatchHistory({
+      homeName: userMap[p1].name, awayName: userMap[p2].name,
+      homeScore: score1, awayScore: score2, tournament: 'Solo'
+    });
   }
   window._allUsersCache = [];
   statusEl.textContent = '✅ Saved! Player profile updated.'; statusEl.style.color = 'var(--green)';
@@ -10909,18 +10999,21 @@ window.saveSoloKnockoutResult = async function(id) {
   if (s1 === '' || s2 === '') { alert('দুইটা score-ই বসাও।'); return; }
   const m = soloKnockoutCache.find(x => x.id === id);
   const alreadyCompleted = m && m.status === 'completed';
+  const alreadyLogged = m && !!m.historyLogged;
   const score1 = parseInt(s1), score2 = parseInt(s2);
-  await fetch(`${SOLO_DB}/typsolo/knockout/${id}.json`, { method: 'PATCH', body: JSON.stringify({ player1Score: score1, player2Score: score2, status: 'completed', updatedAt: new Date().toISOString() }) });
+  await fetch(`${SOLO_DB}/typsolo/knockout/${id}.json`, { method: 'PATCH', body: JSON.stringify({ player1Score: score1, player2Score: score2, status: 'completed', historyLogged: true, updatedAt: new Date().toISOString() }) });
 
-  if (!alreadyCompleted && m) {
+  if (m) {
     const allUsers = await getAllUsers();
     const userMap = {}; allUsers.forEach(u => userMap[u.uid] = u);
     const p1 = m.player1Uid, p2 = m.player2Uid;
-    if (userMap[p1] && userMap[p2]) {
+    if (!alreadyCompleted && userMap[p1] && userMap[p2]) {
       const result1 = score1 > score2 ? 'w' : score1 < score2 ? 'l' : 'd';
       const result2 = score2 > score1 ? 'w' : score2 < score1 ? 'l' : 'd';
       await soloApplyPlayerStat(userMap[p1], p1, score1, result1);
       await soloApplyPlayerStat(userMap[p2], p2, score2, result2);
+    }
+    if (!alreadyLogged && userMap[p1] && userMap[p2]) {
       typRecordMatchHistory({
         homeName: userMap[p1].name, awayName: userMap[p2].name,
         homeScore: score1, awayScore: score2, tournament: 'Solo Knockout'
@@ -12654,8 +12747,11 @@ window.mdcSaveBoutResults = async function(key) {
   };
 
   let saved = 0, profilesUpdated = 0;
+  let teamHomeId = '', teamAwayId = '', totalBouts = 0, filledBouts = 0;
+  let homeAgg = 0, awayAgg = 0;
 
   for (const inp of homeInputs) {
+    totalBouts++;
     const id = inp.dataset.id;
     const hs = inp.value.trim();
     const awayInp = document.querySelector(`#mdc-fixture-${key} .mdc-score-away[data-id="${id}"]`);
@@ -12668,6 +12764,9 @@ window.mdcSaveBoutResults = async function(key) {
     if (!bout) continue;
     const alreadySaved = bout.status === 'completed';
     const p1uid = bout.player1uid, p2uid = bout.player2uid;
+    teamHomeId = bout.homeTeam; teamAwayId = bout.awayTeam;
+    filledBouts++;
+    homeAgg += homeScore; awayAgg += awayScore;
 
     await fetch(`${TRN_DB}/tournament/matches/${id}.json`, {
       method: 'PATCH',
@@ -12681,10 +12780,6 @@ window.mdcSaveBoutResults = async function(key) {
       if (homeScore > awayScore) { statDelta[p1uid].wins += 1; statDelta[p2uid].losses += 1; }
       else if (awayScore > homeScore) { statDelta[p2uid].wins += 1; statDelta[p1uid].losses += 1; }
       else { statDelta[p1uid].draws += 1; statDelta[p2uid].draws += 1; }
-      typRecordMatchHistory({
-        homeName: userMap[p1uid].name, awayName: userMap[p2uid].name,
-        homeScore, awayScore, tournament: 'Matchday'
-      });
     }
     saved++;
   }
@@ -12701,6 +12796,25 @@ window.mdcSaveBoutResults = async function(key) {
     };
     await fetch(`${TRN_DB}/users/${uid}.json`, { method: 'PATCH', body: JSON.stringify(updated) });
     profilesUpdated++;
+  }
+
+  // ── Team-level match-history record ──
+  // Match Results page-e team vs team result dekhabe (individual bout na),
+  // tai shob bout complete hole ekbar-e ekta team-level record log kora hoy,
+  // matchdayControl node-er 'historyLogged' flag diye guard kore jate ekই
+  // fixture-er jonno duplicate record na hoy.
+  if (teamHomeId && teamAwayId && totalBouts > 0 && filledBouts === totalBouts) {
+    try {
+      const ctrl = await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`).then(r => r.json()).catch(() => null);
+      if (!ctrl || !ctrl.historyLogged) {
+        const teamMap = {};
+        trnTeamsCache.forEach(t => { teamMap[t.id] = t; });
+        const htName = (teamMap[teamHomeId] || {}).name || 'Home';
+        const atName = (teamMap[teamAwayId] || {}).name || 'Away';
+        await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: homeAgg, awayScore: awayAgg, tournament: 'Tournament' });
+        await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: true }) });
+      }
+    } catch (e) { console.warn('team history log failed', e); }
   }
 
   window._allUsersCache = [];
@@ -13482,6 +13596,8 @@ window.saveTrnMatchResults = async function() {
   const homeInputs = document.querySelectorAll('.trn-score-home');
   let saved = 0;
   let profilesUpdated = 0;
+  let teamHomeId = '', teamAwayId = '', totalBouts = 0, filledBouts = 0;
+  let homeAgg = 0, awayAgg = 0;
 
   // Load all users for profile update
   const allUsers = await getAllUsers();
@@ -13496,6 +13612,7 @@ window.saveTrnMatchResults = async function() {
   };
 
   for (const inp of homeInputs) {
+    totalBouts++;
     const id = inp.dataset.id;
     const hs = inp.value.trim();
     const awayInp = document.querySelector(`.trn-score-away[data-id="${id}"]`);
@@ -13514,6 +13631,9 @@ window.saveTrnMatchResults = async function() {
     // Get previous match data to check if already saved (to avoid double counting)
     const prevMatch = trnMatchesCache.find(m => m.id === id);
     const alreadySaved = prevMatch?.status === 'completed';
+    if (prevMatch) { teamHomeId = prevMatch.homeTeam; teamAwayId = prevMatch.awayTeam; }
+    filledBouts++;
+    homeAgg += homeScore; awayAgg += awayScore;
 
     // Save to Firebase tournament matches
     await fetch(`${TRN_DB}/tournament/matches/${id}.json`, {
@@ -13552,11 +13672,6 @@ window.saveTrnMatchResults = async function() {
         statDelta[p1uid].draws += 1;
         statDelta[p2uid].draws += 1;
       }
-
-      typRecordMatchHistory({
-        homeName: userMap[p1uid].name, awayName: userMap[p2uid].name,
-        homeScore, awayScore, tournament: 'Tournament'
-      });
     }
 
     saved++;
@@ -13579,6 +13694,25 @@ window.saveTrnMatchResults = async function() {
       body: JSON.stringify(updated)
     });
     profilesUpdated++;
+  }
+
+  // ── Team-level match-history record ──
+  // Match Results page-e team vs team result dekhabe (individual player bout
+  // na), tai eই matchup-er shob bout complete hole ekbar-e ekta team-level
+  // record log kora hoy, matchdayControl node-er 'historyLogged' flag diye
+  // guard kore jate ekই fixture-er jonno duplicate record na hoy.
+  if (teamHomeId && teamAwayId && totalBouts > 0 && filledBouts === totalBouts && window._trnCurrentMdcKey) {
+    try {
+      const mdKey = window._trnCurrentMdcKey;
+      const ctrl = await fetch(`${TRN_DB}/tournament/matchdayControl/${mdKey}.json`).then(r => r.json()).catch(() => null);
+      if (!ctrl || !ctrl.historyLogged) {
+        const teamMap = window._trnCurrentTeamMap || {};
+        const htName = (teamMap[teamHomeId] || {}).name || 'Home';
+        const atName = (teamMap[teamAwayId] || {}).name || 'Away';
+        await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: homeAgg, awayScore: awayAgg, tournament: 'Tournament' });
+        await fetch(`${TRN_DB}/tournament/matchdayControl/${mdKey}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: true }) });
+      }
+    } catch (e) { console.warn('team history log failed', e); }
   }
 
   window._allUsersCache = [];
@@ -13833,10 +13967,6 @@ window.saveKnockoutBoutResults = async function(key) {
       if (homeScore > awayScore) { statDelta[p1uid].wins += 1; statDelta[p2uid].losses += 1; }
       else if (awayScore > homeScore) { statDelta[p2uid].wins += 1; statDelta[p1uid].losses += 1; }
       else { statDelta[p1uid].draws += 1; statDelta[p2uid].draws += 1; }
-      typRecordMatchHistory({
-        homeName: p1Name || userMap[p1uid].name, awayName: p2Name || userMap[p2uid].name,
-        homeScore, awayScore, tournament: 'Knockout', round: `Bout ${b.boutNumber || ''}`
-      });
     }
   }
 
@@ -13859,6 +13989,19 @@ window.saveKnockoutBoutResults = async function(key) {
   const payload = { team1: ko.team1, team2: ko.team2, bouts: updatedBouts, score1: homePts, score2: awayPts, status: allDone ? 'completed' : 'pending', updatedAt: new Date().toISOString() };
   await fetch(`${TRN_DB}/tournament/knockout/${key}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
   trnKnockoutCache[key] = { ...ko, ...payload };
+
+  // ── Team-level match-history record (round-name shoho, once per tie, allDone hole) ──
+  if (allDone && !ko.historyLogged) {
+    try {
+      const htName = t1?.name || 'Home';
+      const atName = t2?.name || 'Away';
+      const goalsHome = Object.values(updatedBouts).reduce((s, b) => s + (parseInt(b.homeScore) || 0), 0);
+      const goalsAway = Object.values(updatedBouts).reduce((s, b) => s + (parseInt(b.awayScore) || 0), 0);
+      await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: goalsHome, awayScore: goalsAway, tournament: 'Knockout', round: key.toUpperCase() });
+      await fetch(`${TRN_DB}/tournament/knockout/${key}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: true }) });
+      trnKnockoutCache[key].historyLogged = true;
+    } catch (e) { console.warn('knockout team history log failed', e); }
+  }
 
   const st = document.getElementById('koSaveStatus');
   if (st) { st.textContent = `✅ ${key.toUpperCase()} bout results সেভ হয়েছে! ${Object.keys(statDelta).length} জন player-এর profile আপডেট হয়েছে।`; setTimeout(()=>st.textContent='',4000); }
