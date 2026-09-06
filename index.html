@@ -2676,18 +2676,14 @@ if (document.readyState === 'loading') {
     </div>
 
     <div class="f4m-content active" id="f4mtab-standings">
-      <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
-        <table class="standings-table" id="f4mStandingsTable">
-          <thead>
-            <tr><th>#</th><th>SQUAD</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>AGG F</th><th>AGG A</th><th class="pts-col">PTS</th></tr>
-          </thead>
-          <tbody id="f4mStandingsBody">
-            <tr><td colspan="9" style="padding:40px;color:var(--text3);text-align:center"><span class="spinner"></span></td></tr>
-          </tbody>
-        </table>
+      <div style="margin-bottom:14px;display:flex;justify-content:flex-end">
+        <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="loadF4mStandings()">🔄 Refresh</button>
+      </div>
+      <div id="f4mStandingsWrap">
+        <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
       </div>
       <div style="margin-top:16px;font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-        * প্রতি Matchday-তে ৩টি 1v1 bout মিলিয়ে Aggregate 3v3 রেজাল্ট হয়। বেশি aggregate গোল করা Squad matchday জিতে ৩ পয়েন্ট পায়, ড্র হলে ১ পয়েন্ট করে।
+        * ৪টা Group (A/B/C/D), প্রতি Group-এ ৪টা Squad। প্রতি Matchday-তে ৩টি 1v1 bout মিলিয়ে Aggregate 3v3 রেজাল্ট হয়। বেশি aggregate গোল করা Squad matchday জিতে ৩ পয়েন্ট পায়, ড্র হলে ১ পয়েন্ট করে। প্রতি Group থেকে Top 2 Quarterfinal-এ যাবে।
       </div>
     </div>
 
@@ -9455,39 +9451,45 @@ window.switchF4mTab = function(tab) {
 
 window.loadF4mStandings = async function() {
   await fetchF4mData();
-  const table = {};
-  f4mSquadsCache.forEach(s => { table[s.id] = { id: s.id, name: s.name, tag: s.tag, mp: 0, w: 0, d: 0, l: 0, af: 0, aa: 0, pts: 0 }; });
-  f4mMatchdaysCache.filter(m => m.status === 'completed').forEach(m => {
-    const a = table[m.squadA], b = table[m.squadB];
-    if (!a || !b) return;
-    // ── Auction Tournament convention: matchday winner is decided by summing
-    // 3/1/0 points across each individual bout (not by raw aggregate goals) ──
-    let homePts = 0, awayPts = 0;
-    Object.values(m.bouts || {}).forEach(bt => {
-      const sA = bt.scoreA || 0, sB = bt.scoreB || 0;
-      if (sA > sB) homePts += 3;
-      else if (sB > sA) awayPts += 3;
-      else { homePts += 1; awayPts += 1; }
-      a.af += sA; a.aa += sB;
-      b.af += sB; b.aa += sA;
-    });
-    a.mp++; b.mp++;
-    if (homePts > awayPts) { a.w++; a.pts += 3; b.l++; }
-    else if (awayPts > homePts) { b.w++; b.pts += 3; a.l++; }
-    else { a.d++; b.d++; a.pts += 1; b.pts += 1; }
-  });
-  const rows = Object.values(table).sort((x, y) => y.pts - x.pts || (y.af - y.aa) - (x.af - x.aa));
-  const body = document.getElementById('f4mStandingsBody');
-  if (!body) return;
-  if (!rows.length) { body.innerHTML = `<tr><td colspan="9" style="padding:30px;text-align:center;color:var(--text3)">এখনো কোনো squad নেই।</td></tr>`; return; }
-  body.innerHTML = rows.map((r, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td style="text-align:left;font-weight:700">${r.tag ? ('[' + r.tag + '] ') : ''}${r.name}</td>
-      <td>${r.mp}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td>
-      <td>${r.af}</td><td>${r.aa}</td>
-      <td class="pts-col" style="font-weight:800;color:var(--gold)">${r.pts}</td>
-    </tr>`).join('');
+  const wrap = document.getElementById('f4mStandingsWrap');
+  if (!wrap) return;
+  if (!f4mSquadsCache.length) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">এখনো কোনো squad নেই।</div>`; return; }
+
+  // ── 16-Team format: 4 Group × 4 Squad. Show one standings table per group ──
+  const groups = ['A', 'B', 'C', 'D'].filter(g => f4mSquadsCache.some(s => s.group === g));
+  const ungrouped = f4mSquadsCache.filter(s => !s.group);
+
+  if (!groups.length) {
+    // No squad has a group assigned yet — fall back to a single flat table
+    // so nothing breaks for tournaments that aren't using the group format.
+    wrap.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+      <table class="standings-table">
+        <thead><tr><th>#</th><th>SQUAD</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th class="pts-col">PTS</th></tr></thead>
+        <tbody><tr><td colspan="9" style="padding:30px;text-align:center;color:var(--text3)">এখনো কোনো Squad-কে Group A/B/C/D-তে বসানো হয়নি।</td></tr></tbody>
+      </table>
+    </div>`;
+    return;
+  }
+
+  const groupLabels = { A: '🅰️', B: '🅱️', C: '🅲', D: '🅳' };
+  wrap.innerHTML = groups.map(g => {
+    const rows = calcF4mGroupStandings(g);
+    return `<div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;font-family:'Libre Caslon Text',sans-serif">${groupLabels[g] || ''} Group ${g}</div>
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:22px">
+        <table class="standings-table">
+          <thead><tr><th>#</th><th>SQUAD</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th class="pts-col">PTS</th></tr></thead>
+          <tbody>${rows.length ? rows.map((r, i) => `
+            <tr class="${i < 2 ? 'qual-row' : 'elim-row'}">
+              <td style="font-weight:700;color:${i < 2 ? 'var(--gold)' : 'var(--text3)'}">${i + 1}</td>
+              <td style="text-align:left;font-weight:700">${r.tag ? ('[' + r.tag + '] ') : ''}${r.name}${i < 2 ? ' <span style="font-size:10px;color:var(--green)">✅</span>' : ''}</td>
+              <td>${r.mp}</td><td style="color:var(--green)">${r.w}</td><td style="color:var(--yellow)">${r.d}</td><td style="color:var(--red)">${r.l}</td>
+              <td>${r.gf}</td><td>${r.ga}</td>
+              <td class="pts-col" style="font-weight:800;color:var(--gold)">${r.pts}</td>
+            </tr>`).join('') : `<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--text3)">এখনো কোনো matchday খেলা হয়নি।</td></tr>`}
+          </tbody>
+        </table>
+      </div>`;
+  }).join('') + (ungrouped.length ? `<div style="font-size:12px;color:var(--red);margin-top:6px">⚠️ ${ungrouped.length}টা squad কোনো Group-এ বসানো হয়নি: ${ungrouped.map(s => s.name).join(', ')}</div>` : '');
 };
 
 window.loadF4mSquadsList = async function() {
