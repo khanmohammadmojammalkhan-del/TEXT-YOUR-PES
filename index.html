@@ -1751,6 +1751,21 @@ if (document.readyState === 'loading') {
     </div>
   </div>
 
+  <!-- RECENT MATCHES FEED (COBEG-style dense grid — combines Auction Tournament
+       + 4-Man Tournament results, since match volume got too big for one-at-a-time cards) -->
+  <div class="section" style="padding-top:0;position:relative;overflow:hidden">
+    <div class="section-title">📡 Recent Matches</div>
+    <div class="section-sub">// সব Tournament-এর সাম্প্রতিক ম্যাচ এক জায়গায়</div>
+    <div id="homeMatchFeedTabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="nav-btn active" onclick="setHomeFeedFilter('3d',this)">Last 3d</button>
+      <button class="nav-btn" onclick="setHomeFeedFilter('yesterday',this)">Yesterday</button>
+      <button class="nav-btn" onclick="setHomeFeedFilter('today',this)">Today</button>
+    </div>
+    <div id="homeMatchFeedWrap">
+      <div style="text-align:center;padding:30px;color:var(--text3)"><span class="spinner"></span></div>
+    </div>
+  </div>
+
   <!-- TYP ADMINS GALLERY -->
   <div class="section" style="padding-top:0;position:relative;overflow:hidden">
     <div class="section-title">🛡️ TYP Admins</div>
@@ -2673,6 +2688,7 @@ if (document.readyState === 'loading') {
       <button class="trn-tab f4m-tab active" onclick="switchF4mTab('standings')">📊 Standings</button>
       <button class="trn-tab f4m-tab" onclick="switchF4mTab('matchdays')">📅 Matchdays</button>
       <button class="trn-tab f4m-tab" onclick="switchF4mTab('squads')">👥 Squads</button>
+      <button class="trn-tab f4m-tab" onclick="switchF4mTab('ranking')">🏅 Ranking</button>
     </div>
 
     <div class="f4m-content active" id="f4mtab-standings">
@@ -2695,6 +2711,18 @@ if (document.readyState === 'loading') {
 
     <div class="f4m-content" id="f4mtab-squads">
       <div id="f4mSquadsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+        <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
+      </div>
+    </div>
+
+    <div class="f4m-content" id="f4mtab-ranking">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="form-input" id="f4mRankEditionSelect" onchange="loadF4mRanking()" style="flex:1;min-width:200px;max-width:280px">
+          <option value="current">🔴 Current Edition</option>
+        </select>
+      </div>
+      <div id="f4mRankingBanner" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:600"></div>
+      <div id="f4mRankingWrap">
         <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
       </div>
     </div>
@@ -4000,12 +4028,28 @@ if (document.readyState === 'loading') {
 
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">⚽ Enter Bout Results</div>
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Matchday বাছাই করো — প্রতিটা bout-এ দুই squad থেকে কে কে খেলেছে সেটা dropdown থেকে বাছাই করে score বসাও। Save করলে matchday-র bout-point (3/1/0 প্রতি bout, ঠিক Auction Tournament-এর মতো) হিসাব হবে, player profile (overall + 4-Man breakdown + Match History) অটো আপডেট হবে, আর নিচে থেকে Matchday Card ও MVP Card ডাউনলোড করা যাবে।</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Matchday বাছাই করো — প্রতিটা bout-এ দুই squad থেকে কে কে খেলেছে সেটা dropdown থেকে বাছাই করে score বসাও। Save করলে matchday-র bout-point (3/1/0 প্রতি bout, ঠিক Auction Tournament-এর মতো) হিসাব হবে, player-দের overall Main Ranking stats আর আলাদা 4-Man breakdown — দুটোই অটো আপডেট হবে, আর নিচে থেকে Matchday Card ও MVP Card ডাউনলোড করা যাবে।</p>
     <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <select class="form-input" id="f4mMdSelect" style="flex:1;min-width:220px" onchange="loadF4mMatchdayForEntry()"><option value="">-- Matchday বাছাই করো --</option></select>
       <button class="btn btn-outline" onclick="loadF4mAdminMatchdays()" style="padding:9px 16px;font-size:12px">🔄 Load</button>
     </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+      <span style="font-size:12px;color:var(--text2);white-space:nowrap">📅 এই Matchday কবে খেলা হবে/হয়েছে:</span>
+      <input type="date" class="form-input" id="f4mMdDateInput" style="max-width:170px">
+      <button class="btn btn-outline" onclick="saveF4mMatchdayDate()" style="padding:7px 14px;font-size:12px">💾 তারিখ Save</button>
+      <span id="f4mMdDateStatus" style="font-size:12px"></span>
+      <span style="font-size:11px;color:var(--text3)">— এটা বসালে Home page-এর "Recent Matches" feed-এ এই matchday সঠিক তারিখে দেখাবে, না বসালে সবসময় UPCOMING-এই দেখাবে।</span>
+    </div>
     <div id="f4mMdEntryArea"></div>
+  </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">🏁 Edition Reset (Archive & Start New)</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">এই Edition (Group Stage → KO → Final) শেষ হলে এখানে চাপলে বর্তমান সব Squad, Matchday আর প্রতিটা player-এর 4-Man stats <code>typ4man/editions</code>-এ আর্কাইভ হয়ে যাবে, আর নতুন Edition-এর জন্য Squad/Matchday খালি হয়ে যাবে এবং সবার 4-Man stats শূন্য থেকে শুরু হবে। এটা player-দের Main Season Ranking-এর কোনো সংখ্যা বদলাবে না — শুধু 4-Man-এর নিজস্ব ডেটা রিসেট হয়। এই কাজ Undo করা যাবে না!</p>
+    <input type="text" class="form-input" id="f4mEditionName" placeholder="Edition-এর নাম (ফাঁকা রাখলে auto: Edition 2, Edition 3...)" style="margin-bottom:10px;max-width:360px">
+    <input type="text" class="form-input" id="f4mEditionConfirmInput" placeholder='Confirm করতে এখানে &quot;RESET&quot; লেখো' style="margin-bottom:10px;max-width:360px">
+    <button onclick="doF4mEditionReset()" style="background:linear-gradient(135deg,#ff4757,#c0392b);border:none;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px">🔄 EDITION RESET করো</button>
+    <div id="f4mEditionResetStatus" style="margin-top:10px;font-size:13px"></div>
   </div>
 </div>
 
@@ -7272,6 +7316,7 @@ async function loadHomePageData() {
   loadHomeAdminsGallery();
   loadHomeStats();
   loadHomeLiveMatchday();
+  loadHomeRecentMatchesFeed();
   loadHomeNotice();
   loadHomePlayerCarousel();
 }
@@ -7512,6 +7557,178 @@ async function loadHomeLiveMatchday() {
 }
 
 // ══════════════════════════════════════════
+// 📡 HOME PAGE: Recent Matches feed (COBEG-style dense grid) — pulls
+// Auction Tournament bout groups + 4-Man Tournament matchdays into one
+// combined feed, grouped under a heading per tournament, with a
+// Last-3-days / Yesterday / Today date filter like cobegbd.com.
+// ══════════════════════════════════════════
+window._homeFeedFilter = '3d';
+
+function homeFeedIsoDate(iso) { return iso ? iso.slice(0, 10) : null; }
+function homeFeedShortDate(isoDateStr) {
+  if (!isoDateStr) return '';
+  const d = new Date(isoDateStr + 'T00:00:00');
+  if (isNaN(d)) return isoDateStr;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+window.setHomeFeedFilter = function(filter, btn) {
+  window._homeFeedFilter = filter;
+  document.querySelectorAll('#homeMatchFeedTabs .nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadHomeRecentMatchesFeed();
+};
+
+window.loadHomeRecentMatchesFeed = async function() {
+  const wrap = document.getElementById('homeMatchFeedWrap');
+  if (!wrap) return;
+  wrap.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text3)"><span class="spinner"></span></div>`;
+
+  try {
+    const [trnTeamsSnap, trnMatchesSnap, f4mSquadsSnap, f4mMatchdaysSnap] = await Promise.all([
+      fetch(`${TRN_DB}/tournament/teams.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/tournament/matches.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/typ4man/squads.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/typ4man/matchdays.json`).then(r => r.json())
+    ]);
+    const trnTeams = trnTeamsSnap || {};
+    const trnBouts = trnMatchesSnap ? Object.values(trnMatchesSnap) : [];
+    const f4mSquads = f4mSquadsSnap || {};
+    const f4mMatchdaysWithId = f4mMatchdaysSnap ? Object.entries(f4mMatchdaysSnap).map(([id, v]) => ({ id, ...v })) : [];
+
+    // ── Auction Tournament: each fixture is stored as 3 separate 1v1 bout
+    // rows sharing (day, matchday, homeTeam, awayTeam) — group them back into
+    // one card per fixture and turn bout wins into matchday points (3/1/0),
+    // exactly like loadHomeLiveMatchday() already does. ──
+    const trnGroups = {};
+    trnBouts.forEach(b => {
+      const key = `${b.day}_${b.matchday}_${b.homeTeam}_${b.awayTeam}`;
+      if (!trnGroups[key]) trnGroups[key] = { day: b.day, matchday: b.matchday, homeTeam: b.homeTeam, awayTeam: b.awayTeam, bouts: [] };
+      trnGroups[key].bouts.push(b);
+    });
+    const trnCards = Object.values(trnGroups).map(g => {
+      const ht = trnTeams[g.homeTeam] || {}, at = trnTeams[g.awayTeam] || {};
+      const doneBouts = g.bouts.filter(b => b.homeScore !== undefined && b.awayScore !== undefined);
+      const totalBouts = g.bouts.length;
+      const homeWins = doneBouts.filter(b => b.homeScore > b.awayScore).length;
+      const awayWins = doneBouts.filter(b => b.awayScore > b.homeScore).length;
+      const draws = doneBouts.length - homeWins - awayWins;
+      const anyDone = doneBouts.length > 0;
+      const allDone = anyDone && doneBouts.length === totalBouts;
+      const latestTs = doneBouts.reduce((max, b) => (b.updatedAt && b.updatedAt > max) ? b.updatedAt : max, '');
+      return {
+        tournament: '🏆 TYP Championship (Auction Tournament)',
+        roundLabel: `Day ${g.day ?? '—'} · MD${g.matchday ?? '—'}`,
+        teamA: ht.tag || ht.name || g.homeTeam || '—', teamB: at.tag || at.name || g.awayTeam || '—',
+        teamAFull: ht.name || g.homeTeam || '—', teamBFull: at.name || g.awayTeam || '—',
+        teamALogo: ht.logo || null, teamBLogo: at.logo || null,
+        scoreA: anyDone ? (homeWins * 3 + draws) : null, scoreB: anyDone ? (awayWins * 3 + draws) : null,
+        status: allDone ? 'completed' : (anyDone ? 'live' : 'upcoming'),
+        ts: latestTs || null,
+        clickType: 'trn', clickDay: g.day, clickHomeId: g.homeTeam, clickAwayId: g.awayTeam
+      };
+    });
+
+    // ── 4-Man Tournament: each matchday already stores an aggregate
+    // score (aggScoreA/aggScoreB = summed goals across its 3 bouts). ──
+    const f4mCards = f4mMatchdaysWithId.map(m => {
+      const sa = f4mSquads[m.squadA] || {}, sb = f4mSquads[m.squadB] || {};
+      const done = m.status === 'completed';
+      const roundLabel = m.stage === 'qf' ? 'Quarterfinal' : m.stage === 'sf' ? 'Semifinal' : m.stage === 'final' ? 'Final'
+        : (m.group ? `GRP ${m.group} · Matchday ${f4mMdRoundOf(m)}` : (m.label || 'Matchday'));
+      return {
+        tournament: '🥊 4-Man Auction Tournament',
+        roundLabel,
+        teamA: sa.tag || sa.name || '—', teamB: sb.tag || sb.name || '—',
+        teamAFull: sa.name || '—', teamBFull: sb.name || '—',
+        teamALogo: sa.logo || null, teamBLogo: sb.logo || null,
+        scoreA: done ? m.aggScoreA : null, scoreB: done ? m.aggScoreB : null,
+        status: done ? 'completed' : 'upcoming',
+        ts: m.updatedAt || null,
+        scheduledDate: m.scheduledDate || null,
+        clickType: 'f4m', clickMatchdayId: m.id
+      };
+    });
+
+    window._homeFeedCards = [...trnCards, ...f4mCards];
+    renderHomeMatchFeed();
+  } catch (e) {
+    wrap.innerHTML = `<div class="card text-center" style="padding:30px;color:var(--red)">❌ Match data load হয়নি।</div>`;
+  }
+};
+
+function renderHomeMatchFeed() {
+  const wrap = document.getElementById('homeMatchFeedWrap');
+  if (!wrap) return;
+  const allCards = window._homeFeedCards || [];
+  const filter = window._homeFeedFilter || '3d';
+
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const yestStr = new Date(now.getTime() - 86400000).toISOString().slice(0, 10);
+  const threeDaysAgoStr = new Date(now.getTime() - 2 * 86400000).toISOString().slice(0, 10);
+  const dateMatchesTab = (d) => {
+    if (!d) return false;
+    if (filter === 'today') return d === todayStr;
+    if (filter === 'yesterday') return d === yestStr;
+    return d >= threeDaysAgoStr; // Last 3d window (today + previous 2 days)
+  };
+
+  const playedOrLive = allCards.filter(c => c.status === 'completed' || c.status === 'live');
+  const upcomingDated = allCards.filter(c => c.status === 'upcoming' && c.scheduledDate);
+  const upcomingUndated = allCards.filter(c => c.status === 'upcoming' && !c.scheduledDate);
+
+  const shownPlayed = playedOrLive.filter(c => dateMatchesTab(homeFeedIsoDate(c.ts)));
+  shownPlayed.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+
+  const shownUpcomingDated = upcomingDated.filter(c => dateMatchesTab(c.scheduledDate));
+  shownUpcomingDated.sort((a, b) => (a.scheduledDate || '').localeCompare(b.scheduledDate || ''));
+
+  // Fixtures with no scheduledDate set at all have no date to filter by —
+  // keep showing them (capped) in every tab as a fallback, same as before.
+  const cards = [...shownPlayed, ...shownUpcomingDated, ...upcomingUndated.slice(0, 8)];
+
+  if (!cards.length) {
+    wrap.innerHTML = `<div class="card text-center" style="padding:30px;color:var(--text3)">এই সময়ে কোনো ম্যাচ নেই।</div>`;
+    return;
+  }
+
+  const byTournament = {};
+  cards.forEach(c => { (byTournament[c.tournament] = byTournament[c.tournament] || []).push(c); });
+
+  wrap.innerHTML = Object.entries(byTournament).map(([tname, list]) => `
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin:16px 0 8px;font-family:'Libre Caslon Text',sans-serif;letter-spacing:0.5px">${tname}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">
+      ${list.map(c => `
+        <div onclick="${c.clickType === 'trn' ? `openPublicMatchDetail(${c.clickDay},'${c.clickHomeId}','${c.clickAwayId}')` : c.clickType === 'f4m' ? `openPublicF4mMatchDetail('${c.clickMatchdayId}')` : ''}"
+          style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;transition:border-color 0.15s"
+          onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:10px;color:var(--text3);font-family:'Libre Caslon Text',monospace">${c.roundLabel}</span>
+            ${c.status === 'upcoming' ? `<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text3)">UPCOMING${c.scheduledDate ? ' · ' + homeFeedShortDate(c.scheduledDate) : ''}</span>`
+              : c.status === 'live' ? `<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(245,166,35,0.15);color:var(--yellow)">⏳ LIVE</span>` : ''}
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;margin-bottom:4px" title="${c.teamAFull}">
+            <span style="display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0">
+              ${c.teamALogo ? `<img src="${c.teamALogo}" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:20px;height:20px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🛡️</span>`}
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.teamA}</span>
+            </span>
+            <span style="font-weight:800;color:${c.status !== 'upcoming' ? 'var(--gold)' : 'var(--text3)'}">${c.status !== 'upcoming' ? c.scoreA : ''}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600" title="${c.teamBFull}">
+            <span style="display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0">
+              ${c.teamBLogo ? `<img src="${c.teamBLogo}" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:20px;height:20px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🛡️</span>`}
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.teamB}</span>
+            </span>
+            <span style="font-weight:800;color:${c.status !== 'upcoming' ? 'var(--gold)' : 'var(--text3)'}">${c.status !== 'upcoming' ? c.scoreB : ''}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
 // 🆚 PUBLIC MATCH DETAIL MODAL — je keo (login chara-o) khulte parbe.
 // Fixture (bout list, read-only), "Copy as Text", ar Prediction Voting (kar
 // team jitbe bole vote deya, ek device theke ekbari vote hobe — Ballon d'Or
@@ -7564,8 +7781,33 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
     window._pmdBouts = bouts;
     window._pmdHome = ht;
     window._pmdAway = at;
+    window._pmdCtrl = ctrlSnap || {};
 
     const allDone = bouts.length > 0 && bouts.every(b => b.status === 'completed');
+
+    // allDone hole matchday-r point (3/1/0 per bout, Auction Tournament-er system)
+    // ar total goal dutoi upore dekhabo — public ra full match ta ek nojore dekhte parbe.
+    let pmdSummaryHtml = '';
+    if (allDone) {
+      let homeWins = 0, awayWins = 0, draws = 0;
+      let homeGoals = 0, awayGoals = 0;
+      bouts.forEach(b => {
+        const hs = parseInt(b.homeScore) || 0, as_ = parseInt(b.awayScore) || 0;
+        homeGoals += hs; awayGoals += as_;
+        if (hs > as_) homeWins++; else if (as_ > hs) awayWins++; else draws++;
+      });
+      const homePts = homeWins * 3 + draws, awayPts = awayWins * 3 + draws;
+      pmdSummaryHtml = `
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Final Result</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+          <span style="font-size:13px;font-weight:700;text-align:right;flex:1">${ht.name || 'Home'}</span>
+          <span style="font-size:26px;font-weight:800;color:var(--gold)">${homePts} – ${awayPts}</span>
+          <span style="font-size:13px;font-weight:700;text-align:left;flex:1">${at.name || 'Away'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Goals: ${homeGoals} – ${awayGoals}</div>
+      </div>`;
+    }
 
     const boutRows = bouts.length ? bouts.map((b, i) => {
       const dl = i < 3 ? '1st DL' : '2nd DL';
@@ -7580,9 +7822,11 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
     }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো fixture draw হয়নি — দুই দলের manager lineup submit করলে ও deadline শেষ হলে admin draw করবে।</div>';
 
     body.innerHTML = `
+      ${pmdSummaryHtml}
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
         ${boutRows}
         ${bouts.length ? `<button class="btn btn-outline" onclick="pmdCopyFixtureText()" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>` : ''}
+        ${allDone ? `<button class="btn btn-outline" onclick="pmdDownloadMatchCard()" style="margin-top:8px;padding:8px 14px;font-size:12px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">📸 Download Match Card</button>` : ''}
       </div>
       <div id="pmdPredictionArea"><div style="text-align:center;padding:14px"><span class="spinner"></span></div></div>
     `;
@@ -7710,6 +7954,123 @@ async function pmdRenderPrediction(matchDone) {
     <div id="pmdVoteStatus" style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center"></div>
   </div>`;
 }
+
+// Public Match Detail theke matchday shesh howar por je keu (admin chhara o) matchday
+// result card download korte parbe — thik Matchday Control-er "📸 Download Match Card"
+// button-er moto, kintu already-fetched public bouts/teams data byabohar kore (admin-only
+// DOM inputs er upor nirbhor kore na), tai homepage theke direct download kaj korbe.
+window.pmdDownloadMatchCard = async function() {
+  const bouts = window._pmdBouts || [];
+  const ht = window._pmdHome || {};
+  const at = window._pmdAway || {};
+  const ctrl = window._pmdCtrl || {};
+  if (!bouts.length || !bouts.every(b => b.status === 'completed')) {
+    alert('⚠️ ম্যাচের সব bout এখনো শেষ হয়নি।');
+    return;
+  }
+  const dayVal = bouts[0].matchday || 'Matchday ?';
+  const overrideMvpName = ctrl.manualMvpName || '';
+  await _renderResultCard({
+    matches: bouts,
+    homeTeam: ht,
+    awayTeam: at,
+    dayVal,
+    fileSuffix: `${ht.name || 'Home'}-vs-${at.name || 'Away'}`,
+    overrideMvpName
+  });
+};
+
+// ══════════════════════════════════════════
+// 🥊 PUBLIC 4-MAN TOURNAMENT MATCH DETAIL — same publicMatchModal hishebe khule,
+// kintu 4-Man-er data shape Auction Tournament theke alada (bouts object b1/b2/b3
+// shorashori matchday record-er bhitore thake, squad vs squad, player UID diye
+// resolve korte hoy), tai fixture বানানো আলাদা কোরে লেখা হয়েছে। Prediction voting আর
+// Download Match Card — দুটোই আগে থেকে থাকা shared function (pmdRenderPrediction,
+// pmdDownloadMatchCard) reuse করে, শুধু ওগুলোর জন্য দরকারি window._pmd* variable গুলো
+// এখানে 4-Man shape দিয়ে বসিয়ে দেই।
+window.openPublicF4mMatchDetail = async function(matchdayId) {
+  const modal = document.getElementById('publicMatchModal');
+  const body = document.getElementById('pmdBody');
+  document.getElementById('pmdTitle').textContent = '🆚 Match Detail';
+  body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
+  modal.classList.add('show');
+
+  try {
+    const [mdSnap, squadsSnap, users] = await Promise.all([
+      fetch(`${TRN_DB}/typ4man/matchdays/${matchdayId}.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/typ4man/squads.json`).then(r => r.json()),
+      getAllUsers()
+    ]);
+    if (!mdSnap) {
+      body.innerHTML = '<div style="color:var(--red);font-size:13px;text-align:center;padding:20px">❌ Matchday খুঁজে পাওয়া যায়নি।</div>';
+      return;
+    }
+    const squads = squadsSnap || {};
+    const sa = squads[mdSnap.squadA] || {};
+    const sb = squads[mdSnap.squadB] || {};
+    const ht = { name: sa.name || sa.tag || 'Squad A', emoji: sa.emoji || '🛡️' };
+    const at = { name: sb.name || sb.tag || 'Squad B', emoji: sb.emoji || '🛡️' };
+
+    const nameOf = (uid) => { const u = users.find(x => x.uid === uid); return u ? u.name : '—'; };
+    const mdLabel = mdSnap.label || (mdSnap.group ? `GRP ${mdSnap.group} Matchday` : 'Matchday');
+    const boutKeys = Object.keys(mdSnap.bouts || {}).sort();
+    const bouts = boutKeys.map((k, i) => {
+      const b = mdSnap.bouts[k] || {};
+      return {
+        boutNumber: i + 1,
+        player1: nameOf(b.playerAUid),
+        player2: nameOf(b.playerBUid),
+        homeScore: b.scoreA, awayScore: b.scoreB,
+        status: b.done ? 'completed' : 'pending',
+        matchday: mdLabel
+      };
+    });
+
+    document.getElementById('pmdTitle').textContent = `🆚 ${ht.name} vs ${at.name}`;
+    window._pmdKey = `f4m_${matchdayId}`;
+    window._pmdBouts = bouts;
+    window._pmdHome = ht;
+    window._pmdAway = at;
+    window._pmdCtrl = {};
+
+    const allDone = mdSnap.status === 'completed' && bouts.length > 0 && bouts.every(b => b.status === 'completed');
+
+    const summaryHtml = allDone ? `
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Final Result</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px">
+          <span style="font-size:13px;font-weight:700;text-align:right;flex:1">${ht.name}</span>
+          <span style="font-size:26px;font-weight:800;color:var(--gold)">${mdSnap.aggScoreA} – ${mdSnap.aggScoreB}</span>
+          <span style="font-size:13px;font-weight:700;text-align:left;flex:1">${at.name}</span>
+        </div>
+      </div>` : '';
+
+    const boutRows = bouts.length ? bouts.map(b => {
+      const done = b.status === 'completed';
+      const scoreTxt = done ? `<span style="color:var(--gold);font-weight:700;padding:0 6px">${b.homeScore} – ${b.awayScore}</span>` : `<span style="color:var(--text3);padding:0 6px">vs</span>`;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text3);min-width:52px;font-size:10px">Bout ${b.boutNumber} ${done ? '✅' : ''}</span>
+        <span style="flex:1">${b.player1}</span>
+        ${scoreTxt}
+        <span style="flex:1;text-align:right">${b.player2}</span>
+      </div>`;
+    }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো bout draw হয়নি — দুই squad-এর manager lineup submit করলে ও deadline শেষ হলে admin draw করবে।</div>';
+
+    body.innerHTML = `
+      ${summaryHtml}
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        ${boutRows}
+        ${allDone ? `<button class="btn btn-outline" onclick="pmdDownloadMatchCard()" style="margin-top:10px;padding:8px 14px;font-size:12px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">📸 Download Match Card</button>` : ''}
+      </div>
+      <div id="pmdPredictionArea"><div style="text-align:center;padding:14px"><span class="spinner"></span></div></div>
+    `;
+
+    await pmdRenderPrediction(allDone);
+  } catch (e) {
+    console.error('4-Man match detail error:', e);
+    body.innerHTML = '<div style="color:var(--red);font-size:13px;text-align:center;padding:20px">❌ Load হয়নি।</div>';
+  }
+};
 
 window.pmdSubmitVote = async function(pick) {
   const key = window._pmdKey;
@@ -9488,6 +9849,7 @@ window.switchF4mTab = function(tab) {
   if (tab === 'standings') loadF4mStandings();
   if (tab === 'matchdays') loadF4mMatchdaysList();
   if (tab === 'squads') loadF4mSquadsList();
+  if (tab === 'ranking') loadF4mRankingEditionOptions();
 };
 
 window.loadF4mStandings = async function() {
@@ -9594,6 +9956,108 @@ window.loadF4mMatchdaysList = async function() {
       ${cards}
     </div>`;
   }).join('');
+};
+
+// ── PUBLIC: 4-Man Ranking (edition-wise, mirrors the Main Ranking's
+// season selector but scoped to this tournament's own stats4man data) ──
+window.loadF4mRankingEditionOptions = async function() {
+  const sel = document.getElementById('f4mRankEditionSelect');
+  if (!sel) return;
+  try {
+    const res = await fetch(`${F4M_DB}/typ4man/editions.json?shallow=true`);
+    const data = await res.json();
+    const keys = data ? Object.keys(data) : [];
+    // Fetch each archived edition's display name
+    const names = await Promise.all(keys.map(k => fetch(`${F4M_DB}/typ4man/editions/${k}/editionName.json`).then(r => r.json())));
+    const archivedOpts = keys.map((k, i) => `<option value="${k}">📁 ${names[i] || k.replace(/_/g, ' ')}</option>`).join('');
+    sel.innerHTML = `<option value="current">🔴 Current Edition</option>${archivedOpts}`;
+  } catch (e) { /* archived list is optional — current edition still loads */ }
+  loadF4mRanking();
+};
+
+window.loadF4mRanking = async function() {
+  const wrap = document.getElementById('f4mRankingWrap');
+  const banner = document.getElementById('f4mRankingBanner');
+  if (!wrap) return;
+  const sel = document.getElementById('f4mRankEditionSelect');
+  const editionKey = sel ? sel.value : 'current';
+  wrap.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>`;
+
+  let rows = [];
+  try {
+    if (editionKey === 'current') {
+      if (banner) { banner.style.display = 'block'; banner.style.borderColor = 'var(--cyan)'; banner.style.color = 'var(--cyan)'; banner.innerHTML = '🔴 চলতি Edition-এর live ranking দেখছো।'; }
+      const users = await getAllUsers();
+      rows = users.filter(u => u.stats4man && (u.stats4man.matches || 0) > 0).map(u => ({ uid: u.uid, name: u.name, avatarUrl: u.avatarUrl, ...u.stats4man }));
+    } else {
+      const res = await fetch(`${F4M_DB}/typ4man/editions/${editionKey}.json`);
+      const ed = await res.json();
+      if (banner) { banner.style.display = 'block'; banner.style.borderColor = 'var(--yellow)'; banner.style.color = 'var(--yellow)'; banner.innerHTML = `📁 আর্কাইভ করা Edition দেখছো: <b>${ed && ed.editionName ? ed.editionName : editionKey.replace(/_/g, ' ')}</b> — এটা read-only history।`; }
+      const users = await getAllUsers();
+      const userMap = {}; users.forEach(u => { userMap[u.uid] = u; });
+      const playerStats = (ed && ed.playerStats) || {};
+      rows = Object.entries(playerStats).filter(([, s]) => (s.matches || 0) > 0).map(([uid, s]) => ({ uid, name: userMap[uid] ? userMap[uid].name : '—', avatarUrl: userMap[uid] ? userMap[uid].avatarUrl : null, ...s }));
+    }
+  } catch (e) {
+    wrap.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--red)">❌ Data load হয়নি। Error: ${e.message}</div>`;
+    return;
+  }
+
+  if (!rows.length) { wrap.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--text3)">এখনো কোনো 4-Man ম্যাচ খেলা হয়নি।</div>`; return; }
+
+  rows.sort((a, b) => {
+    const sa = (a.wins || 0) * 3 + (a.draws || 0) * 1;
+    const sb = (b.wins || 0) * 3 + (b.draws || 0) * 1;
+    if (sb !== sa) return sb - sa;
+    if ((b.wins || 0) !== (a.wins || 0)) return (b.wins || 0) - (a.wins || 0);
+    return (b.goalsFor || 0) - (a.goalsFor || 0);
+  });
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const bodyRows = rows.map((p, i) => {
+    const rank = i + 1;
+    const medal = medals[rank - 1] || '';
+    const bg = rank <= 3 ? `background:linear-gradient(90deg,rgba(245,166,35,${0.08 - i * 0.02}),transparent)` : '';
+    const wl = (p.wins || 0) + (p.losses || 0);
+    const wp = wl > 0 ? Math.min(100, ((p.wins || 0) / wl * 100)).toFixed(1) : '0.0';
+    const avatar = p.avatarUrl
+      ? `<img src="${p.avatarUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);vertical-align:middle;margin-right:8px">`
+      : `<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);align-items:center;justify-content:center;font-size:14px;margin-right:8px;vertical-align:middle">🎮</span>`;
+    return `<tr style="${bg}">
+      <td style="padding:12px 16px;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:${rank <= 3 ? 'var(--gold)' : 'var(--text3)'}">${medal} ${rank}</td>
+      <td style="padding:12px 16px">
+        <div style="display:flex;align-items:center;cursor:pointer" onclick="openPublicProfile('${p.uid}')">
+          ${avatar}<div style="font-weight:600;color:var(--cyan);text-decoration:underline dotted;text-underline-offset:3px">${p.name || '—'}</div>
+        </div>
+      </td>
+      <td style="padding:12px 16px;text-align:center">${p.matches || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--green)">${p.wins || 0}</td>
+      <td style="padding:12px 16px;text-align:center">${p.draws || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--red)">${p.losses || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--cyan)">${wp}%</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--yellow);font-weight:700">${p.goalsFor || 0}</td>
+      <td style="padding:12px 16px;text-align:center;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:var(--cyan)">${(p.wins || 0) * 3 + (p.draws || 0) * 1}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+    <table style="width:100%;border-collapse:collapse;background:var(--card);min-width:600px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',monospace;letter-spacing:1px">#</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',monospace;letter-spacing:1px">PLAYER</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">M</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">W</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--yellow);font-family:'Libre Caslon Text',sans-serif">D</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--red);font-family:'Libre Caslon Text',sans-serif">L</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">WIN%</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--yellow);font-family:'Libre Caslon Text',sans-serif">⚽ GOALS</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--cyan);font-family:'Libre Caslon Text',sans-serif">⭐ PTS</th>
+        </tr>
+      </thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+  </div>`;
 };
 
 // ── ADMIN: Squad management ──
@@ -9996,14 +10460,40 @@ window.loadF4mAdminMatchdays = async function() {
   renderF4mKoBracket();
   const area = document.getElementById('f4mMdEntryArea');
   if (area) area.innerHTML = '';
+  const dateInput = document.getElementById('f4mMdDateInput');
+  if (dateInput) dateInput.value = '';
+};
+
+// ── Lets admin attach a real calendar date to a matchday (created singly or
+// via the 16-Team bulk fixture generator, which can't assign per-match dates
+// on its own). Home page's Recent Matches feed uses this scheduledDate to
+// filter Today/Yesterday/Last-3d correctly, including for not-yet-played
+// (upcoming) matchdays which otherwise have no date to filter by at all. ──
+window.saveF4mMatchdayDate = async function() {
+  const id = document.getElementById('f4mMdSelect').value;
+  const statusEl = document.getElementById('f4mMdDateStatus');
+  const dateVal = document.getElementById('f4mMdDateInput').value;
+  if (!id) { statusEl.innerHTML = '<span style="color:var(--red)">⚠️ আগে একটা Matchday বাছাই করো।</span>'; return; }
+  if (!dateVal) { statusEl.innerHTML = '<span style="color:var(--red)">⚠️ একটা তারিখ বাছাই করো।</span>'; return; }
+  try {
+    await fetch(`${F4M_DB}/typ4man/matchdays/${id}/scheduledDate.json`, { method: 'PUT', body: JSON.stringify(dateVal) });
+    const m = f4mMatchdaysCache.find(x => x.id === id);
+    if (m) m.scheduledDate = dateVal;
+    statusEl.innerHTML = '<span style="color:var(--green)">✅ Saved!</span>';
+    setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3000);
+  } catch (e) {
+    statusEl.innerHTML = `<span style="color:var(--red)">❌ Error: ${e.message}</span>`;
+  }
 };
 
 window.loadF4mMatchdayForEntry = async function() {
   const id = document.getElementById('f4mMdSelect').value;
   const area = document.getElementById('f4mMdEntryArea');
-  if (!id) { area.innerHTML = ''; return; }
+  const dateInput = document.getElementById('f4mMdDateInput');
+  if (!id) { area.innerHTML = ''; if (dateInput) dateInput.value = ''; return; }
   const m = f4mMatchdaysCache.find(x => x.id === id);
-  if (!m) { area.innerHTML = ''; return; }
+  if (!m) { area.innerHTML = ''; if (dateInput) dateInput.value = ''; return; }
+  if (dateInput) dateInput.value = m.scheduledDate || '';
   let mdSubs = {};
   if (m.drawn) {
     try { const r = await fetch(`${F4M_DB}/typ4man/matchdaySubs/${id}.json`); mdSubs = (await r.json()) || {}; } catch (e) {}
@@ -10745,7 +11235,9 @@ window.saveF4mMatchdayResults = async function(mid) {
     } catch (e) { console.warn('4-man history log failed', e); }
   }
 
-  // Flush player stat deltas — overall career stats + separate 4-Man breakdown
+  // Flush player stat deltas — overall career stats (feeds the Main Season
+  // Ranking) AND the separate 4-Man breakdown (feeds the 4-Man Edition
+  // Ranking). Per your call: 4-Man results DO count toward Main Ranking.
   for (const [uid, delta] of Object.entries(statDelta)) {
     const base = userMap[uid];
     if (!base) continue;
@@ -10779,6 +11271,69 @@ window.saveF4mMatchdayResults = async function(mid) {
   await loadF4mMatchdayForEntry();
   const statusEl2 = document.getElementById('f4mSaveStatus');
   if (statusEl2) { statusEl2.textContent = `✅ Saved! ${Object.keys(statDelta).length} player profile updated.`; statusEl2.style.color = 'var(--green)'; }
+};
+
+// ── Edition Reset: archive current 16-Team edition (squads + matchdays +
+// every player's stats4man) under typ4man/editions/<key>, then clear the
+// live squads/matchdays and zero out stats4man so a fresh edition can start.
+// Mirrors doSeasonReset()'s archive-then-clear pattern for the main league,
+// but scoped entirely to the 4-Man tournament's own data — it never touches
+// a player's Main Season Ranking numbers. ──
+window.doF4mEditionReset = async function() {
+  const statusEl = document.getElementById('f4mEditionResetStatus');
+  const confirmVal = (document.getElementById('f4mEditionConfirmInput').value || '').trim();
+  if (confirmVal !== 'RESET') {
+    statusEl.innerHTML = '<span style="color:var(--red)">❌ "RESET" লেখো confirmation box-এ।</span>';
+    return;
+  }
+
+  statusEl.innerHTML = '<span style="color:var(--yellow)">⏳ Archiving...</span>';
+  try {
+    await fetchF4mData();
+    if (!f4mUsersCache.length) f4mUsersCache = await getAllUsers();
+
+    const editionsRes = await fetch(`${F4M_DB}/typ4man/editions.json?shallow=true`);
+    const existingEditions = await editionsRes.json();
+    const editionCount = existingEditions ? Object.keys(existingEditions).length : 0;
+    const editionName = (document.getElementById('f4mEditionName').value || '').trim() || `Edition ${editionCount + 1}`;
+    const editionKey = editionName.replace(/\s+/g, '_');
+
+    const squadsObj = {};
+    f4mSquadsCache.forEach(s => { const { id, ...rest } = s; squadsObj[id] = rest; });
+    const matchdaysObj = {};
+    f4mMatchdaysCache.forEach(m => { const { id, ...rest } = m; matchdaysObj[id] = rest; });
+    const playerStats = {};
+    f4mUsersCache.forEach(u => { if (u.stats4man) playerStats[u.uid] = u.stats4man; });
+
+    const archivePayload = {
+      archivedAt: new Date().toISOString(),
+      editionName,
+      squads: squadsObj,
+      matchdays: matchdaysObj,
+      playerStats
+    };
+    await fetch(`${F4M_DB}/typ4man/editions/${editionKey}.json`, { method: 'PUT', body: JSON.stringify(archivePayload) });
+
+    statusEl.innerHTML = '<span style="color:var(--cyan)">✅ Archive done! Resetting stats...</span>';
+
+    // Zero out every player's 4-Man breakdown (keep the node, not delete it,
+    // so the Ranking UI always has a consistent shape to read).
+    await Promise.all(f4mUsersCache.filter(u => u.stats4man).map(u =>
+      fetch(`${F4M_DB}/users/${u.uid}/stats4man.json`, { method: 'PUT', body: JSON.stringify({ matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0 }) })
+    ));
+
+    await fetch(`${F4M_DB}/typ4man/squads.json`, { method: 'DELETE' });
+    await fetch(`${F4M_DB}/typ4man/matchdays.json`, { method: 'DELETE' });
+
+    statusEl.innerHTML = `<span style="color:var(--green)">🎉 "${editionName}" আর্কাইভ হয়ে গেছে! Squad, Matchday, আর সবার 4-Man stats রিসেট — নতুন Edition শুরু করার জন্য প্রস্তুত।</span>`;
+    document.getElementById('f4mEditionConfirmInput').value = '';
+    document.getElementById('f4mEditionName').value = '';
+    window._allUsersCache = [];
+    if (typeof loadF4mAdminSquads === 'function') loadF4mAdminSquads();
+    await loadF4mAdminMatchdays();
+  } catch (e) {
+    statusEl.innerHTML = `<span style="color:var(--red)">❌ Error: ${e.message}</span>`;
+  }
 };
 
 // ════════════════════════════════════════════════════════
