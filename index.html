@@ -4174,14 +4174,43 @@ if (document.readyState === 'loading') {
   </div>
 </div>
 
-<!-- PUBLIC MATCH DETAIL MODAL (fixture view + prediction voting, everyone can see) -->
-<div class="modal-overlay" id="publicMatchModal">
-  <div class="modal-box" style="max-width:480px;max-height:85vh;overflow-y:auto">
-    <div class="modal-title" id="pmdTitle">🆚 Match Detail</div>
-    <div id="pmdBody"><div style="text-align:center;padding:30px"><span class="spinner"></span></div></div>
-    <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="document.getElementById('publicMatchModal').classList.remove('show')">Close</button>
+<!-- PUBLIC MATCH DETAIL PAGE (fixture view + prediction voting, everyone can see) -->
+<!-- Full-screen overlay (not a small centered popup) so it reads as its own
+     page, like a dedicated match page — back arrow top-left, big team logos
+     + score header, then the Details/Lineup/Table tabs below. -->
+<div class="modal-overlay" id="publicMatchModal" style="background:var(--bg2,#0b1830);padding:0;align-items:stretch;justify-content:stretch;backdrop-filter:none">
+  <div class="modal-box" id="pmdPageBox" style="max-width:600px;width:100%;height:100%;max-height:100vh;margin:0 auto;overflow-y:auto;border-radius:0;padding:0;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)">
+      <button onclick="document.getElementById('publicMatchModal').classList.remove('show')" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:4px 8px 4px 0">←</button>
+      <div style="font-size:12px;color:var(--text3)" id="pmdDateLine"></div>
+    </div>
+    <div style="padding:18px 16px 4px;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:18px">
+        <div style="flex:1;text-align:center">
+          <img id="pmdHomeLogo" src="" alt="" style="width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--card2);border:1px solid var(--border);display:none" />
+          <div id="pmdHomeEmoji" style="font-size:40px;line-height:56px"></div>
+          <div id="pmdHomeName" style="font-size:12px;font-weight:700;margin-top:6px"></div>
+        </div>
+        <div style="min-width:90px" id="pmdScoreBlock">
+          <div id="pmdScoreLine" style="font-size:26px;font-weight:800;color:var(--gold)">vs</div>
+          <div id="pmdSubLine" style="font-size:10px;color:var(--text3);margin-top:2px"></div>
+        </div>
+        <div style="flex:1;text-align:center">
+          <img id="pmdAwayLogo" src="" alt="" style="width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--card2);border:1px solid var(--border);display:none" />
+          <div id="pmdAwayEmoji" style="font-size:40px;line-height:56px"></div>
+          <div id="pmdAwayName" style="font-size:12px;font-weight:700;margin-top:6px"></div>
+        </div>
+      </div>
+    </div>
+    <div id="pmdTabs" style="display:flex;gap:4px;margin:14px 16px 0;border-bottom:1px solid var(--border)">
+      <button class="pmd-tab-btn" data-tab="details" onclick="pmdSwitchTab('details')" style="flex:1;background:none;border:none;padding:8px 4px;font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent">Details</button>
+      <button class="pmd-tab-btn" data-tab="lineup" onclick="pmdSwitchTab('lineup')" style="flex:1;background:none;border:none;padding:8px 4px;font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent">Lineup</button>
+      <button class="pmd-tab-btn" data-tab="table" onclick="pmdSwitchTab('table')" style="flex:1;background:none;border:none;padding:8px 4px;font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent">Table</button>
+    </div>
+    <div id="pmdBody" style="padding:16px;flex:1;overflow-y:auto"><div style="text-align:center;padding:30px"><span class="spinner"></span></div></div>
   </div>
 </div>
+
 
 <!-- MANAGER LOGIN MODAL -->
 <div class="modal-overlay" id="managerLoginModal">
@@ -7625,6 +7654,8 @@ window.loadHomeRecentMatchesFeed = async function() {
         scoreA: anyDone ? (homeWins * 3 + draws) : null, scoreB: anyDone ? (awayWins * 3 + draws) : null,
         status: allDone ? 'completed' : (anyDone ? 'live' : 'upcoming'),
         ts: latestTs || null,
+        sortKey: (Number(g.day) || 0) * 1000 + (Number(g.matchday) || 0),
+        groupKey: 'main',
         clickType: 'trn', clickDay: g.day, clickHomeId: g.homeTeam, clickAwayId: g.awayTeam
       };
     });
@@ -7636,6 +7667,12 @@ window.loadHomeRecentMatchesFeed = async function() {
       const done = m.status === 'completed';
       const roundLabel = m.stage === 'qf' ? 'Quarterfinal' : m.stage === 'sf' ? 'Semifinal' : m.stage === 'final' ? 'Final'
         : (m.group ? `GRP ${m.group} · Matchday ${f4mMdRoundOf(m)}` : (m.label || 'Matchday'));
+      // Sort key so group-stage matches always list in proper order
+      // (Group A→D, Round 1→3) then knockout — instead of whatever
+      // arbitrary order Firebase happens to return the raw keys in.
+      const stageRank = { group: 0, qf: 1, sf: 2, final: 3 }[m.stage] ?? 0;
+      const groupRank = m.group ? m.group.charCodeAt(0) : 0;
+      const sortKey = stageRank * 100000 + groupRank * 1000 + f4mMdRoundOf(m);
       return {
         tournament: '🥊 4-Man Auction Tournament',
         roundLabel,
@@ -7646,6 +7683,8 @@ window.loadHomeRecentMatchesFeed = async function() {
         status: done ? 'completed' : 'upcoming',
         ts: m.updatedAt || null,
         scheduledDate: m.scheduledDate || null,
+        sortKey,
+        groupKey: m.stage === 'group' ? `grp_${m.group || '?'}` : (m.stage || 'ko'),
         clickType: 'f4m', clickMatchdayId: m.id
       };
     });
@@ -7686,7 +7725,41 @@ function renderHomeMatchFeed() {
 
   // Fixtures with no scheduledDate set at all have no date to filter by —
   // keep showing them (capped) in every tab as a fallback, same as before.
-  const cards = [...shownPlayed, ...shownUpcomingDated, ...upcomingUndated.slice(0, 8)];
+  // Sort by tournament first (so 4-Man and Auction Tournament cards don't
+  // interleave), then by sortKey (Group A→D, Matchday 1→N) so the earliest
+  // not-yet-played round always shows first instead of whatever arbitrary
+  // order Firebase happened to return the raw fixture keys in.
+  // Bucket by tournament + group (GRP A / GRP B / GRP C / GRP D / knockout
+  // stage / main tournament) so a single group's matches can't hog every
+  // slot — round-robin across buckets picking each group's next-earliest
+  // matchday in turn, so every group is represented before any group's
+  // later rounds show up.
+  const undatedBuckets = {};
+  [...upcomingUndated]
+    .sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0))
+    .forEach(c => {
+      const key = `${c.tournament}||${c.groupKey || 'x'}`;
+      (undatedBuckets[key] = undatedBuckets[key] || []).push(c);
+    });
+  const bucketKeys = Object.keys(undatedBuckets).sort((ka, kb) => {
+    const a = undatedBuckets[ka][0], b = undatedBuckets[kb][0];
+    if (a.tournament !== b.tournament) return a.tournament.localeCompare(b.tournament);
+    return (a.groupKey || '').localeCompare(b.groupKey || '');
+  });
+  const UNDATED_CAP = 24; // covers all rounds of a 4-group stage (4 × 3 rounds × 2 matches)
+  const upcomingUndatedSorted = [];
+  let anyLeft = true;
+  while (anyLeft && upcomingUndatedSorted.length < UNDATED_CAP) {
+    anyLeft = false;
+    for (const key of bucketKeys) {
+      if (undatedBuckets[key].length) {
+        upcomingUndatedSorted.push(undatedBuckets[key].shift());
+        anyLeft = true;
+        if (upcomingUndatedSorted.length >= UNDATED_CAP) break;
+      }
+    }
+  }
+  const cards = [...shownPlayed, ...shownUpcomingDated, ...upcomingUndatedSorted];
 
   if (!cards.length) {
     wrap.innerHTML = `<div class="card text-center" style="padding:30px;color:var(--text3)">এই সময়ে কোনো ম্যাচ নেই।</div>`;
@@ -7750,7 +7823,7 @@ function pmdGetDeviceFp() {
 window.openPublicMatchDetail = async function(day, homeId, awayId) {
   const modal = document.getElementById('publicMatchModal');
   const body = document.getElementById('pmdBody');
-  document.getElementById('pmdTitle').textContent = '🆚 Match Detail';
+  pmdSetHeaderLoading();
   body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
   modal.classList.add('show');
 
@@ -7776,27 +7849,34 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
           .sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0))
       : [];
 
-    document.getElementById('pmdTitle').textContent = `🆚 ${ht.name || 'Home'} vs ${at.name || 'Away'}`;
     window._pmdKey = key;
     window._pmdBouts = bouts;
     window._pmdHome = ht;
     window._pmdAway = at;
+    window._pmdHomeId = homeId;
+    window._pmdAwayId = awayId;
     window._pmdCtrl = ctrlSnap || {};
+    window._pmdMode = 'trn';
+    window._pmdAllTeams = teams;
+    window._pmdAllMatches = allMatches;
+    window._pmdGroup = null;
 
     const allDone = bouts.length > 0 && bouts.every(b => b.status === 'completed');
+    window._pmdAllDone = allDone;
+    const completedCount = bouts.filter(b => b.status === 'completed').length;
 
     // allDone hole matchday-r point (3/1/0 per bout, Auction Tournament-er system)
     // ar total goal dutoi upore dekhabo — public ra full match ta ek nojore dekhte parbe.
     let pmdSummaryHtml = '';
+    let homePts = 0, awayPts = 0, homeGoals = 0, awayGoals = 0;
     if (allDone) {
       let homeWins = 0, awayWins = 0, draws = 0;
-      let homeGoals = 0, awayGoals = 0;
       bouts.forEach(b => {
         const hs = parseInt(b.homeScore) || 0, as_ = parseInt(b.awayScore) || 0;
         homeGoals += hs; awayGoals += as_;
         if (hs > as_) homeWins++; else if (as_ > hs) awayWins++; else draws++;
       });
-      const homePts = homeWins * 3 + draws, awayPts = awayWins * 3 + draws;
+      homePts = homeWins * 3 + draws; awayPts = awayWins * 3 + draws;
       pmdSummaryHtml = `
       <div style="text-align:center;margin-bottom:14px">
         <div style="font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Final Result</div>
@@ -7821,22 +7901,243 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
       </div>`;
     }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো fixture draw হয়নি — দুই দলের manager lineup submit করলে ও deadline শেষ হলে admin draw করবে।</div>';
 
-    body.innerHTML = `
-      ${pmdSummaryHtml}
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
-        ${boutRows}
+    window._pmdSummaryHtml = pmdSummaryHtml;
+    window._pmdBoutRowsHtml = boutRows;
+    window._pmdExtraButtonsHtml = `
         ${bouts.length ? `<button class="btn btn-outline" onclick="pmdCopyFixtureText()" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>` : ''}
-        ${allDone ? `<button class="btn btn-outline" onclick="pmdDownloadMatchCard()" style="margin-top:8px;padding:8px 14px;font-size:12px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">📸 Download Match Card</button>` : ''}
-      </div>
-      <div id="pmdPredictionArea"><div style="text-align:center;padding:14px"><span class="spinner"></span></div></div>
-    `;
+        ${allDone ? `<button class="btn btn-outline" onclick="pmdDownloadMatchCard()" style="margin-top:8px;padding:8px 14px;font-size:12px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">📸 Download Match Card</button>` : ''}`;
 
-    await pmdRenderPrediction(allDone);
+    pmdSetHeader(ht, at, {
+      scoreLine: allDone ? `${homePts} – ${awayPts}` : 'VS',
+      subLine: bouts.length ? `${completedCount} OF ${bouts.length} PLAYED` : '',
+      dateLine: `Matchday ${day}`
+    });
+
+    pmdSwitchTab('details');
   } catch (e) {
     console.error('Match detail error:', e);
     body.innerHTML = '<div style="color:var(--red);font-size:13px;text-align:center;padding:20px">❌ Load হয়নি।</div>';
   }
 };
+
+// ── Match Detail page: header (logos, names, score) + tab system ──
+function pmdSetHeaderLoading() {
+  ['Home', 'Away'].forEach(prefix => {
+    const logoEl = document.getElementById(`pmd${prefix}Logo`);
+    const emojiEl = document.getElementById(`pmd${prefix}Emoji`);
+    const nameEl = document.getElementById(`pmd${prefix}Name`);
+    if (logoEl) logoEl.style.display = 'none';
+    if (emojiEl) emojiEl.textContent = '';
+    if (nameEl) nameEl.textContent = '';
+  });
+  const scoreEl = document.getElementById('pmdScoreLine');
+  const subEl = document.getElementById('pmdSubLine');
+  const dateEl = document.getElementById('pmdDateLine');
+  if (scoreEl) scoreEl.textContent = '…';
+  if (subEl) subEl.textContent = '';
+  if (dateEl) dateEl.textContent = '';
+}
+
+function pmdSetHeader(ht, at, opts) {
+  opts = opts || {};
+  const setSide = (prefix, team) => {
+    const logoEl = document.getElementById(`pmd${prefix}Logo`);
+    const emojiEl = document.getElementById(`pmd${prefix}Emoji`);
+    const nameEl = document.getElementById(`pmd${prefix}Name`);
+    if (team && team.logo) {
+      logoEl.src = team.logo;
+      logoEl.style.display = 'block';
+      emojiEl.style.display = 'none';
+    } else {
+      logoEl.style.display = 'none';
+      emojiEl.style.display = 'block';
+      emojiEl.textContent = (team && team.emoji) || '🏟️';
+    }
+    nameEl.textContent = (team && team.name) || (prefix === 'Home' ? 'Home' : 'Away');
+  };
+  setSide('Home', ht);
+  setSide('Away', at);
+  document.getElementById('pmdScoreLine').textContent = opts.scoreLine || 'VS';
+  document.getElementById('pmdSubLine').textContent = opts.subLine || '';
+  document.getElementById('pmdDateLine').textContent = opts.dateLine || '';
+}
+
+window.pmdSwitchTab = function(tab) {
+  window._pmdActiveTab = tab;
+  document.querySelectorAll('.pmd-tab-btn').forEach(btn => {
+    const active = btn.dataset.tab === tab;
+    btn.style.color = active ? 'var(--gold)' : 'var(--text3)';
+    btn.style.borderBottomColor = active ? 'var(--gold)' : 'transparent';
+  });
+  if (tab === 'lineup') pmdRenderLineupTab();
+  else if (tab === 'table') pmdRenderTableTab();
+  else pmdRenderDetailsTab();
+};
+
+function pmdRenderDetailsTab() {
+  const body = document.getElementById('pmdBody');
+  if (!body) return;
+  const chartHtml = pmdRenderProgressionChart();
+  body.innerHTML = `
+    ${window._pmdSummaryHtml || ''}
+    ${chartHtml}
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+      ${window._pmdBoutRowsHtml || ''}
+      ${window._pmdExtraButtonsHtml || ''}
+    </div>
+    <div id="pmdPredictionArea"><div style="text-align:center;padding:14px"><span class="spinner"></span></div></div>
+  `;
+  pmdRenderPrediction(window._pmdAllDone);
+}
+
+// Running score progression: cumulative goals for each side after every
+// completed bout, drawn as a simple two-line SVG chart (no external chart
+// library needed). Skipped when there aren't at least 2 completed bouts —
+// a single point can't show a trend.
+function pmdBuildProgressionData(bouts) {
+  let cumH = 0, cumA = 0;
+  const points = [{ n: 0, h: 0, a: 0 }];
+  bouts.forEach((b) => {
+    if (b.status !== 'completed') return;
+    cumH += parseInt(b.homeScore) || 0;
+    cumA += parseInt(b.awayScore) || 0;
+    points.push({ n: points.length, h: cumH, a: cumA });
+  });
+  return points;
+}
+
+function pmdRenderProgressionChart() {
+  const bouts = window._pmdBouts || [];
+  const completedCount = bouts.filter(b => b.status === 'completed').length;
+  if (completedCount < 2) return '';
+  const pts = pmdBuildProgressionData(bouts);
+  const maxVal = Math.max(1, ...pts.map(p => Math.max(p.h, p.a)));
+  const W = 320, H = 120, padL = 14, padR = 14, padT = 10, padB = 10;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const xStep = plotW / Math.max(1, pts.length - 1);
+  const yOf = v => padT + plotH - (v / maxVal) * plotH;
+  const xOf = i => padL + i * xStep;
+  const lineHome = pts.map((p, i) => `${xOf(i)},${yOf(p.h)}`).join(' ');
+  const lineAway = pts.map((p, i) => `${xOf(i)},${yOf(p.a)}`).join(' ');
+  const dotsHome = pts.map((p, i) => `<circle cx="${xOf(i)}" cy="${yOf(p.h)}" r="3" fill="var(--cyan)"/>`).join('');
+  const dotsAway = pts.map((p, i) => `<circle cx="${xOf(i)}" cy="${yOf(p.a)}" r="3" fill="var(--gold)"/>`).join('');
+  const htName = (window._pmdHome || {}).name || 'Home';
+  const atName = (window._pmdAway || {}).name || 'Away';
+  return `
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+    <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Score Progression</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;font-size:11px">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);display:inline-block"></span>${htName}</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block"></span>${atName}</span>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+      <polyline points="${lineHome}" fill="none" stroke="var(--cyan)" stroke-width="2"/>
+      <polyline points="${lineAway}" fill="none" stroke="var(--gold)" stroke-width="2"/>
+      ${dotsHome}${dotsAway}
+    </svg>
+  </div>`;
+}
+
+function pmdRenderLineupTab() {
+  const body = document.getElementById('pmdBody');
+  if (!body) return;
+  const bouts = window._pmdBouts || [];
+  const playingNames = new Set();
+  bouts.forEach(b => {
+    if (b.player1 && b.player1 !== '—') playingNames.add(b.player1);
+    if (b.player2 && b.player2 !== '—') playingNames.add(b.player2);
+  });
+
+  let homeRoster = [], awayRoster = [];
+  if (window._pmdMode === 'trn') {
+    homeRoster = (window._pmdHome.players || []).map(p => p.name).filter(Boolean);
+    awayRoster = (window._pmdAway.players || []).map(p => p.name).filter(Boolean);
+  } else {
+    const users = window._pmdUsers || [];
+    const nameOf = uid => { const u = users.find(x => x.uid === uid); return u ? u.name : '—'; };
+    homeRoster = (window._pmdHomePlayerUids || []).map(nameOf);
+    awayRoster = (window._pmdAwayPlayerUids || []).map(nameOf);
+  }
+
+  const rosterHtml = (names) => names.length ? names.map(n => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span>${n}</span>
+      ${playingNames.has(n)
+        ? '<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(46,204,113,0.15);color:var(--green)">খেলছে</span>'
+        : '<span style="font-size:9px;color:var(--text3)">Bench</span>'}
+    </div>`).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">Squad list পাওয়া যায়নি।</div>';
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">${(window._pmdHome || {}).name || 'Home'}</div>
+        ${rosterHtml(homeRoster)}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">${(window._pmdAway || {}).name || 'Away'}</div>
+        ${rosterHtml(awayRoster)}
+      </div>
+    </div>`;
+}
+
+// Standalone (non-admin-cache) 4-Man group standings calculator — the
+// public match modal can't rely on f4mSquadsCache/f4mMatchdaysCache since
+// those are only populated on the admin panel; this mirrors the same logic
+// (calcF4mGroupStandings) using freshly fetched data instead.
+function pmdCalcF4mStandingsStandalone(squadsObj, matchdaysArr, group) {
+  const teams = Object.entries(squadsObj || {})
+    .filter(([, s]) => s.group === group)
+    .map(([id, s]) => ({ id, name: s.name || s.tag || '—' }));
+  const table = {};
+  teams.forEach(t => { table[t.id] = { id: t.id, name: t.name, mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }; });
+  (matchdaysArr || []).filter(m => m.stage === 'group' && m.group === group && m.status === 'completed').forEach(m => {
+    const boutList = Object.values(m.bouts || {});
+    let aggA = 0, aggB = 0;
+    boutList.forEach(b => { aggA += (b.scoreA || 0); aggB += (b.scoreB || 0); });
+    if (!table[m.squadA] || !table[m.squadB]) return;
+    table[m.squadA].mp++; table[m.squadB].mp++;
+    table[m.squadA].gf += aggA; table[m.squadA].ga += aggB;
+    table[m.squadB].gf += aggB; table[m.squadB].ga += aggA;
+    if (aggA > aggB) { table[m.squadA].w++; table[m.squadA].pts += 3; table[m.squadB].l++; }
+    else if (aggB > aggA) { table[m.squadB].w++; table[m.squadB].pts += 3; table[m.squadA].l++; }
+    else { table[m.squadA].d++; table[m.squadA].pts += 1; table[m.squadB].d++; table[m.squadB].pts += 1; }
+  });
+  return Object.values(table).sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga)) || (b.gf - a.gf));
+}
+
+function pmdRenderTableTab() {
+  const body = document.getElementById('pmdBody');
+  if (!body) return;
+  let rows = [];
+  if (window._pmdMode === 'trn') {
+    rows = calcStandings(window._pmdAllTeams || [], window._pmdAllMatches || []);
+  } else {
+    rows = pmdCalcF4mStandingsStandalone(window._pmdAllSquads || {}, window._pmdAllMatchdaysF4m || [], window._pmdGroup);
+  }
+  if (!rows.length) {
+    body.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Table পাওয়া যায়নি।</div>';
+    return;
+  }
+  const homeId = window._pmdHomeId, awayId = window._pmdAwayId;
+  const headRow = `<tr style="font-size:10px;color:var(--text3);text-transform:uppercase">
+    <td style="padding:6px 4px">#</td><td style="padding:6px 4px;text-align:left">Team</td>
+    <td style="padding:6px 4px">MP</td><td style="padding:6px 4px">W</td><td style="padding:6px 4px">D</td><td style="padding:6px 4px">L</td><td style="padding:6px 4px">GD</td><td style="padding:6px 4px">Pts</td>
+  </tr>`;
+  const bodyRows = rows.map((r, i) => {
+    const highlight = (r.id === homeId || r.id === awayId);
+    return `<tr style="font-size:12px;${highlight ? 'background:rgba(212,175,55,0.08);font-weight:700' : ''}">
+      <td style="padding:6px 4px;text-align:center;color:var(--text3)">${i + 1}</td>
+      <td style="padding:6px 4px">${r.name}</td>
+      <td style="padding:6px 4px;text-align:center">${r.mp}</td>
+      <td style="padding:6px 4px;text-align:center">${r.w}</td>
+      <td style="padding:6px 4px;text-align:center">${r.d}</td>
+      <td style="padding:6px 4px;text-align:center">${r.l}</td>
+      <td style="padding:6px 4px;text-align:center">${r.gf - r.ga}</td>
+      <td style="padding:6px 4px;text-align:center;color:var(--gold)">${r.pts}</td>
+    </tr>`;
+  }).join('');
+  body.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${headRow}${bodyRows}</table></div>`;
+}
 
 // Josh dekhte fixture text — Messenger e paste korle sundor lagbe emon format.
 // Both admin (Matchday Control) ar public (match detail modal) copy button eita reuse kore.
@@ -7991,14 +8292,15 @@ window.pmdDownloadMatchCard = async function() {
 window.openPublicF4mMatchDetail = async function(matchdayId) {
   const modal = document.getElementById('publicMatchModal');
   const body = document.getElementById('pmdBody');
-  document.getElementById('pmdTitle').textContent = '🆚 Match Detail';
+  pmdSetHeaderLoading();
   body.innerHTML = '<div style="text-align:center;padding:30px"><span class="spinner"></span></div>';
   modal.classList.add('show');
 
   try {
-    const [mdSnap, squadsSnap, users] = await Promise.all([
+    const [mdSnap, squadsSnap, matchdaysSnap, users] = await Promise.all([
       fetch(`${TRN_DB}/typ4man/matchdays/${matchdayId}.json`).then(r => r.json()),
       fetch(`${TRN_DB}/typ4man/squads.json`).then(r => r.json()),
+      fetch(`${TRN_DB}/typ4man/matchdays.json`).then(r => r.json()),
       getAllUsers()
     ]);
     if (!mdSnap) {
@@ -8008,8 +8310,9 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
     const squads = squadsSnap || {};
     const sa = squads[mdSnap.squadA] || {};
     const sb = squads[mdSnap.squadB] || {};
-    const ht = { name: sa.name || sa.tag || 'Squad A', emoji: sa.emoji || '🛡️' };
-    const at = { name: sb.name || sb.tag || 'Squad B', emoji: sb.emoji || '🛡️' };
+    const ht = { name: sa.name || sa.tag || 'Squad A', emoji: sa.emoji || '🛡️', logo: sa.logo || '' };
+    const at = { name: sb.name || sb.tag || 'Squad B', emoji: sb.emoji || '🛡️', logo: sb.logo || '' };
+    const allMatchdaysF4m = matchdaysSnap ? Object.values(matchdaysSnap) : [];
 
     const nameOf = (uid) => { const u = users.find(x => x.uid === uid); return u ? u.name : '—'; };
     const mdLabel = mdSnap.label || (mdSnap.group ? `GRP ${mdSnap.group} Matchday` : 'Matchday');
@@ -8026,14 +8329,23 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
       };
     });
 
-    document.getElementById('pmdTitle').textContent = `🆚 ${ht.name} vs ${at.name}`;
     window._pmdKey = `f4m_${matchdayId}`;
     window._pmdBouts = bouts;
     window._pmdHome = ht;
     window._pmdAway = at;
+    window._pmdHomeId = mdSnap.squadA;
+    window._pmdAwayId = mdSnap.squadB;
     window._pmdCtrl = {};
+    window._pmdMode = 'f4m';
+    window._pmdAllSquads = squads;
+    window._pmdAllMatchdaysF4m = allMatchdaysF4m;
+    window._pmdGroup = mdSnap.group || null;
+    window._pmdUsers = users;
+    window._pmdHomePlayerUids = sa.playerUids || [];
+    window._pmdAwayPlayerUids = sb.playerUids || [];
 
     const allDone = mdSnap.status === 'completed' && bouts.length > 0 && bouts.every(b => b.status === 'completed');
+    window._pmdAllDone = allDone;
 
     const summaryHtml = allDone ? `
       <div style="text-align:center;margin-bottom:14px">
@@ -8056,16 +8368,18 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
       </div>`;
     }).join('') : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:10px">এখনো bout draw হয়নি — দুই squad-এর manager lineup submit করলে ও deadline শেষ হলে admin draw করবে।</div>';
 
-    body.innerHTML = `
-      ${summaryHtml}
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
-        ${boutRows}
-        ${allDone ? `<button class="btn btn-outline" onclick="pmdDownloadMatchCard()" style="margin-top:10px;padding:8px 14px;font-size:12px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">📸 Download Match Card</button>` : ''}
-      </div>
-      <div id="pmdPredictionArea"><div style="text-align:center;padding:14px"><span class="spinner"></span></div></div>
-    `;
+    window._pmdSummaryHtml = summaryHtml;
+    window._pmdBoutRowsHtml = boutRows;
+    window._pmdExtraButtonsHtml = allDone ? `<button class="btn btn-outline" onclick="pmdDownloadMatchCard()" style="margin-top:10px;padding:8px 14px;font-size:12px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">📸 Download Match Card</button>` : '';
 
-    await pmdRenderPrediction(allDone);
+    const completedCount = bouts.filter(b => b.status === 'completed').length;
+    pmdSetHeader(ht, at, {
+      scoreLine: allDone ? `${mdSnap.aggScoreA} – ${mdSnap.aggScoreB}` : 'VS',
+      subLine: bouts.length ? `${completedCount} OF ${bouts.length} PLAYED` : '',
+      dateLine: mdLabel
+    });
+
+    pmdSwitchTab('details');
   } catch (e) {
     console.error('4-Man match detail error:', e);
     body.innerHTML = '<div style="color:var(--red);font-size:13px;text-align:center;padding:20px">❌ Load হয়নি।</div>';
@@ -10286,7 +10600,7 @@ window.generateF4mGroupFixtures = async function() {
     rounds.forEach((round, rIdx) => {
       round.forEach((pair, mIdx) => {
         const [aId, bId] = pair;
-        const key = `grp_${Date.now()}_${n++}`;
+        const key = `grp_${Date.now()}_${String(n++).padStart(3, '0')}`;
         batchObj[key] = {
           label: `Group ${g} — Round ${rIdx + 1}`,
           squadA: aId, squadB: bId,
