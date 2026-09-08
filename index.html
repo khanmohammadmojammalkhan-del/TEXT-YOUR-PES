@@ -11940,18 +11940,51 @@ window.f4mPcConfirm = async function() {
   }
 };
 
-// ── Copy fixture as text (Messenger-friendly) — usable by admin and managers ──
+// ── Copy fixture as text (Messenger-friendly, poster-style) — usable by admin and managers ──
 window.f4mCopyFixtureText = async function(mid) {
   await fetchF4mData();
   const m = f4mMatchdaysCache.find(x => x.id === mid);
   if (!m || !m.drawn) { alert('❌ এই matchday এখনো draw হয়নি।'); return; }
+
   const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || '—';
+  const squadLine = id => {
+    const s = f4mSquadsCache.find(x => x.id === id);
+    if (!s) return '—';
+    return (s.tag ? `[${s.tag.toUpperCase()}] ` : '') + (s.name || '').toUpperCase();
+  };
+  const cleanLabel = (m.label || 'MATCH').replace(/^[^\w]+/, '').trim();
   const boutKeys = Object.keys(m.bouts || {}).sort();
-  const lines = boutKeys.map((k, i) => `Bout ${i + 1}: ${nameOf(m.bouts[k].playerAUid)}  vs  ${nameOf(m.bouts[k].playerBUid)}`);
-  const text = `🏆 TYP 4-MAN TOURNAMENT\n${m.label || 'Matchday'}\n\n${f4mSquadName(m.squadA)}  vs  ${f4mSquadName(m.squadB)}\n\n${lines.join('\n')}\n\nGood luck! ⚽`;
+
+  const deadline = prompt('⏰ Deadline time দাও (যেমন: 1:00 AM):', window.typ4mLastDeadline || '1:00 AM');
+  if (deadline === null) return;
+  window.typ4mLastDeadline = deadline;
+
+  const SEP = '━━━━━━━━━━━━━━━━━━';
+  const boutBlocks = boutKeys.map((k, i) =>
+    `🎮 BOUT ${i + 1}\n🔹 ${nameOf(m.bouts[k].playerAUid)}\n🆚\n🔹 ${nameOf(m.bouts[k].playerBUid)}`
+  );
+
+  const text = [
+    '🏆 TYP 4-MAN TOURNAMENT',
+    `⚔️ ${cleanLabel.toUpperCase()}`,
+    SEP,
+    `🆚 ${squadLine(m.squadA)}`,
+    'VS',
+    squadLine(m.squadB),
+    ...boutBlocks,
+    SEP,
+    `🚨 ⏰ DEADLINE: ${deadline} 🚨`,
+    '🌐 MATCH DETAILS & UPDATES',
+    '👉 typ-bd.vercel.app',
+    SEP,
+    `🔥 ${boutKeys.length} BOUTS • 1 WINNER • 1 STEP CLOSER TO VICTORY`,
+    '⚽ GOOD LUCK TO BOTH TEAMS!',
+    '🏆 MAY THE BEST TEAM WIN!'
+  ].join('\n');
+
   try {
     await navigator.clipboard.writeText(text);
-    alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
+    alert('✅ Copy হয়ে গেছে! এখন Messenger/Group-এ paste করো।');
   } catch (e) {
     prompt('Copy করতে সমস্যা হলে ম্যানুয়ালি সিলেক্ট করে কপি করো:', text);
   }
