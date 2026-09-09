@@ -12249,42 +12249,67 @@ window.f4mCopyFixtureText = async function(mid) {
   const remaining = boutKeys.filter(k => !m.bouts[k].done).length;
   const scoreA = m.aggScoreA ?? 0, scoreB = m.aggScoreB ?? 0;
   const nameA = squadName(m.squadA), nameB = squadName(m.squadB);
+  const sqA = f4mSquadsCache.find(s => s.id === m.squadA) || {};
+  const sqB = f4mSquadsCache.find(s => s.id === m.squadB) || {};
+  const tagA = sqA.tag ? sqA.tag.toUpperCase() : nameA;
+  const tagB = sqB.tag ? sqB.tag.toUpperCase() : nameB;
 
   const SEP = '━━━━━━━━━━━━━━━━━━━━';
-  const lineupBlocks = boutKeys.map(k => `${nameOf(m.bouts[k].playerAUid)}\nVS\n${nameOf(m.bouts[k].playerBUid)}`);
+  const boutNumEmoji = i => ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'][i] || `${i + 1}.`;
+  // Protishoti bout-er block-e number emoji + "BOUT 0X" label, ar prottek
+  // player-er name-er pashe tar nijer squad-er tag boshiye dilam — jate
+  // kew match line-up dekhle ekbar-e bujhte pare ke kon dol-er hoye khelche,
+  // upore VS order mone rakhte na hoyeo.
+  const lineupBlocks = [];
+  boutKeys.forEach((k, i) => {
+    lineupBlocks.push(`${boutNumEmoji(i)} BOUT ${String(i + 1).padStart(2, '0')}`);
+    lineupBlocks.push(`🎮 [${tagA}] ${nameOf(m.bouts[k].playerAUid)}`);
+    lineupBlocks.push('        ⚔️ VS ⚔️');
+    lineupBlocks.push(`🎮 [${tagB}] ${nameOf(m.bouts[k].playerBUid)}`);
+    if (i < boutKeys.length - 1) lineupBlocks.push('');
+  });
+
+  const motivational = [
+    '💬 "Pressure is temporary, glory is forever — give it your all!"',
+    `🔥 Good Luck ${tagA} & ${tagB} — May the best squad win! 🏆`
+  ];
 
   const text = [
-    'TYP QUADRIX — SEASON 1',
-    stageLine,
+    '🏆 TYP QUADRIX — SEASON 1',
+    `📅 ${stageLine}`,
     SEP,
     '',
-    nameA,
-    'VS',
-    nameB,
+    `🆚  ${nameA}`,
+    '        VS',
+    `🆚  ${nameB}`,
     '',
-    `DEADLINE ${deadlineDisp}`,
-    `RESPONSE TIME ${responseTimeDisp}`,
+    `⏰ DEADLINE ${deadlineDisp}`,
+    `🕒 RESPONSE TIME ${responseTimeDisp}`,
     '',
-    `SUB / SWAP DEADLINE ${subSwapDisp}`,
+    `🔁 SUB / SWAP DEADLINE ${subSwapDisp}`,
     SEP,
     '',
-    'MATCH LINE-UP',
+    '📋 MATCH LINE-UP',
+    '',
     ...lineupBlocks,
+    '',
     SEP,
     '',
-    'MATCH STATUS',
-    `MATCHES REMAINING • ${String(remaining).padStart(2, '0')}`,
-    `${nameA} • ${String(scoreA).padStart(2, '0')}`,
-    `${nameB} • ${String(scoreB).padStart(2, '0')}`,
+    '📊 MATCH STATUS',
+    `⏳ MATCHES REMAINING • ${String(remaining).padStart(2, '0')}`,
+    `🔷 ${nameA} • ${String(scoreA).padStart(2, '0')}`,
+    `🔶 ${nameB} • ${String(scoreB).padStart(2, '0')}`,
     SEP,
     '',
-    'RULEBOOK Details • Updated',
+    '📖 RULEBOOK Details • Updated',
     '',
-    'OFFICIAL TYP WEBSITE',
+    '🌐 OFFICIAL TYP WEBSITE',
     'https://typ-bd.vercel.app/',
     '',
     SEP,
-    'TEXT YOUR PES • TYP QUADRIX'
+    '🎮 TEXT YOUR PES • TYP QUADRIX',
+    '',
+    ...motivational
   ].join('\n');
 
   try {
