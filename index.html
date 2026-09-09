@@ -568,6 +568,18 @@ nav {
   .typ-admin-avatar { width:52px; height:52px; }
 }
 
+/* ── HOME: LIVE TOURNAMENT MATCHDAY (compact grid) ── */
+.home-live-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:10px; }
+@media (max-width:600px) {
+  .home-live-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+}
+
+/* ── HOME: RECENT MATCHES FEED (compact grid) ── */
+.home-feed-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px; }
+@media (max-width:600px) {
+  .home-feed-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+}
+
 /* ── BUTTONS ── */
 .btn {
   padding: 11px 24px;
@@ -4259,6 +4271,27 @@ if (document.readyState === 'loading') {
   </div>
 </div>
 
+<!-- 4-MAN: SQUAD PLAYER CHANGE MODAL (swap one roster player for another) -->
+<div class="modal-overlay" id="f4mSquadPlayerChangeModal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-title">🔁 Squad Player বদলাও</div>
+    <input type="hidden" id="spcSquadId">
+    <div class="form-group">
+      <label class="form-label">কোন Player বদলাবে</label>
+      <select class="form-input" id="spcOldPlayer"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">নতুন Player বাছাই করো</label>
+      <select class="form-input" id="spcNewPlayer"></select>
+    </div>
+    <div id="spcError" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" style="flex:1" onclick="f4mConfirmSquadPlayerChange()">✅ Confirm Change</button>
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('f4mSquadPlayerChangeModal').classList.remove('show')">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- 4-MAN: MANAGER LOGIN MODAL -->
 <div class="modal-overlay" id="f4mMgrLoginModal">
   <div class="modal-box" style="max-width:380px">
@@ -7528,7 +7561,7 @@ async function loadHomeLiveMatchday() {
     let html = `<div style="margin-bottom:10px;display:flex;align-items:center;gap:8px">
       <span style="background:var(--green);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px">DAY ${currentDay}</span>
       <span style="color:var(--text3);font-size:12px">${played.filter(m => m.day === currentDay).length > 0 ? '🔴 Live / Completed' : '🕐 Upcoming'}</span>
-    </div>`;
+    </div><div class="home-live-grid">`;
 
     mds.forEach(md => {
       const mdMatches = dayMatches.filter(m => m.matchday === md);
@@ -7546,53 +7579,38 @@ async function loadHomeLiveMatchday() {
       const hasResults = played_count > 0;
 
       const allDone = hasResults && played_count === total;
-      const statusDot = allDone
-        ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span> <span style="color:var(--green)">সম্পন্ন</span>`
+      const statusBadge = allDone
+        ? `<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(52,199,89,0.15);color:var(--green);font-weight:700">সম্পন্ন</span>`
         : hasResults
-        ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--yellow);display:inline-block;animation:pulse 1.5s infinite"></span> <span style="color:var(--yellow)">চলছে</span>`
-        : `<span style="width:6px;height:6px;border-radius:50%;background:var(--text3);display:inline-block"></span> <span style="color:var(--text3)">Upcoming</span>`;
+        ? `<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(245,166,35,0.15);color:var(--yellow);font-weight:700">⏳ চলছে</span>`
+        : `<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text3);font-weight:700">UPCOMING</span>`;
 
       html += `<div onclick="openPublicMatchDetail(${currentDay},'${mdMatches[0].homeTeam}','${mdMatches[0].awayTeam}')"
-        style="cursor:pointer;position:relative;background:linear-gradient(180deg,var(--card2) 0%,var(--card) 100%);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s"
-        onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(201,168,76,0.15)'"
-        onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
-        <div style="height:3px;background:linear-gradient(90deg,var(--gold),var(--cyan))"></div>
-        <div style="padding:14px 16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <span style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1.5px;font-family:'Libre Caslon Text',monospace;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);padding:3px 10px;border-radius:20px">MATCHDAY ${md}</span>
-            <span style="font-size:10px;font-weight:700;letter-spacing:0.5px;display:flex;align-items:center;gap:5px">${statusDot}</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-            <div style="flex:1;text-align:center;min-width:0">
-              <div style="width:56px;height:56px;border-radius:14px;border:1.5px solid ${hasResults && homePoints>awayPoints ? 'var(--gold)' : 'var(--border)'};background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;margin:0 auto 8px;box-shadow:${hasResults && homePoints>awayPoints ? '0 0 14px rgba(201,168,76,0.35)' : 'none'}">
-                ${home.logo ? `<img src="${home.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : (home.emoji||'🏟️')}
-              </div>
-              <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${home.name||'—'}</div>
-              <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${home.manager||''}</div>
-            </div>
-            <div style="text-align:center;min-width:70px;flex-shrink:0">
-              ${hasResults
-                ? `<div style="font-size:30px;font-weight:900;font-family:'Libre Caslon Text',monospace;background:linear-gradient(120deg,var(--gold),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${homePoints}<span style="color:var(--text3);font-size:16px;-webkit-text-fill-color:var(--text3)">–</span>${awayPoints}</div>
-                   <div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:1px">POINTS</div>`
-                : `<div style="font-size:11px;color:var(--text3);font-weight:800;letter-spacing:2px;font-family:'Libre Caslon Text',monospace;border:1px solid var(--border);border-radius:10px;padding:8px 10px">VS</div>`}
-            </div>
-            <div style="flex:1;text-align:center;min-width:0">
-              <div style="width:56px;height:56px;border-radius:14px;border:1.5px solid ${hasResults && awayPoints>homePoints ? 'var(--gold)' : 'var(--border)'};background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden;margin:0 auto 8px;box-shadow:${hasResults && awayPoints>homePoints ? '0 0 14px rgba(201,168,76,0.35)' : 'none'}">
-                ${away.logo ? `<img src="${away.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : (away.emoji||'🏟️')}
-              </div>
-              <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${away.name||'—'}</div>
-              <div style="font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${away.manager||''}</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text3)">
-            <span>⚽ ${played_count}/${total} bouts</span>
-            <span style="color:var(--border)">•</span>
-            <span style="color:var(--cyan)">👆 Detail + Prediction Vote</span>
-          </div>
+        style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;transition:border-color 0.15s"
+        onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:9px;color:var(--gold);font-weight:700;letter-spacing:0.5px;font-family:'Libre Caslon Text',monospace">MATCHDAY ${md}</span>
+          ${statusBadge}
         </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;margin-bottom:5px" title="${home.name||''}">
+          <span style="display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0">
+            ${home.logo ? `<img src="${home.logo}" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:20px;height:20px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🛡️</span>`}
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${home.name||'—'}</span>
+          </span>
+          <span style="font-weight:800;color:${hasResults && homePoints>awayPoints ? 'var(--gold)' : 'var(--text3)'}">${hasResults ? homePoints : ''}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600" title="${away.name||''}">
+          <span style="display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0">
+            ${away.logo ? `<img src="${away.logo}" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:20px;height:20px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🛡️</span>`}
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${away.name||'—'}</span>
+          </span>
+          <span style="font-weight:800;color:${hasResults && awayPoints>homePoints ? 'var(--gold)' : 'var(--text3)'}">${hasResults ? awayPoints : ''}</span>
+        </div>
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border);font-size:9px;color:var(--text3);text-align:center">⚽ ${played_count}/${total} bouts</div>
       </div>`;
     });
 
+    html += `</div>`;
     container.innerHTML = html;
     section.style.display = '';
   } catch(e) {
@@ -7676,11 +7694,18 @@ window.loadHomeRecentMatchesFeed = async function() {
       };
     });
 
-    // ── 4-Man Tournament: each matchday already stores an aggregate
-    // score (aggScoreA/aggScoreB = summed goals across its 3 bouts). ──
+    // ── 4-Man Tournament: compute matchday points the same way the Auction
+    // Tournament card above does (win=3 / draw=1 / loss=0 per bout) instead
+    // of using the raw aggScoreA/aggScoreB goal-sum, so the small feed card
+    // matches the win/draw/loss points shown on the downloadable card. ──
     const f4mCards = f4mMatchdaysWithId.map(m => {
       const sa = f4mSquads[m.squadA] || {}, sb = f4mSquads[m.squadB] || {};
       const done = m.status === 'completed';
+      const boutList = Object.values(m.bouts || {});
+      const doneBouts = boutList.filter(b => b.scoreA !== null && b.scoreA !== undefined && b.scoreB !== null && b.scoreB !== undefined);
+      const homeWins = doneBouts.filter(b => b.scoreA > b.scoreB).length;
+      const awayWins = doneBouts.filter(b => b.scoreB > b.scoreA).length;
+      const draws = doneBouts.length - homeWins - awayWins;
       const roundLabel = m.stage === 'qf' ? 'Quarterfinal' : m.stage === 'sf' ? 'Semifinal' : m.stage === 'final' ? 'Final'
         : (m.group ? `GRP ${m.group} · Matchday ${f4mMdRoundOf(m)}` : (m.label || 'Matchday'));
       // Sort key so group-stage matches always list in proper order
@@ -7690,12 +7715,12 @@ window.loadHomeRecentMatchesFeed = async function() {
       const groupRank = m.group ? m.group.charCodeAt(0) : 0;
       const sortKey = stageRank * 100000 + groupRank * 1000 + f4mMdRoundOf(m);
       return {
-        tournament: '🥊 4-Man Auction Tournament',
+        tournament: '🥊 4-Man Tournament',
         roundLabel,
         teamA: sa.tag || sa.name || '—', teamB: sb.tag || sb.name || '—',
         teamAFull: sa.name || '—', teamBFull: sb.name || '—',
         teamALogo: sa.logo || null, teamBLogo: sb.logo || null,
-        scoreA: done ? m.aggScoreA : null, scoreB: done ? m.aggScoreB : null,
+        scoreA: done ? (homeWins * 3 + draws) : null, scoreB: done ? (awayWins * 3 + draws) : null,
         status: done ? 'completed' : 'upcoming',
         ts: m.updatedAt || null,
         scheduledDate: m.scheduledDate || null,
@@ -7787,29 +7812,29 @@ function renderHomeMatchFeed() {
 
   wrap.innerHTML = Object.entries(byTournament).map(([tname, list]) => `
     <div style="font-size:12px;font-weight:700;color:var(--gold);margin:16px 0 8px;font-family:'Libre Caslon Text',sans-serif;letter-spacing:0.5px">${tname}</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px">
+    <div class="home-feed-grid">
       ${list.map(c => `
         <div onclick="${c.clickType === 'trn' ? `openPublicMatchDetail(${c.clickDay},'${c.clickHomeId}','${c.clickAwayId}')` : c.clickType === 'f4m' ? `openPublicF4mMatchDetail('${c.clickMatchdayId}')` : ''}"
-          style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;transition:border-color 0.15s"
+          style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;transition:border-color 0.15s;min-width:0;overflow:hidden"
           onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <span style="font-size:10px;color:var(--text3);font-family:'Libre Caslon Text',monospace">${c.roundLabel}</span>
-            ${c.status === 'upcoming' ? `<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.06);color:var(--text3)">UPCOMING${c.scheduledDate ? ' · ' + homeFeedShortDate(c.scheduledDate) : ''}</span>`
-              : c.status === 'live' ? `<span style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(245,166,35,0.15);color:var(--yellow)">⏳ LIVE</span>` : ''}
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px">
+            <span style="font-size:9.5px;color:var(--text3);font-family:'Libre Caslon Text',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">${c.roundLabel}</span>
+            ${c.status === 'upcoming' ? `<span style="font-size:8.5px;padding:2px 6px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--text3);white-space:nowrap;flex-shrink:0">UPCOMING${c.scheduledDate ? ' · ' + homeFeedShortDate(c.scheduledDate) : ''}</span>`
+              : c.status === 'live' ? `<span style="font-size:8.5px;padding:2px 6px;border-radius:8px;background:rgba(245,166,35,0.15);color:var(--yellow);white-space:nowrap;flex-shrink:0">⏳ LIVE</span>` : ''}
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;margin-bottom:4px" title="${c.teamAFull}">
-            <span style="display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0">
-              ${c.teamALogo ? `<img src="${c.teamALogo}" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:20px;height:20px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🛡️</span>`}
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;margin-bottom:4px;gap:4px" title="${c.teamAFull}">
+            <span style="display:flex;align-items:center;gap:5px;overflow:hidden;min-width:0">
+              ${c.teamALogo ? `<img src="${c.teamALogo}" style="width:18px;height:18px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:18px;height:18px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">🛡️</span>`}
               <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.teamA}</span>
             </span>
-            <span style="font-weight:800;color:${c.status !== 'upcoming' ? 'var(--gold)' : 'var(--text3)'}">${c.status !== 'upcoming' ? c.scoreA : ''}</span>
+            <span style="font-weight:800;color:${c.status !== 'upcoming' ? 'var(--gold)' : 'var(--text3)'};flex-shrink:0">${c.status !== 'upcoming' ? c.scoreA : ''}</span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600" title="${c.teamBFull}">
-            <span style="display:flex;align-items:center;gap:6px;overflow:hidden;min-width:0">
-              ${c.teamBLogo ? `<img src="${c.teamBLogo}" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:20px;height:20px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">🛡️</span>`}
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;gap:4px" title="${c.teamBFull}">
+            <span style="display:flex;align-items:center;gap:5px;overflow:hidden;min-width:0">
+              ${c.teamBLogo ? `<img src="${c.teamBLogo}" style="width:18px;height:18px;border-radius:5px;object-fit:cover;flex-shrink:0">` : `<span style="width:18px;height:18px;border-radius:5px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">🛡️</span>`}
               <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.teamB}</span>
             </span>
-            <span style="font-weight:800;color:${c.status !== 'upcoming' ? 'var(--gold)' : 'var(--text3)'}">${c.status !== 'upcoming' ? c.scoreB : ''}</span>
+            <span style="font-weight:800;color:${c.status !== 'upcoming' ? 'var(--gold)' : 'var(--text3)'};flex-shrink:0">${c.status !== 'upcoming' ? c.scoreB : ''}</span>
           </div>
         </div>
       `).join('')}
@@ -8277,6 +8302,7 @@ async function pmdRenderPrediction(matchDone) {
 // button-er moto, kintu already-fetched public bouts/teams data byabohar kore (admin-only
 // DOM inputs er upor nirbhor kore na), tai homepage theke direct download kaj korbe.
 window.pmdDownloadMatchCard = async function() {
+  if (window._pmdMode === 'f4m') { await pmdDownloadF4mQuadrixCard(); return; }
   const bouts = window._pmdBouts || [];
   const ht = window._pmdHome || {};
   const at = window._pmdAway || {};
@@ -8294,6 +8320,75 @@ window.pmdDownloadMatchCard = async function() {
     dayVal,
     fileSuffix: `${ht.name || 'Home'}-vs-${at.name || 'Away'}`,
     overrideMvpName
+  });
+};
+
+// ── Public 4-Man match detail's "Download Match Card" uses the same
+// QUADRIX-style card the admin panel generates (downloadF4mQuadrixCard),
+// rebuilt here from the already-fetched public pmd data instead of the
+// admin-only f4mMatchdaysCache/f4mSquadsCache. ──
+window.pmdDownloadF4mQuadrixCard = async function() {
+  const bouts = window._pmdBouts || [];
+  const ht = window._pmdHome || {};
+  const at = window._pmdAway || {};
+  const users = window._pmdUsers || [];
+  const matches = bouts
+    .filter(b => b.status === 'completed' && b.homeScore !== null && b.homeScore !== undefined && b.awayScore !== null && b.awayScore !== undefined)
+    .map(b => ({ homeScore: b.homeScore, awayScore: b.awayScore, player1: b.player1, player2: b.player2, player1uid: b.player1uid, player2uid: b.player2uid }));
+  if (!matches.length) { alert('⚠️ এই matchday-তে কোনো bout-এ score বসানো নেই।'); return; }
+
+  const { mvpName } = _computeMatchupMvp(matches, '');
+  if (!mvpName) { alert('⚠️ MVP নির্ধারণ করা যায়নি।'); return; }
+  const mvpRating = _calcAvgMvpRating(matches, mvpName);
+
+  let mvpUid = '', mvpSide = '', opponentName = '', myScore = null, oppScore = null;
+  for (const mt of matches) {
+    if (mt.player1 === mvpName) { mvpUid = mt.player1uid; mvpSide = 'home'; opponentName = mt.player2 || ''; myScore = mt.homeScore; oppScore = mt.awayScore; break; }
+    if (mt.player2 === mvpName) { mvpUid = mt.player2uid; mvpSide = 'away'; opponentName = mt.player1 || ''; myScore = mt.awayScore; oppScore = mt.homeScore; break; }
+  }
+
+  const userMap = {}; users.forEach(u => { userMap[u.uid] = u; });
+  const userObj = userMap[mvpUid] || {};
+
+  let opponentUid = '';
+  for (const mt of matches) {
+    if (mt.player1 === mvpName && mt.player2 === opponentName) { opponentUid = mt.player2uid; break; }
+    if (mt.player2 === mvpName && mt.player1 === opponentName) { opponentUid = mt.player1uid; break; }
+  }
+
+  const matchesWithAvatars = matches.map(mt => ({
+    ...mt,
+    p1AvatarUrl: (userMap[mt.player1uid] || {}).avatarUrl || '',
+    p2AvatarUrl: (userMap[mt.player2uid] || {}).avatarUrl || ''
+  }));
+
+  // 3-1-0 point system: tally each bout as a win/draw/loss, then win=3, draw=1, loss=0.
+  let homeWins = 0, awayWins = 0, draws = 0;
+  matches.forEach(x => {
+    const hs = parseInt(x.homeScore) || 0, as_ = parseInt(x.awayScore) || 0;
+    if (hs > as_) homeWins++; else if (as_ > hs) awayWins++; else draws++;
+  });
+  const homeTotal = (homeWins * 3) + draws;
+  const awayTotal = (awayWins * 3) + draws;
+
+  await _renderF4mQuadrixCard({
+    homeTeamName: (ht.name || 'Home').replace(/^\[.*?\]\s*/, ''),
+    awayTeamName: (at.name || 'Away').replace(/^\[.*?\]\s*/, ''),
+    homeTotal,
+    awayTotal,
+    homeLogoUrl: ht.logo || '',
+    awayLogoUrl: at.logo || '',
+    matches: matchesWithAvatars,
+    dayLabel: (window._pmdF4mLabel || 'Matchday').replace('—', '•'),
+    mvpName,
+    mvpTeamName: (mvpSide === 'home' ? ht.name : at.name || '—').replace(/^\[.*?\]\s*/, ''),
+    mvpAvatarUrl: userObj.avatarUrl || '',
+    opponentName,
+    opponentAvatarUrl: (userMap[opponentUid] || {}).avatarUrl || '',
+    myScore,
+    oppScore,
+    mvpRating,
+    fileSuffix: `${ht.name || 'Home'}-vs-${at.name || 'Away'}`
   });
 };
 
@@ -8339,6 +8434,7 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
         boutNumber: i + 1,
         player1: nameOf(b.playerAUid),
         player2: nameOf(b.playerBUid),
+        player1uid: b.playerAUid, player2uid: b.playerBUid,
         homeScore: b.scoreA, awayScore: b.scoreB,
         status: b.done ? 'completed' : 'pending',
         matchday: mdLabel
@@ -8359,18 +8455,35 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
     window._pmdUsers = users;
     window._pmdHomePlayerUids = sa.playerUids || [];
     window._pmdAwayPlayerUids = sb.playerUids || [];
+    window._pmdF4mLabel = mdLabel;
 
     const allDone = mdSnap.status === 'completed' && bouts.length > 0 && bouts.every(b => b.status === 'completed');
     window._pmdAllDone = allDone;
+
+    // Main score = matchday points (win=3/draw=1/loss=0 per bout), matching
+    // the Auction Tournament's match detail and the downloadable card —
+    // NOT the raw aggScoreA/aggScoreB goal-sum (that only feeds the goal
+    // progression graph further down).
+    let homePts = 0, awayPts = 0, homeGoals = 0, awayGoals = 0;
+    if (allDone) {
+      let homeWins = 0, awayWins = 0, draws = 0;
+      bouts.forEach(b => {
+        const hs = parseInt(b.homeScore) || 0, as_ = parseInt(b.awayScore) || 0;
+        homeGoals += hs; awayGoals += as_;
+        if (hs > as_) homeWins++; else if (as_ > hs) awayWins++; else draws++;
+      });
+      homePts = homeWins * 3 + draws; awayPts = awayWins * 3 + draws;
+    }
 
     const summaryHtml = allDone ? `
       <div style="text-align:center;margin-bottom:14px">
         <div style="font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Final Result</div>
         <div style="display:flex;align-items:center;justify-content:center;gap:16px">
           <span style="font-size:13px;font-weight:700;text-align:right;flex:1">${ht.name}</span>
-          <span style="font-size:26px;font-weight:800;color:var(--gold)">${mdSnap.aggScoreA} – ${mdSnap.aggScoreB}</span>
+          <span style="font-size:26px;font-weight:800;color:var(--gold)">${homePts} – ${awayPts}</span>
           <span style="font-size:13px;font-weight:700;text-align:left;flex:1">${at.name}</span>
         </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Goals: ${homeGoals} – ${awayGoals}</div>
       </div>` : '';
 
     const boutRows = bouts.length ? bouts.map(b => {
@@ -8390,7 +8503,7 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
 
     const completedCount = bouts.filter(b => b.status === 'completed').length;
     pmdSetHeader(ht, at, {
-      scoreLine: allDone ? `${mdSnap.aggScoreA} – ${mdSnap.aggScoreB}` : 'VS',
+      scoreLine: allDone ? `${homePts} – ${awayPts}` : 'VS',
       subLine: bouts.length ? `${completedCount} OF ${bouts.length} PLAYED` : '',
       dateLine: mdLabel
     });
@@ -10495,13 +10608,53 @@ function renderF4mAdminSquadsList() {
     const groupHtml = s.group ? `<span style="background:rgba(212,175,55,0.15);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px">GRP ${s.group}</span>` : '';
     return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px">
       <div>${logoHtml}<strong>${s.tag ? ('[' + s.tag + '] ') : ''}${s.name}</strong>${groupHtml}${s.manager ? ` <span style="color:var(--text3);font-size:11px">👑 ${s.manager}</span>` : ''} <span style="font-size:10px;color:${s.managerPassword ? 'var(--green)' : 'var(--text3)'}">${s.managerPassword ? '🔑 Password Set' : '🔓 No Password'}</span><div style="font-size:12px;color:var(--text3)">⚽ ${players}</div></div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
+        <button class="btn btn-outline" style="padding:5px 12px;font-size:11px" onclick="f4mOpenSquadPlayerChange('${s.id}')">🔁 Player</button>
         <button class="btn btn-outline" style="padding:5px 12px;font-size:11px" onclick="f4mSetManagerPassword('${s.id}')">🔑 Password</button>
         <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteF4mSquad('${s.id}')">🗑️ Delete</button>
       </div>
     </div>`;
   }).join('');
 }
+
+// ── Admin: swap ONE player out of a squad's 4-man roster for a new one
+// (e.g. two teams each changing 1 player before a matchday). Does NOT
+// touch already-drawn matchday bouts — use the per-bout 🔁 for that. ──
+window.f4mOpenSquadPlayerChange = function(squadId) {
+  const s = f4mSquadsCache.find(x => x.id === squadId);
+  if (!s) return;
+  document.getElementById('spcSquadId').value = squadId;
+  document.getElementById('spcError').textContent = '';
+  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || 'Unknown';
+  const oldSel = document.getElementById('spcOldPlayer');
+  oldSel.innerHTML = (s.playerUids || []).map(uid => `<option value="${uid}">${nameOf(uid)}</option>`).join('');
+  const newSel = document.getElementById('spcNewPlayer');
+  const currentIds = new Set(s.playerUids || []);
+  newSel.innerHTML = '<option value="">-- Player বাছাই করো --</option>' + f4mUsersCache
+    .filter(u => !currentIds.has(u.uid))
+    .map(u => `<option value="${u.uid}">${u.name || 'Unknown'}</option>`).join('');
+  document.getElementById('f4mSquadPlayerChangeModal').classList.add('show');
+};
+
+window.f4mConfirmSquadPlayerChange = async function() {
+  const squadId = document.getElementById('spcSquadId').value;
+  const oldUid = document.getElementById('spcOldPlayer').value;
+  const newUid = document.getElementById('spcNewPlayer').value;
+  const errEl = document.getElementById('spcError');
+  if (!newUid) { errEl.textContent = '⚠️ নতুন Player বাছাই করো।'; return; }
+  if (newUid === oldUid) { errEl.textContent = '⚠️ একই Player বাছাই করা যাবে না।'; return; }
+  const s = f4mSquadsCache.find(x => x.id === squadId);
+  if (!s) return;
+  const uids = (s.playerUids || []).map(uid => uid === oldUid ? newUid : uid);
+  try {
+    await fetch(`${F4M_DB}/typ4man/squads/${squadId}/playerUids.json`, { method: 'PUT', body: JSON.stringify(uids) });
+    s.playerUids = uids;
+    document.getElementById('f4mSquadPlayerChangeModal').classList.remove('show');
+    renderF4mAdminSquadsList();
+  } catch (e) {
+    errEl.textContent = `❌ Error: ${e.message}`;
+  }
+};
 
 window.createF4mSquad = async function() {
   const name = document.getElementById('f4mSqName').value.trim();
@@ -11961,46 +12114,104 @@ window.f4mPcConfirm = async function() {
   }
 };
 
-// ── Copy fixture as text (Messenger-friendly, poster-style) — usable by admin and managers ──
+// ── Parse a "1:00 AM" style string into {h24, m} (24h hour + minute). Returns null on failure. ──
+function typ4mParseClock(str) {
+  const mm = String(str || '').trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!mm) return null;
+  let h = parseInt(mm[1], 10) % 12;
+  if (/pm/i.test(mm[3])) h += 12;
+  return { h24: h, m: parseInt(mm[2], 10) };
+}
+// ── Format {h24,m,[s]} back into "1:00 AM" / "1:00:00 AM" style ──
+function typ4mFormatClock(h24, m, s) {
+  const ap = h24 >= 12 ? 'PM' : 'AM';
+  let h12 = h24 % 12; if (h12 === 0) h12 = 12;
+  const mm = String(((m % 60) + 60) % 60).padStart(2, '0');
+  const base = `${h12}:${mm}`;
+  return s === undefined ? `${base} ${ap}` : `${base}:${String(s).padStart(2, '0')} ${ap}`;
+}
+// ── Shift a {h24,m} clock by N minutes (and optional seconds), wrapping across midnight ──
+function typ4mShiftClock(clock, minutesDelta, secondsDelta = 0) {
+  let totalSec = (clock.h24 * 3600 + clock.m * 60) + minutesDelta * 60 + secondsDelta;
+  totalSec = ((totalSec % 86400) + 86400) % 86400;
+  const h24 = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return { h24, m, s };
+}
+
+// ── Copy fixture as text (Messenger-friendly, QUADRIX poster-style) — usable by admin and managers ──
 window.f4mCopyFixtureText = async function(mid) {
   await fetchF4mData();
   const m = f4mMatchdaysCache.find(x => x.id === mid);
   if (!m || !m.drawn) { alert('❌ এই matchday এখনো draw হয়নি।'); return; }
 
-  const nameOf = uid => (f4mUsersCache.find(u => u.uid === uid) || {}).name || '—';
-  const squadLine = id => {
+  const nameOf = uid => ((f4mUsersCache.find(u => u.uid === uid) || {}).name || '—').toUpperCase();
+  const squadName = id => {
     const s = f4mSquadsCache.find(x => x.id === id);
     if (!s) return '—';
     return (s.tag ? `[${s.tag.toUpperCase()}] ` : '') + (s.name || '').toUpperCase();
   };
-  const cleanLabel = (m.label || 'MATCH').replace(/^[^\w]+/, '').trim();
   const boutKeys = Object.keys(m.bouts || {}).sort();
 
-  const deadline = prompt('⏰ Deadline time দাও (যেমন: 1:00 AM):', window.typ4mLastDeadline || '1:00 AM');
-  if (deadline === null) return;
-  window.typ4mLastDeadline = deadline;
+  const stageLine = m.stage === 'qf' ? 'KNOCKOUT STAGE • QUARTERFINAL'
+    : m.stage === 'sf' ? 'KNOCKOUT STAGE • SEMIFINAL'
+    : m.stage === 'final' ? 'KNOCKOUT STAGE • FINAL'
+    : `GROUP STAGE • MATCHDAY ${m.round || 1}`;
 
-  const SEP = '━━━━━━━━━━━━━━━━━━';
-  const boutBlocks = boutKeys.map((k, i) =>
-    `🎮 BOUT ${i + 1}\n🔹 ${nameOf(m.bouts[k].playerAUid)}\n🆚\n🔹 ${nameOf(m.bouts[k].playerBUid)}`
-  );
+  const deadlineStr = prompt('⏰ Deadline time দাও (যেমন: 1:00 AM):', window.typ4mLastDeadline || '1:00 AM');
+  if (deadlineStr === null) return;
+  window.typ4mLastDeadline = deadlineStr;
+
+  const parsed = typ4mParseClock(deadlineStr);
+  let deadlineDisp = deadlineStr.trim(), responseTimeDisp = '—', subSwapDisp = '—';
+  if (parsed) {
+    deadlineDisp = typ4mFormatClock(parsed.h24, parsed.m);
+    const respStart = typ4mShiftClock(parsed, -10);
+    responseTimeDisp = `${typ4mFormatClock(respStart.h24, respStart.m)} — ${deadlineDisp}`;
+    const subSwap = typ4mShiftClock(parsed, -10, -1);
+    subSwapDisp = typ4mFormatClock(subSwap.h24, subSwap.m, subSwap.s);
+  }
+
+  const remaining = boutKeys.filter(k => !m.bouts[k].done).length;
+  const scoreA = m.aggScoreA ?? 0, scoreB = m.aggScoreB ?? 0;
+  const nameA = squadName(m.squadA), nameB = squadName(m.squadB);
+
+  const SEP = '━━━━━━━━━━━━━━━━━━━━';
+  const lineupBlocks = boutKeys.map(k => `${nameOf(m.bouts[k].playerAUid)}\nVS\n${nameOf(m.bouts[k].playerBUid)}`);
 
   const text = [
-    '🏆 TYP 4-MAN TOURNAMENT',
-    `⚔️ ${cleanLabel.toUpperCase()}`,
+    'TYP QUADRIX — SEASON 1',
+    stageLine,
     SEP,
-    `🆚 ${squadLine(m.squadA)}`,
+    '',
+    nameA,
     'VS',
-    squadLine(m.squadB),
-    ...boutBlocks,
+    nameB,
+    '',
+    `DEADLINE ${deadlineDisp}`,
+    `RESPONSE TIME ${responseTimeDisp}`,
+    '',
+    `SUB / SWAP DEADLINE ${subSwapDisp}`,
     SEP,
-    `🚨 ⏰ DEADLINE: ${deadline} 🚨`,
-    '🌐 MATCH DETAILS & UPDATES',
-    '👉 typ-bd.vercel.app',
+    '',
+    'MATCH LINE-UP',
+    ...lineupBlocks,
     SEP,
-    `🔥 ${boutKeys.length} BOUTS • 1 WINNER • 1 STEP CLOSER TO VICTORY`,
-    '⚽ GOOD LUCK TO BOTH TEAMS!',
-    '🏆 MAY THE BEST TEAM WIN!'
+    '',
+    'MATCH STATUS',
+    `MATCHES REMAINING • ${String(remaining).padStart(2, '0')}`,
+    `${nameA} • ${String(scoreA).padStart(2, '0')}`,
+    `${nameB} • ${String(scoreB).padStart(2, '0')}`,
+    SEP,
+    '',
+    'RULEBOOK Details • Updated',
+    '',
+    'OFFICIAL TYP WEBSITE',
+    'https://typ-bd.vercel.app/',
+    '',
+    SEP,
+    'TEXT YOUR PES • TYP QUADRIX'
   ].join('\n');
 
   try {
