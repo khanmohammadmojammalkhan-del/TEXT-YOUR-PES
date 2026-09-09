@@ -10215,14 +10215,32 @@ window.typRecordMatchHistory = typRecordMatchHistory;
 let f4mSquadsCache = [];
 let f4mMatchdaysCache = [];
 let f4mUsersCache = [];
+let f4mLastLineupCache = {};
 
 async function fetchF4mData() {
-  const [squadsRes, mdsRes] = await Promise.all([
+  const [squadsRes, mdsRes, lastRes] = await Promise.all([
     fetch(`${F4M_DB}/typ4man/squads.json`).then(r => r.json()),
-    fetch(`${F4M_DB}/typ4man/matchdays.json`).then(r => r.json())
+    fetch(`${F4M_DB}/typ4man/matchdays.json`).then(r => r.json()),
+    fetch(`${F4M_DB}/typ4man/lastLineup.json`).then(r => r.json())
   ]);
   f4mSquadsCache = squadsRes ? Object.entries(squadsRes).map(([id, v]) => ({ id, ...v })) : [];
   f4mMatchdaysCache = mdsRes ? Object.entries(mdsRes).map(([id, v]) => ({ id, ...v })) : [];
+  f4mLastLineupCache = lastRes || {};
+}
+
+// ── Effective lineup for a squad on a matchday: nijer eyi-matchday-r
+// lineup thakle sheta, na thakle tar sob theke shesh-e (latest) je matchday-e
+// lineup diyechilo shetai fallback hisebe use hobe. Squad kokhono kono
+// lineup na dile null return kore (draw hobe na tar jonno). ──
+function f4mEffectiveLineup(m, side) {
+  const squadId = side === 'A' ? m.squadA : m.squadB;
+  const own = side === 'A' ? m.lineupA : m.lineupB;
+  if (own && own.length === 3) return { lineup: own, source: 'own' };
+  const fb = f4mLastLineupCache[squadId];
+  if (fb && fb.lineup && fb.lineup.length === 3) {
+    return { lineup: fb.lineup, source: 'fallback', fromLabel: fb.matchdayLabel || 'আগের matchday' };
+  }
+  return { lineup: null, source: 'none' };
 }
 
 function f4mSquadName(id) {
@@ -10390,7 +10408,16 @@ window.loadF4mMatchdaysList = async function() {
           <span style="font-size:16px;font-weight:800">${m.status === 'completed' ? (m.aggScoreA + ' - ' + m.aggScoreB) : 'VS'}</span>
           <span style="font-weight:800;color:var(--primary)">${f4mSquadName(m.squadB)}</span>
         </div>
-        ${m.status !== 'completed' ? `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">${m.drawn ? '🎲 Draw সম্পন্ন — bout pairing ঠিক হয়ে গেছে' : ((m.lineupA && m.lineupA.length === 3 && m.lineupB && m.lineupB.length === 3) ? '✅ দুই দলের Lineup জমা — Draw বাকি' : '⏳ Manager-দের Lineup জমা দেওয়ার অপেক্ষায়')}</div>` : ''}
+        ${(() => {
+          if (m.status === 'completed') return '';
+          if (m.drawn) return `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">🎲 Draw সম্পন্ন — bout pairing ঠিক হয়ে গেছে${m.usedLineupASource === 'fallback' || m.usedLineupBSource === 'fallback' ? ' (কারো কারো সর্বশেষ lineup fallback হিসেবে ব্যবহার হয়েছে)' : ''}</div>`;
+          const effA = f4mEffectiveLineup(m, 'A'), effB = f4mEffectiveLineup(m, 'B');
+          if (effA.lineup && effB.lineup) {
+            const fbNote = (effA.source === 'fallback' || effB.source === 'fallback') ? ' 🔁 (কারো সর্বশেষ Lineup fallback হিসেবে)' : '';
+            return `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">✅ দুই দলের Lineup পাওয়া গেছে — Draw বাকি${fbNote}</div>`;
+          }
+          return `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">⏳ Manager-দের Lineup জমা দেওয়ার অপেক্ষায়</div>`;
+        })()}
         ${boutRows}
       </div>`;
     }).join('');
@@ -10990,14 +11017,28 @@ window.loadF4mMatchdayForEntry = async function() {
   const isKnockout = m.stage === 'qf' || m.stage === 'sf' || m.stage === 'final';
   const r = f4mMatchdayResult(m);
   const showTieBreakBtn = isKnockout && r && r.draw;
-  const lineupAOk = m.lineupA && m.lineupA.length === 3;
-  const lineupBOk = m.lineupB && m.lineupB.length === 3;
+  // Draw-er age effective lineup dekhabo (nijer eyi-MD lineup thakle
+  // shetai, na thakle squad-er sob-theke shesh submitted lineup fallback
+  // hisebe); draw hoye gele thakle asholey je lineup diye draw hoyeche
+  // (usedLineupA/B, PATCH-e save kora) shetai dekhabo — jate admin
+  // "latest lineup" ta clear-ly dekhte pay.
+  const effA = m.drawn && m.usedLineupA ? { lineup: m.usedLineupA, source: m.usedLineupASource } : f4mEffectiveLineup(m, 'A');
+  const effB = m.drawn && m.usedLineupB ? { lineup: m.usedLineupB, source: m.usedLineupBSource } : f4mEffectiveLineup(m, 'B');
+  const lineupLabel = (eff, squadId) => {
+    if (!eff.lineup) return '⏳ Lineup বাকি (কোনো lineup পাওয়া যায়নি)';
+    const names = eff.lineup.map(uName).join(', ');
+    return eff.source === 'own'
+      ? `✅ এই matchday-র Lineup জমা (${names})`
+      : `🔁 এই matchday-র Lineup দেয়নি — সর্বশেষ${eff.fromLabel ? ' (' + eff.fromLabel + ')' : ''} Lineup ব্যবহার হবে (${names})`;
+  };
+  const lineupAOk = !!effA.lineup;
+  const lineupBOk = !!effB.lineup;
   const canDraw = lineupAOk && lineupBOk && !m.drawn;
   const drawBlock = `
     <div style="margin-bottom:14px;padding:12px;background:var(--bg2);border:1px dashed var(--primary);border-radius:10px">
       <div style="font-weight:700;font-size:12.5px;color:var(--primary);margin-bottom:6px">🎲 Manager Lineup & Draw</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${f4mSquadName(m.squadA)}: ${lineupAOk ? '✅ Lineup জমা (' + m.lineupA.map(uName).join(', ') + ')' : '⏳ Lineup বাকি'}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${f4mSquadName(m.squadB)}: ${lineupBOk ? '✅ Lineup জমা (' + m.lineupB.map(uName).join(', ') + ')' : '⏳ Lineup বাকি'}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">${f4mSquadName(m.squadA)}: ${lineupLabel(effA, m.squadA)}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">${f4mSquadName(m.squadB)}: ${lineupLabel(effB, m.squadB)}</div>
       ${m.drawn
         ? `<div style="font-size:12px;color:var(--green);margin-bottom:6px">✅ Draw সম্পন্ন — নিচে bout pairing দেখা যাচ্ছে, প্রয়োজনে 🔁 দিয়ে Change Player করা যাবে (Admin unlimited)।</div>
            <div style="font-size:10.5px;color:var(--text3);margin-bottom:8px">${f4mSquadName(m.squadA)}: ${(mdSubs[m.squadA] || {}).subsUsed || 0}/2 Sub, ${(mdSubs[m.squadA] || {}).swapsUsed || 0}/2 Swap · ${f4mSquadName(m.squadB)}: ${(mdSubs[m.squadB] || {}).subsUsed || 0}/2 Sub, ${(mdSubs[m.squadB] || {}).swapsUsed || 0}/2 Swap</div>
@@ -11006,7 +11047,7 @@ window.loadF4mMatchdayForEntry = async function() {
              <button class="btn" style="padding:6px 14px;font-size:12px;background:rgba(248,113,113,0.08);border:1px solid var(--red);color:var(--red)" onclick="f4mUndoDraw('${id}')">🗑️ Undo Draw</button>
            </div>`
         : `<button class="btn btn-gold" style="padding:7px 16px;font-size:12px" ${canDraw ? '' : 'disabled style="opacity:0.5"'} onclick="f4mStartDraw('${id}')">🎲 Start Matchday (Draw করো)</button>
-           ${!canDraw ? '<div style="font-size:11px;color:var(--text3);margin-top:4px">দুই squad-এর manager Lineup জমা না দেওয়া পর্যন্ত Draw করা যাবে না।</div>' : ''}`}
+           ${!canDraw ? '<div style="font-size:11px;color:var(--text3);margin-top:4px">দুই squad-এর কোনো (এই বা আগের matchday-র) Lineup পাওয়া না যাওয়া পর্যন্ত Draw করা যাবে না।</div>' : ''}`}
     </div>`;
   area.innerHTML = `
     <div style="margin:16px 0;padding:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px">
@@ -11954,7 +11995,12 @@ window.f4mMgrSubmitLineup = async function(mid) {
   const isA = m.squadA === squad.id;
   const field = isA ? 'lineupA' : 'lineupB';
   const tsField = isA ? 'lineupASubmittedAt' : 'lineupBSubmittedAt';
-  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ [field]: draft, [tsField]: new Date().toISOString() }) });
+  const now = new Date().toISOString();
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ [field]: draft, [tsField]: now }) });
+  // Ei lineup-take squad-er "latest lineup" hisebe o save kore rakhi — porer
+  // matchday-e jodi eyi squad notun kore lineup na dey, tahole eyi lineup-i
+  // fallback hisebe draw-e use hobe.
+  await fetch(`${F4M_DB}/typ4man/lastLineup/${squad.id}.json`, { method: 'PUT', body: JSON.stringify({ lineup: draft, matchdayId: mid, matchdayLabel: m.label || 'Matchday', submittedAt: now }) });
   alert('✅ Lineup জমা হয়েছে!');
   await fetchF4mData();
   f4mMgrRenderMatchdayList();
@@ -12013,16 +12059,27 @@ window.f4mStartDraw = async function(mid) {
   await fetchF4mData();
   const m = f4mMatchdaysCache.find(x => x.id === mid);
   if (!m) { alert('❌ Matchday পাওয়া যায়নি।'); return; }
-  if (!m.lineupA || m.lineupA.length !== 3 || !m.lineupB || m.lineupB.length !== 3) {
-    alert(`❌ Lineup অসম্পূর্ণ।\n${f4mSquadName(m.squadA)}: ${m.lineupA ? m.lineupA.length : 0}/3\n${f4mSquadName(m.squadB)}: ${m.lineupB ? m.lineupB.length : 0}/3`);
+  const effA = f4mEffectiveLineup(m, 'A');
+  const effB = f4mEffectiveLineup(m, 'B');
+  if (!effA.lineup || !effB.lineup) {
+    alert(`❌ Lineup অসম্পূর্ণ।\n${f4mSquadName(m.squadA)}: ${effA.lineup ? '✅' : '❌ কোনো lineup নেই (এই বা আগের কোনো matchday-তেও দেয়নি)'}\n${f4mSquadName(m.squadB)}: ${effB.lineup ? '✅' : '❌ কোনো lineup নেই (এই বা আগের কোনো matchday-তেও দেয়নি)'}`);
     return;
   }
-  if (!confirm(`🎲 ${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)} — Draw করা হবে?\n\nদুই squad-এর ৩ জন করে lineup থেকে random pairing হয়ে 3টা bout fixture তৈরি হবে।`)) return;
+  const noteA = effA.source === 'fallback' ? `\n⚠️ ${f4mSquadName(m.squadA)}: এই matchday-র lineup দেয়নি — এদের সর্বশেষ (${effA.fromLabel}) lineup ব্যবহার হবে।` : '';
+  const noteB = effB.source === 'fallback' ? `\n⚠️ ${f4mSquadName(m.squadB)}: এই matchday-র lineup দেয়নি — এদের সর্বশেষ (${effB.fromLabel}) lineup ব্যবহার হবে।` : '';
+  if (!confirm(`🎲 ${f4mSquadName(m.squadA)} vs ${f4mSquadName(m.squadB)} — Draw করা হবে?\n\nদুই squad-এর ৩ জন করে lineup থেকে random pairing হয়ে 3টা bout fixture তৈরি হবে।${noteA}${noteB}`)) return;
   const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const shuffledB = shuffle(m.lineupB);
+  const shuffledB = shuffle(effB.lineup);
   const bouts = {};
-  m.lineupA.forEach((uid, i) => { bouts['b' + (i + 1)] = { playerAUid: uid, playerBUid: shuffledB[i], scoreA: null, scoreB: null, done: false }; });
-  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts, drawn: true, drawnAt: new Date().toISOString() }) });
+  effA.lineup.forEach((uid, i) => { bouts['b' + (i + 1)] = { playerAUid: uid, playerBUid: shuffledB[i], scoreA: null, scoreB: null, done: false }; });
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({
+    bouts, drawn: true, drawnAt: new Date().toISOString(),
+    // Draw-e asholey je lineup use hoyeche shetao save kore rakhi (nijer na
+    // hoye fallback-o hote pare) — jate admin/manager pore dekhte pare
+    // kar kon lineup diye draw hoyeche.
+    usedLineupA: effA.lineup, usedLineupASource: effA.source,
+    usedLineupB: effB.lineup, usedLineupBSource: effB.source
+  }) });
   await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}.json`, { method: 'PUT', body: JSON.stringify({ [m.squadA]: { subsUsed: 0, swapsUsed: 0 }, [m.squadB]: { subsUsed: 0, swapsUsed: 0 } }) });
   alert('✅ Draw সম্পন্ন! Fixture তৈরি হয়ে গেছে।');
   await loadF4mAdminMatchdays();
@@ -12033,7 +12090,7 @@ window.f4mStartDraw = async function(mid) {
 // ── Admin: Undo a draw (clears pairing, keeps submitted lineups) ──
 window.f4mUndoDraw = async function(mid) {
   if (!confirm('⚠️ এই matchday-এর drawn fixture (player pairing) মুছে দেওয়া হবে। Lineup ঠিকই থাকবে, পরে আবার Draw করা যাবে। Continue?')) return;
-  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts: f4mEmptyBouts(), drawn: false }) });
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts: f4mEmptyBouts(), drawn: false, usedLineupA: null, usedLineupASource: null, usedLineupB: null, usedLineupBSource: null }) });
   await fetch(`${F4M_DB}/typ4man/matchdaySubs/${mid}.json`, { method: 'DELETE' });
   alert('✅ Draw undo হয়েছে।');
   await loadF4mAdminMatchdays();
