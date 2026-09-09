@@ -4716,6 +4716,7 @@ window.computeMainRankingData = async function() {
       totals[p.uid].draws    += (s4.draws||0);
       totals[p.uid].losses   += (s4.losses||0);
       totals[p.uid].goalsFor += (s4.goalsFor||0);
+      totals[p.uid].mvp      += (s4.mvp||0);
     }
   });
 
@@ -4792,6 +4793,7 @@ window.loadMainRanking = async function() {
         totals[p.uid].draws    += (s4.draws||0);
         totals[p.uid].losses   += (s4.losses||0);
         totals[p.uid].goalsFor += (s4.goalsFor||0);
+        totals[p.uid].mvp      += (s4.mvp||0);
       }
     });
 
@@ -10522,6 +10524,7 @@ window.loadF4mRanking = async function() {
       <td style="padding:12px 16px;text-align:center;color:var(--red)">${p.losses || 0}</td>
       <td style="padding:12px 16px;text-align:center;color:var(--cyan)">${wp}%</td>
       <td style="padding:12px 16px;text-align:center;color:var(--yellow);font-weight:700">${p.goalsFor || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--gold);font-weight:700">${p.mvp || 0}</td>
       <td style="padding:12px 16px;text-align:center;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:var(--cyan)">${(p.wins || 0) * 3 + (p.draws || 0) * 1}</td>
     </tr>`;
   }).join('');
@@ -10538,6 +10541,7 @@ window.loadF4mRanking = async function() {
           <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--red);font-family:'Libre Caslon Text',sans-serif">L</th>
           <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">WIN%</th>
           <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--yellow);font-family:'Libre Caslon Text',sans-serif">⚽ GOALS</th>
+          <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--gold);font-family:'Libre Caslon Text',sans-serif">🏅 MVP</th>
           <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--cyan);font-family:'Libre Caslon Text',sans-serif">⭐ PTS</th>
         </tr>
       </thead>
@@ -11084,6 +11088,15 @@ window.loadF4mMatchdayForEntry = async function() {
       }).join('')}
       ${showTieBreakBtn ? `<div style="margin:6px 0;font-size:12px;color:var(--yellow)">⚖️ Aggregate টাই (${r.aggA}-${r.aggB}) — Knockout-এ টাই চলবে না, নিচে থেকে একটা Tie-Break bout যোগ করো।</div>
       <button class="btn btn-outline" style="padding:6px 14px;font-size:12px;border-color:var(--yellow);color:var(--yellow);margin-bottom:8px" onclick="f4mAddTieBreakBout('${id}')">➕ Tie-Break Bout যোগ করো</button>` : ''}
+      <div style="margin:10px 0;padding:10px;background:var(--bg2);border:1px dashed var(--gold);border-radius:10px">
+        <label class="form-label" style="font-size:12px;color:var(--gold)">🏅 Matchday MVP বাছাই করো</label>
+        <select class="form-input" id="f4mMvpSelect-${id}" data-mid="${id}" style="width:100%">
+          <option value="">-- MVP নির্বাচন করো (ঐচ্ছিক) --</option>
+          ${[...new Set([...(squadA?.playerUids || []), ...(squadB?.playerUids || [])])].map(uid =>
+            `<option value="${uid}" ${uid === (m.mvpUid || '') ? 'selected' : ''}>${uName(uid)}</option>`).join('')}
+        </select>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:4px">এই MVP শুধু 4-Man Ranking-এ যোগ হবে — Main (Auction Tournament) Ranking-এ কোনো প্রভাব ফেলবে না।</div>
+      </div>
       <button class="btn btn-gold" style="margin-top:8px;padding:8px 20px;font-size:13px" onclick="saveF4mMatchdayResults('${id}')">💾 Save Results</button>
       <span id="f4mSaveStatus" style="margin-left:10px;font-size:13px;color:var(--green)"></span>
       ${m.status === 'completed' ? f4mBuildCardControlsHtml(m, id) : ''}
@@ -11102,7 +11115,7 @@ function f4mBuildCardControlsHtml(m, id) {
     if (mt.player1uid && !seen.has(mt.player1uid)) { seen.add(mt.player1uid); uniquePlayers.push({ uid: mt.player1uid, name: mt.player1 }); }
     if (mt.player2uid && !seen.has(mt.player2uid)) { seen.add(mt.player2uid); uniquePlayers.push({ uid: mt.player2uid, name: mt.player2 }); }
   });
-  const savedMvp = (window._f4mCardMvp || {})[id] || '';
+  const savedMvp = (window._f4mCardMvp || {})[id] || m.mvpUid || '';
   return `
     <div style="margin-top:14px;padding:12px;background:var(--card2);border:1px dashed var(--secondary);border-radius:10px">
       <div style="font-weight:700;color:var(--secondary);margin-bottom:8px;font-size:13px">🎴 Matchday Card (Result + MVP একসাথে)</div>
@@ -11140,6 +11153,37 @@ function f4mBuildCardMatches(m) {
 // Legacy standalone cards — kept as internal helpers in case something else on
 // the page still calls them, but the 4-Man admin UI now only exposes the
 // single combined card via downloadF4mQuadrixCard() below.
+// ── Shared: set a matchday's MVP + apply the +1/-1 delta to stats4man.mvp.
+// Called from BOTH the Save Results MVP-picker AND the Matchday-Card export
+// MVP-picker — whichever one runs last is what actually counts (it always
+// diffs against the matchday's currently-saved mvpUid), so using either
+// entry point never double-credits a player's profile. ──
+async function f4mCreditMvp(mid, newMvpUid, userMapParam) {
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m) return;
+  newMvpUid = newMvpUid || '';
+  const oldMvpUid = m.mvpUid || '';
+  if (oldMvpUid === newMvpUid) return;
+
+  let userMap = userMapParam;
+  if (!userMap) {
+    const allUsers = await getAllUsers();
+    userMap = {}; allUsers.forEach(u => userMap[u.uid] = u);
+  }
+
+  if (oldMvpUid && userMap[oldMvpUid]) {
+    const oldCount = Math.max(0, ((userMap[oldMvpUid].stats4man || {}).mvp || 0) - 1);
+    await fetch(`${F4M_DB}/users/${oldMvpUid}/stats4man/mvp.json`, { method: 'PUT', body: JSON.stringify(oldCount) });
+  }
+  if (newMvpUid && userMap[newMvpUid]) {
+    const newCount = ((userMap[newMvpUid].stats4man || {}).mvp || 0) + 1;
+    await fetch(`${F4M_DB}/users/${newMvpUid}/stats4man/mvp.json`, { method: 'PUT', body: JSON.stringify(newCount) });
+  }
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ mvpUid: newMvpUid }) });
+  m.mvpUid = newMvpUid;
+  window._allUsersCache = [];
+}
+
 window.downloadF4mMatchdayCard = async function(mid) {
   const m = f4mMatchdaysCache.find(x => x.id === mid);
   if (!m) { alert('❌ Matchday পাওয়া যায়নি।'); return; }
@@ -11220,6 +11264,11 @@ window.downloadF4mQuadrixCard = async function(mid) {
 
   const allUsers = await getAllUsers();
   const userMap = {}; allUsers.forEach(u => { userMap[u.uid] = u; });
+
+  // ── এখানেই MVP profile-এ ক্রেডিট হয়ে যায় — card export করার মুহূর্তেই
+  // stats4man.mvp আপডেট হয়, আলাদা করে Save Results-এ গিয়ে বাছাই করা লাগে না। ──
+  await f4mCreditMvp(mid, mvpUid, userMap);
+
   const userObj = userMap[mvpUid] || {};
   const squadA = f4mSquadsCache.find(s => s.id === m.squadA) || {};
   const squadB = f4mSquadsCache.find(s => s.id === m.squadB) || {};
@@ -11767,6 +11816,12 @@ window.saveF4mMatchdayResults = async function(mid) {
 
   if (!allFilled) { statusEl.textContent = '⚠️ সব bout-এর score বসাও।'; statusEl.style.color = 'var(--red)'; return; }
 
+  // ── MVP: shudhu ei matchday-r jonno ekjon (optional) — shudhu stats4man.mvp-e
+  // jog hoy. f4mCreditMvp() nijei mvpUid PATCH kore + delta apply kore, tai
+  // eikhane mvpUid alada kore PATCH-e pathano lagbe na. ──
+  const mvpSelEl = document.getElementById(`f4mMvpSelect-${mid}`);
+  const newMvpUid = mvpSelEl ? mvpSelEl.value : '';
+
   await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts, aggScoreA: aggA, aggScoreB: aggB, status: 'completed', updatedAt: new Date().toISOString() }) });
 
   // ── Squad-level match-history record ──
@@ -11795,16 +11850,21 @@ window.saveF4mMatchdayResults = async function(mid) {
     // still count toward the Main (all-time) Ranking, but only via the separate
     // stats4man breakdown below, which computeMainRankingData()/loadMainRanking() add
     // in on top of the season fields.
-    const s4 = base.stats4man || { matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0 };
+    const s4 = base.stats4man || { matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, mvp: 0 };
     const s4Update = {
       matches: (s4.matches || 0) + delta.matches,
       wins: (s4.wins || 0) + delta.wins,
       draws: (s4.draws || 0) + delta.draws,
       losses: (s4.losses || 0) + delta.losses,
       goalsFor: (s4.goalsFor || 0) + delta.goalsFor,
+      mvp: s4.mvp || 0, // ei mvp field ekhane touch kora hoy na — niche alada-bhabe update hobe
     };
     await fetch(`${F4M_DB}/users/${uid}/stats4man.json`, { method: 'PUT', body: JSON.stringify(s4Update) });
   }
+
+  // ── Matchday MVP delta apply — shared helper (also used by the Matchday-Card
+  // export flow), so both entry points stay in sync and never double-credit. ──
+  await f4mCreditMvp(mid, newMvpUid, userMap);
 
   window._allUsersCache = [];
   await loadF4mAdminMatchdays();
@@ -11864,7 +11924,7 @@ window.doF4mEditionReset = async function() {
     // Zero out every player's 4-Man breakdown (keep the node, not delete it,
     // so the Ranking UI always has a consistent shape to read).
     await Promise.all(f4mUsersCache.filter(u => u.stats4man).map(u =>
-      fetch(`${F4M_DB}/users/${u.uid}/stats4man.json`, { method: 'PUT', body: JSON.stringify({ matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0 }) })
+      fetch(`${F4M_DB}/users/${u.uid}/stats4man.json`, { method: 'PUT', body: JSON.stringify({ matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, mvp: 0 }) })
     ));
 
     await fetch(`${F4M_DB}/typ4man/squads.json`, { method: 'DELETE' });
