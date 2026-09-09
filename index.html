@@ -10229,17 +10229,33 @@ async function fetchF4mData() {
 }
 
 // ── Effective lineup for a squad on a matchday: nijer eyi-matchday-r
-// lineup thakle sheta, na thakle tar sob theke shesh-e (latest) je matchday-e
-// lineup diyechilo shetai fallback hisebe use hobe. Squad kokhono kono
-// lineup na dile null return kore (draw hobe na tar jonno). ──
+// lineup thakle sheta. Na thakle "latest submitted lineup" fallback hisebe
+// use hobe — eta dutoi jaygay khoje: (1) typ4man/lastLineup node (notun
+// submission-e save hoy, fast path), ar (2) squad-er onno matchday-gulor
+// modde already-save-thaka lineupA/B (retroactive path — eta feature-ta
+// add howar AGE je squad-gula lineup diyechilo tader jonno o kaj kore, kono
+// backfill lagbe na). Dutor modde je-ta sob-theke shesh-e submit hoyeche
+// shetai use hoy. Squad kokhono kono lineup na dile null return kore
+// (draw hobe na tar jonno). ──
 function f4mEffectiveLineup(m, side) {
   const squadId = side === 'A' ? m.squadA : m.squadB;
   const own = side === 'A' ? m.lineupA : m.lineupB;
   if (own && own.length === 3) return { lineup: own, source: 'own' };
+  let best = null;
   const fb = f4mLastLineupCache[squadId];
   if (fb && fb.lineup && fb.lineup.length === 3) {
-    return { lineup: fb.lineup, source: 'fallback', fromLabel: fb.matchdayLabel || 'আগের matchday' };
+    best = { lineup: fb.lineup, label: fb.matchdayLabel || 'আগের matchday', stamp: fb.submittedAt || '' };
   }
+  f4mMatchdaysCache.forEach(other => {
+    if (other.id === m.id) return;
+    const isA = other.squadA === squadId, isB = other.squadB === squadId;
+    if (!isA && !isB) return;
+    const lu = isA ? other.lineupA : other.lineupB;
+    if (!lu || lu.length !== 3) return;
+    const ts = (isA ? other.lineupASubmittedAt : other.lineupBSubmittedAt) || other.drawnAt || other.createdAt || '';
+    if (!best || ts > best.stamp) best = { lineup: lu, label: other.label || 'Matchday', stamp: ts };
+  });
+  if (best) return { lineup: best.lineup, source: 'fallback', fromLabel: best.label };
   return { lineup: null, source: 'none' };
 }
 
