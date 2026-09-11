@@ -10493,9 +10493,10 @@ window.loadF4mRanking = async function() {
 
   if (!rows.length) { wrap.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--text3)">এখনো কোনো 4-Man ম্যাচ খেলা হয়নি।</div>`; return; }
 
+  // Score: Win=9, MVP=5, Draw=3, Goal=1 — same weights as Main Ranking (sortRankingData)
   rows.sort((a, b) => {
-    const sa = (a.wins || 0) * 3 + (a.draws || 0) * 1;
-    const sb = (b.wins || 0) * 3 + (b.draws || 0) * 1;
+    const sa = (a.wins || 0) * 9 + (a.mvp || 0) * 5 + (a.draws || 0) * 3 + (a.goalsFor || 0) * 1;
+    const sb = (b.wins || 0) * 9 + (b.mvp || 0) * 5 + (b.draws || 0) * 3 + (b.goalsFor || 0) * 1;
     if (sb !== sa) return sb - sa;
     if ((b.wins || 0) !== (a.wins || 0)) return (b.wins || 0) - (a.wins || 0);
     return (b.goalsFor || 0) - (a.goalsFor || 0);
@@ -10525,7 +10526,7 @@ window.loadF4mRanking = async function() {
       <td style="padding:12px 16px;text-align:center;color:var(--cyan)">${wp}%</td>
       <td style="padding:12px 16px;text-align:center;color:var(--yellow);font-weight:700">${p.goalsFor || 0}</td>
       <td style="padding:12px 16px;text-align:center;color:var(--gold);font-weight:700">${p.mvp || 0}</td>
-      <td style="padding:12px 16px;text-align:center;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:var(--cyan)">${(p.wins || 0) * 3 + (p.draws || 0) * 1}</td>
+      <td style="padding:12px 16px;text-align:center;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:var(--cyan)">${(p.wins || 0) * 9 + (p.mvp || 0) * 5 + (p.draws || 0) * 3 + (p.goalsFor || 0) * 1}</td>
     </tr>`;
   }).join('');
 
@@ -18263,3 +18264,5 @@ window.aiqaUseAsFaq = aiqaUseAsFaq;
 </script>
 </body>
 </html>
+
+
