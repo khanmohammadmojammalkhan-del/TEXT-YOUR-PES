@@ -11089,7 +11089,17 @@ window.renderF4mGroupStandings = function() {
 window.generateF4mQuarterfinals = async function() {
   const status = document.getElementById('f4mKoStatus');
   const groups = ['A', 'B', 'C', 'D'];
-  const incomplete = groups.filter(g => f4mSquadsCache.filter(s => s.group === g).length === 4 &&
+  const counts = {};
+  groups.forEach(g => counts[g] = f4mSquadsCache.filter(s => s.group === g).length);
+  // Flag ANY group with fewer/more squads than expected too — not just the
+  // exactly-4 case — so a mis-typed group letter or unassigned squad shows
+  // up here instead of surfacing later as a confusing "need 2 teams" error.
+  const wrongCount = groups.filter(g => counts[g] !== 4);
+  if (wrongCount.length) {
+    status.textContent = `⚠️ Group সংখ্যা মিলছে না — ${wrongCount.map(g => `${g}: ${counts[g]}টা squad`).join(', ')} (প্রতি Group-এ ঠিক ৪টা থাকা দরকার)। Squads list-এ গিয়ে group assignment চেক করো।`;
+    status.style.color = 'var(--red)'; return;
+  }
+  const incomplete = groups.filter(g =>
     f4mMatchdaysCache.filter(m => m.stage === 'group' && m.group === g).length < 6);
   if (incomplete.length) { status.textContent = `⚠️ Group ${incomplete.join(', ')}-এর সব matchday এখনো শেষ হয়নি।`; status.style.color = 'var(--red)'; return; }
   const top2 = {};
