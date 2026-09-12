@@ -8223,14 +8223,19 @@ function pmdCalcF4mStandingsStandalone(squadsObj, matchdaysArr, group) {
   teams.forEach(t => { table[t.id] = { id: t.id, name: t.name, mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }; });
   (matchdaysArr || []).filter(m => m.stage === 'group' && m.group === group && m.status === 'completed').forEach(m => {
     const boutList = Object.values(m.bouts || {});
-    let aggA = 0, aggB = 0;
-    boutList.forEach(b => { aggA += (b.scoreA || 0); aggB += (b.scoreB || 0); });
+    let aggA = 0, aggB = 0, winsA = 0, winsB = 0;
+    boutList.forEach(b => {
+      aggA += (b.scoreA || 0); aggB += (b.scoreB || 0);
+      if (b.scoreA > b.scoreB) winsA++; else if (b.scoreB > b.scoreA) winsB++;
+    });
     if (!table[m.squadA] || !table[m.squadB]) return;
     table[m.squadA].mp++; table[m.squadB].mp++;
     table[m.squadA].gf += aggA; table[m.squadA].ga += aggB;
     table[m.squadB].gf += aggB; table[m.squadB].ga += aggA;
-    if (aggA > aggB) { table[m.squadA].w++; table[m.squadA].pts += 3; table[m.squadB].l++; }
-    else if (aggB > aggA) { table[m.squadB].w++; table[m.squadB].pts += 3; table[m.squadA].l++; }
+    // Same fix as calcF4mGroupStandings: decide W/D/L by bout wins, not
+    // raw goal aggregate.
+    if (winsA > winsB) { table[m.squadA].w++; table[m.squadA].pts += 3; table[m.squadB].l++; }
+    else if (winsB > winsA) { table[m.squadB].w++; table[m.squadB].pts += 3; table[m.squadA].l++; }
     else { table[m.squadA].d++; table[m.squadA].pts += 1; table[m.squadB].d++; table[m.squadB].pts += 1; }
   });
   return Object.values(table).sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga)) || (b.gf - a.gf));
@@ -11024,10 +11029,16 @@ window.generateF4mGroupFixtures = async function() {
 function f4mMatchdayResult(m) {
   const boutList = Object.values(m.bouts || {});
   if (!boutList.length || boutList.some(b => !b.done)) return null;
-  let aggA = 0, aggB = 0;
-  boutList.forEach(b => { aggA += (b.scoreA || 0); aggB += (b.scoreB || 0); });
-  if (aggA > aggB) return { winner: m.squadA, loser: m.squadB, draw: false, aggA, aggB };
-  if (aggB > aggA) return { winner: m.squadB, loser: m.squadA, draw: false, aggA, aggB };
+  let aggA = 0, aggB = 0, winsA = 0, winsB = 0;
+  boutList.forEach(b => {
+    aggA += (b.scoreA || 0); aggB += (b.scoreB || 0);
+    if (b.scoreA > b.scoreB) winsA++; else if (b.scoreB > b.scoreA) winsB++;
+  });
+  // Matchday result is decided by bout wins (matchday points), not raw
+  // goal aggregate — a squad can win more bouts while conceding more
+  // total goals in a blowout bout, and that must still count as a win.
+  if (winsA > winsB) return { winner: m.squadA, loser: m.squadB, draw: false, aggA, aggB };
+  if (winsB > winsA) return { winner: m.squadB, loser: m.squadA, draw: false, aggA, aggB };
   return { winner: null, loser: null, draw: true, aggA, aggB };
 }
 
@@ -11037,14 +11048,20 @@ function calcF4mGroupStandings(group) {
   teams.forEach(t => { table[t.id] = { id: t.id, name: t.name, logo: t.logo || '', mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }; });
   f4mMatchdaysCache.filter(m => m.stage === 'group' && m.group === group && m.status === 'completed').forEach(m => {
     const boutList = Object.values(m.bouts || {});
-    let aggA = 0, aggB = 0;
-    boutList.forEach(b => { aggA += (b.scoreA || 0); aggB += (b.scoreB || 0); });
+    let aggA = 0, aggB = 0, winsA = 0, winsB = 0;
+    boutList.forEach(b => {
+      aggA += (b.scoreA || 0); aggB += (b.scoreB || 0);
+      if (b.scoreA > b.scoreB) winsA++; else if (b.scoreB > b.scoreA) winsB++;
+    });
     if (!table[m.squadA] || !table[m.squadB]) return;
     table[m.squadA].mp++; table[m.squadB].mp++;
     table[m.squadA].gf += aggA; table[m.squadA].ga += aggB;
     table[m.squadB].gf += aggB; table[m.squadB].ga += aggA;
-    if (aggA > aggB) { table[m.squadA].w++; table[m.squadA].pts += 3; table[m.squadB].l++; }
-    else if (aggB > aggA) { table[m.squadB].w++; table[m.squadB].pts += 3; table[m.squadA].l++; }
+    // W/D/L is decided by bout wins (matchday points), not raw goal
+    // aggregate — e.g. 1 bout won big + 1 bout lost + 1 draw is a drawn
+    // matchday even if the losing side's goal tally looks lopsided.
+    if (winsA > winsB) { table[m.squadA].w++; table[m.squadA].pts += 3; table[m.squadB].l++; }
+    else if (winsB > winsA) { table[m.squadB].w++; table[m.squadB].pts += 3; table[m.squadA].l++; }
     else { table[m.squadA].d++; table[m.squadA].pts += 1; table[m.squadB].d++; table[m.squadB].pts += 1; }
   });
   return Object.values(table).sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga)) || (b.gf - a.gf));
