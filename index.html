@@ -2531,7 +2531,6 @@ if (document.readyState === 'loading') {
       <input type="text" class="form-input" id="rankSearch" placeholder="🔍 Search player..." oninput="filterRanking()" style="flex:1;min-width:200px">
       <select class="form-input" id="rankSeasonFilter" onchange="onRankSeasonChange()" style="min-width:170px;max-width:240px;flex-shrink:0">
         <option value="main">🏆 Main Ranking (All-Time)</option>
-        <option value="current">🔴 Current Season</option>
       </select>
       <button class="btn btn-outline" onclick="refreshRankingView()">🔄 Sync</button>
       <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px">
@@ -2616,6 +2615,7 @@ if (document.readyState === 'loading') {
     <button class="trn-tab" onclick="switchTrnTab('fixtures')">📅 Fixtures</button>
     <button class="trn-tab" onclick="switchTrnTab('teams')">👥 Teams</button>
     <button class="trn-tab" onclick="switchTrnTab('knockout')">⚡ Knockout</button>
+    <button class="trn-tab" onclick="switchTrnTab('ranking')">🏆 Ranking</button>
   </div>
 
   <!-- STANDINGS TAB -->
@@ -2688,6 +2688,23 @@ if (document.readyState === 'loading') {
       <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
     </div>
   </div>
+
+  <!-- RANKING TAB (Auction Tournament only: Current Season + archived seasons) -->
+  <div class="trn-content" id="trntab-ranking">
+    <div style="margin-bottom:14px;font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
+      <span style="border-left:3px solid var(--gold);padding-left:6px">Current Season ও আগের Archived Seasons — Auction Tournament-এর ranking history</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <select class="form-input" id="trnRankSeasonFilter" onchange="onTrnRankSeasonChange()" style="min-width:190px;max-width:260px;flex:1">
+        <option value="current">🔴 Current Season</option>
+      </select>
+      <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="refreshTrnRankingView()">🔄 Sync</button>
+    </div>
+    <div id="trnRankSeasonBanner" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:600"></div>
+    <div id="trnRankingWrap">
+      <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
+    </div>
+  </div>
   </div><!-- /trnAuctionView -->
 
   <!-- ═══ 4-MAN TOURNAMENT VIEW ═══ -->
@@ -2729,6 +2746,7 @@ if (document.readyState === 'loading') {
 
     <div class="f4m-content" id="f4mtab-ranking">
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <input type="text" class="form-input" id="f4mRankSearch" placeholder="🔍 Player খুঁজো..." oninput="filterF4mRanking()" style="flex:1;min-width:200px">
         <select class="form-input" id="f4mRankEditionSelect" onchange="loadF4mRanking()" style="flex:1;min-width:200px;max-width:280px">
           <option value="current">🔴 Current Edition</option>
         </select>
@@ -3955,6 +3973,15 @@ if (document.readyState === 'loading') {
     <button class="btn btn-outline" onclick="loadKnockoutAdmin()" style="padding:9px 20px;font-size:13px;margin-top:10px">🔄 Load Knockout</button>
     <button class="btn" onclick="autoSetSemis()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set from Top 2/Group</button>
   </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">✏️ Edit Player Stats (Auction Tournament)</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্লেয়ার খুঁজে সরাসরি এখান থেকে তার overall stats (matches/wins/draws/losses/goals/MVP) edit করো — ঠিক Players ট্যাবের মতোই, শুধু এখানে খোঁজা আরো সহজ।</p>
+    <input type="text" class="form-input" id="trnStatsSearch" placeholder="🔍 Player খুঁজো..." oninput="filterTrnStatsAdmin(this.value)" style="margin-bottom:12px;max-width:320px">
+    <div id="trnStatsPlayerList" style="max-height:400px;overflow-y:auto">
+      <div style="text-align:center;padding:20px;color:var(--text3)"><span class="spinner"></span></div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════ 4-MAN TOURNAMENT (ADMIN) ══════════════ -->
@@ -4062,6 +4089,15 @@ if (document.readyState === 'loading') {
     <input type="text" class="form-input" id="f4mEditionConfirmInput" placeholder='Confirm করতে এখানে &quot;RESET&quot; লেখো' style="margin-bottom:10px;max-width:360px">
     <button onclick="doF4mEditionReset()" style="background:linear-gradient(135deg,#ff4757,#c0392b);border:none;color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px">🔄 EDITION RESET করো</button>
     <div id="f4mEditionResetStatus" style="margin-top:10px;font-size:13px"></div>
+  </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">✏️ Edit Player 4-Man Stats</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্লেয়ার খুঁজে তার 4-Man Tournament-এর নিজস্ব breakdown (matches/wins/draws/losses/goals/MVP) সরাসরি সংশোধন করো — এটা Auction Tournament-এর Current Season stats কে touch করবে না।</p>
+    <input type="text" class="form-input" id="f4mStatsSearch" placeholder="🔍 Player খুঁজো..." oninput="filterF4mStatsAdmin(this.value)" style="margin-bottom:12px;max-width:320px">
+    <div id="f4mStatsPlayerList" style="max-height:400px;overflow-y:auto">
+      <div style="text-align:center;padding:20px;color:var(--text3)"><span class="spinner"></span></div>
+    </div>
   </div>
 </div>
 
@@ -4363,6 +4399,28 @@ if (document.readyState === 'loading') {
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="btn btn-gold" style="flex:1" onclick="savePlayerStats()">💾 Save Stats</button>
       <button class="btn btn-outline" style="flex:1" onclick="closeStatsModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN: EDIT 4-MAN TOURNAMENT PLAYER STATS MODAL -->
+<div class="modal-overlay" id="f4mStatsModal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ Edit 4-Man Stats</div>
+    <div id="f4mModalPlayerName" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px"></div>
+    <input type="hidden" id="f4mModalPlayerUid">
+    <div class="stats-edit-grid">
+      <div class="stats-edit-item"><label>MATCHES</label><input type="number" id="f4ms_matches" min="0"></div>
+      <div class="stats-edit-item"><label>WINS</label><input type="number" id="f4ms_wins" min="0"></div>
+      <div class="stats-edit-item"><label>DRAWS</label><input type="number" id="f4ms_draws" min="0"></div>
+      <div class="stats-edit-item"><label>LOSSES</label><input type="number" id="f4ms_losses" min="0"></div>
+      <div class="stats-edit-item"><label>GOALS FOR</label><input type="number" id="f4ms_goalsFor" min="0"></div>
+      <div class="stats-edit-item"><label>MVP 🏅</label><input type="number" id="f4ms_mvp" min="0"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px">এটা শুধু 4-Man Tournament-এর নিজস্ব breakdown (<code>stats4man</code>) — এটা Auction Tournament-এর Current Season stats বদলাবে না, তবে Main (All-Time) Ranking-এ যোগ হয়।</div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-gold" style="flex:1" onclick="saveF4mPlayerStats()">💾 Save Stats</button>
+      <button class="btn btn-outline" style="flex:1" onclick="closeF4mStatsModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -4871,20 +4929,17 @@ window.loadRankingSeasonsList = async function loadRankingSeasonsList(force) {
     return [];
   }
 }
+// This top-level Ranking page now shows ONLY the combined Main Ranking (All-Time) —
+// Current Season / archived-season browsing was moved into the Auction Tournament
+// section's own Ranking tab, so this dropdown intentionally has just one option.
 function renderSeasonOptions(list) {
   const sel = document.getElementById('rankSeasonFilter');
   if (!sel) return;
-  const prevVal = sel.value || 'main';
-  sel.innerHTML = '<option value="main">🏆 Main Ranking (All-Time)</option><option value="current">🔴 Current Season</option>' +
-    list.map(s => `<option value="${s.key}">📁 ${s.name}</option>`).join('');
-  sel.value = (prevVal === 'main' || prevVal === 'current' || list.find(s => s.key === prevVal)) ? prevVal : 'main';
+  sel.innerHTML = '<option value="main">🏆 Main Ranking (All-Time)</option>';
+  sel.value = 'main';
 }
 window.onRankSeasonChange = function() {
-  const sel = document.getElementById('rankSeasonFilter');
-  const val = sel ? sel.value : 'main';
-  if (val === 'main') loadMainRanking();
-  else if (val === 'current') loadRanking();
-  else loadArchivedSeasonRanking(val);
+  loadMainRanking();
 };
 window.refreshRankingView = async function() {
   loadRankingSeasonsList(true);
@@ -6066,6 +6121,37 @@ window.filterAdminPlayers = function(q) {
   renderAdminPlayers(filtered);
 };
 
+// ── Auction Tournament admin tab: compact player search + Edit Stats list ──
+// Reuses allPlayersCache + the existing openStatsModal() (same modal/fields the
+// Players tab uses), just surfaced inside the Tournament admin tab for convenience.
+window.loadTrnStatsAdminList = async function() {
+  const list = document.getElementById('trnStatsPlayerList');
+  if (!list) return;
+  if (!allPlayersCache.length) await loadAllPlayers();
+  renderTrnStatsAdminList(allPlayersCache);
+};
+
+function renderTrnStatsAdminList(players) {
+  const list = document.getElementById('trnStatsPlayerList');
+  if (!list) return;
+  if (!players.length) { list.innerHTML = '<div style="color:var(--text3);padding:16px;text-align:center;font-size:13px">কোনো player পাওয়া যায়নি।</div>'; return; }
+  list.innerHTML = players.map(p => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px">${p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;color:var(--text2)">${p.name || '—'}</div>
+        <div style="font-size:11px;color:var(--text3)">M:${p.matches||0} W:${p.wins||0} D:${p.draws||0} L:${p.losses||0} • MVP:${p.mvp||0}</div>
+      </div>
+      <button class="btn-admin-edit" onclick="openStatsModal('${p.uid}')" style="flex-shrink:0">✏️ Edit Stats</button>
+    </div>
+  `).join('');
+}
+
+window.filterTrnStatsAdmin = function(q) {
+  const filtered = allPlayersCache.filter(p => (p.name||'').toLowerCase().includes(q.toLowerCase()));
+  renderTrnStatsAdminList(filtered);
+};
+
 window.openStatsModal = function(uid) {
   const p = allPlayersCache.find(x => x.uid === uid);
   if (!p) return;
@@ -6113,6 +6199,7 @@ window.savePlayerStats = async function() {
   if (idx !== -1) allPlayersCache[idx] = updates;
   closeStatsModal();
   renderAdminPlayers(allPlayersCache);
+  if (document.getElementById('trnStatsPlayerList')) renderTrnStatsAdminList(allPlayersCache);
   alert('✅ Stats save হয়েছে!');
 };
 
@@ -7434,8 +7521,8 @@ window.switchAdminTab = function(tab) {
       if (inp && val && val.text) inp.value = val.text;
     }).catch(()=>{});
   }
-  if (tab === 'tournament') loadTrnAdminTeams();
-  if (tab === 'fourman' && typeof loadF4mAdminSquads === 'function') { loadF4mAdminSquads(); loadF4mAdminMatchdays(); }
+  if (tab === 'tournament') { loadTrnAdminTeams(); if (typeof loadTrnStatsAdminList === 'function') loadTrnStatsAdminList(); }
+  if (tab === 'fourman' && typeof loadF4mAdminSquads === 'function') { loadF4mAdminSquads(); loadF4mAdminMatchdays(); if (typeof loadF4mStatsAdminList === 'function') loadF4mStatsAdminList(); }
   if (tab === 'solotourney' && typeof loadSoloAdminGroups === 'function') { loadSoloAdminGroups(); loadSoloAdminMatches(); loadSoloAdminKnockout(); }
   if (tab === 'matchdayctrl' && typeof loadMatchdayControlList === 'function') loadMatchdayControlList();
   if (tab === 'aiqa' && typeof loadAdminAiQa === 'function') loadAdminAiQa();
@@ -10437,6 +10524,7 @@ window.loadF4mMatchdaysList = async function() {
           return `<div style="font-size:11px;color:var(--text3);margin-bottom:8px">⏳ Manager-দের Lineup জমা দেওয়ার অপেক্ষায়</div>`;
         })()}
         ${boutRows}
+        ${m.drawn ? `<button class="btn btn-outline" onclick="f4mCopyFixtureText('${m.id}')" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>` : ''}
       </div>`;
     }).join('');
     return `<div class="matchday-group">
@@ -10502,9 +10590,29 @@ window.loadF4mRanking = async function() {
     return (b.goalsFor || 0) - (a.goalsFor || 0);
   });
 
+  window._f4mRankingRows = rows;
+  rows.forEach((p, i) => { p._originalRank = i + 1; });
+  const searchEl = document.getElementById('f4mRankSearch');
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  renderF4mRankingTable(q ? rows.filter(p => (p.name || '').toLowerCase().includes(q)) : rows);
+};
+
+// Filter the already-fetched 4-Man ranking rows by player name (no re-fetch).
+window.filterF4mRanking = function() {
+  const rows = window._f4mRankingRows || [];
+  const q = (document.getElementById('f4mRankSearch').value || '').trim().toLowerCase();
+  const filtered = q ? rows.filter(p => (p.name || '').toLowerCase().includes(q)) : rows;
+  renderF4mRankingTable(filtered);
+};
+
+function renderF4mRankingTable(rows) {
+  const wrap = document.getElementById('f4mRankingWrap');
+  if (!wrap) return;
+  if (!rows.length) { wrap.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--text3)">কোনো player পাওয়া যায়নি।</div>`; return; }
+
   const medals = ['🥇', '🥈', '🥉'];
   const bodyRows = rows.map((p, i) => {
-    const rank = i + 1;
+    const rank = p._originalRank || (i + 1);
     const medal = medals[rank - 1] || '';
     const bg = rank <= 3 ? `background:linear-gradient(90deg,rgba(245,166,35,${0.08 - i * 0.02}),transparent)` : '';
     const wl = (p.wins || 0) + (p.losses || 0);
@@ -10549,6 +10657,79 @@ window.loadF4mRanking = async function() {
       <tbody>${bodyRows}</tbody>
     </table>
   </div>`;
+};
+
+// ── ADMIN: search + Edit Stats for the separate stats4man breakdown ──
+window._f4mStatsAdminCache = [];
+window.loadF4mStatsAdminList = async function() {
+  const list = document.getElementById('f4mStatsPlayerList');
+  if (!list) return;
+  const users = await getAllUsers();
+  window._f4mStatsAdminCache = [...users].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  renderF4mStatsAdminList(window._f4mStatsAdminCache);
+};
+
+function renderF4mStatsAdminList(players) {
+  const list = document.getElementById('f4mStatsPlayerList');
+  if (!list) return;
+  if (!players.length) { list.innerHTML = '<div style="color:var(--text3);padding:16px;text-align:center;font-size:13px">কোনো player পাওয়া যায়নি।</div>'; return; }
+  list.innerHTML = players.map(p => {
+    const s4 = p.stats4man || {};
+    return `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px">${p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px;color:var(--text2)">${p.name || '—'}</div>
+        <div style="font-size:11px;color:var(--text3)">4-Man — M:${s4.matches||0} W:${s4.wins||0} D:${s4.draws||0} L:${s4.losses||0} • MVP:${s4.mvp||0}</div>
+      </div>
+      <button class="btn-admin-edit" onclick="openF4mStatsModal('${p.uid}')" style="flex-shrink:0">✏️ Edit Stats</button>
+    </div>`;
+  }).join('');
+}
+
+window.filterF4mStatsAdmin = function(q) {
+  const filtered = window._f4mStatsAdminCache.filter(p => (p.name || '').toLowerCase().includes(q.toLowerCase()));
+  renderF4mStatsAdminList(filtered);
+};
+
+window.openF4mStatsModal = function(uid) {
+  const p = window._f4mStatsAdminCache.find(x => x.uid === uid);
+  if (!p) return;
+  const s4 = p.stats4man || {};
+  document.getElementById('f4mModalPlayerUid').value = uid;
+  document.getElementById('f4mModalPlayerName').textContent = p.name || '—';
+  document.getElementById('f4ms_matches').value = s4.matches || 0;
+  document.getElementById('f4ms_wins').value = s4.wins || 0;
+  document.getElementById('f4ms_draws').value = s4.draws || 0;
+  document.getElementById('f4ms_losses').value = s4.losses || 0;
+  document.getElementById('f4ms_goalsFor').value = s4.goalsFor || 0;
+  document.getElementById('f4ms_mvp').value = s4.mvp || 0;
+  document.getElementById('f4mStatsModal').classList.add('show');
+};
+
+window.closeF4mStatsModal = function() {
+  document.getElementById('f4mStatsModal').classList.remove('show');
+};
+
+window.saveF4mPlayerStats = async function() {
+  const uid = document.getElementById('f4mModalPlayerUid').value;
+  const p = window._f4mStatsAdminCache.find(x => x.uid === uid);
+  if (!p) return;
+  const s4Update = {
+    matches: parseInt(document.getElementById('f4ms_matches').value) || 0,
+    wins: parseInt(document.getElementById('f4ms_wins').value) || 0,
+    draws: parseInt(document.getElementById('f4ms_draws').value) || 0,
+    losses: parseInt(document.getElementById('f4ms_losses').value) || 0,
+    goalsFor: parseInt(document.getElementById('f4ms_goalsFor').value) || 0,
+    mvp: parseInt(document.getElementById('f4ms_mvp').value) || 0,
+  };
+  await fetch(`${F4M_DB}/users/${uid}/stats4man.json`, { method: 'PUT', body: JSON.stringify(s4Update) });
+  p.stats4man = s4Update;
+  window._allUsersCache = [];
+  window._mainRankingCache = null;
+  closeF4mStatsModal();
+  renderF4mStatsAdminList(window._f4mStatsAdminCache);
+  alert('✅ 4-Man Stats save হয়েছে!');
 };
 
 // ── ADMIN: Squad management ──
@@ -12829,7 +13010,134 @@ window.switchTrnTab = function(tab) {
   if (tab === 'fixtures') loadTrnFixtures();
   if (tab === 'teams') loadTrnTeams();
   if (tab === 'knockout') loadTrnKnockout();
+  if (tab === 'ranking') { loadTrnRankingSeasonsList(); onTrnRankSeasonChange(); }
 };
+
+// ══════════════════════════════════════════
+// AUCTION-SECTION EMBEDDED RANKING TAB
+// Auction Tournament only — Current Season + browse any archived season (8, 9, 10...).
+// The combined all-time total (Auction + 4-Man + Solo) lives only on the top-level
+// Ranking page's "Main Ranking (All-Time)" — intentionally not duplicated here.
+// ══════════════════════════════════════════
+window.loadTrnRankingSeasonsList = async function(force) {
+  const sel = document.getElementById('trnRankSeasonFilter');
+  if (!sel) return;
+  try {
+    const list = (typeof window.loadRankingSeasonsList === 'function')
+      ? await window.loadRankingSeasonsList(force)
+      : (window._rankingSeasonsCache || []);
+    renderTrnSeasonOptions(list);
+  } catch (e) { /* archived list is optional — current season still loads */ }
+};
+
+function renderTrnSeasonOptions(list) {
+  const sel = document.getElementById('trnRankSeasonFilter');
+  if (!sel) return;
+  const prevVal = sel.value || 'current';
+  sel.innerHTML = '<option value="current">🔴 Current Season</option>' +
+    (list || []).map(s => `<option value="${s.key}">📁 ${s.name}</option>`).join('');
+  sel.value = (prevVal === 'current' || (list || []).find(s => s.key === prevVal)) ? prevVal : 'current';
+}
+
+window.onTrnRankSeasonChange = function() {
+  const sel = document.getElementById('trnRankSeasonFilter');
+  const val = sel ? sel.value : 'current';
+  if (val === 'current') loadTrnCurrentSeasonRanking();
+  else loadTrnArchivedSeasonRanking(val);
+};
+
+window.refreshTrnRankingView = async function() {
+  await loadTrnRankingSeasonsList(true);
+  window.onTrnRankSeasonChange();
+};
+
+// Current season only — same live stats the Auction Tournament standings use
+// (Solo Tournament results are already merged into these same fields).
+window.loadTrnCurrentSeasonRanking = async function() {
+  const wrap = document.getElementById('trnRankingWrap');
+  const banner = document.getElementById('trnRankSeasonBanner');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>';
+  try {
+    const users = await getAllUsers();
+    if (banner) { banner.style.display = 'block'; banner.style.borderColor = 'var(--cyan)'; banner.style.color = 'var(--cyan)'; banner.innerHTML = '🔴 চলতি Season-এর live ranking দেখছো।'; }
+    const data = [...users];
+    sortRankingData(data);
+    renderTrnRankingTable(data);
+  } catch (e) {
+    wrap.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--red)">❌ Data load হয়নি। Error: ${e.message}</div>`;
+  }
+};
+
+// A specific archived Auction Tournament season (read-only history).
+window.loadTrnArchivedSeasonRanking = async function(seasonKey) {
+  const wrap = document.getElementById('trnRankingWrap');
+  const banner = document.getElementById('trnRankSeasonBanner');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>';
+  try {
+    const res = await fetch(`${RANKING_DB}/seasons/${seasonKey}/players.json`);
+    const data = await res.json();
+    if (!data) { wrap.innerHTML = '<div class="card text-center" style="padding:40px;color:var(--text3)">এই season এর কোনো player data পাওয়া যায়নি।</div>'; return; }
+    const arr = Object.entries(data).map(([uid, val]) => ({ uid, ...(val || {}) }));
+    sortRankingData(arr);
+    const cached = (window._rankingSeasonsCache || []).find(s => s.key === seasonKey);
+    if (banner) { banner.style.display = 'block'; banner.style.borderColor = 'var(--yellow)'; banner.style.color = 'var(--yellow)'; banner.innerHTML = `📁 আর্কাইভ করা সিজন দেখছো: <b>${cached ? cached.name : seasonKey.replace(/_/g, ' ')}</b> — এটা read-only history।`; }
+    renderTrnRankingTable(arr);
+  } catch (e) {
+    wrap.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--red)">❌ Load হয়নি। Error: ${e.message}</div>`;
+  }
+};
+
+function renderTrnRankingTable(data) {
+  const wrap = document.getElementById('trnRankingWrap');
+  if (!wrap) return;
+  if (!data || !data.length) { wrap.innerHTML = '<div class="card text-center" style="padding:40px;color:var(--text3)">কোনো player data নেই।</div>'; return; }
+  const medals = ['🥇', '🥈', '🥉'];
+  const rows = data.map((p, i) => {
+    const rank = i + 1;
+    const medal = medals[rank - 1] || '';
+    const bg = rank <= 3 ? `background:linear-gradient(90deg,rgba(245,166,35,${0.08 - i * 0.02}),transparent)` : '';
+    const wl = (p.wins || 0) + (p.losses || 0);
+    const wp = wl > 0 ? Math.min(100, ((p.wins || 0) / wl * 100)).toFixed(1) : '0.0';
+    const avatar = p.avatarUrl
+      ? `<img src="${p.avatarUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border);vertical-align:middle;margin-right:8px">`
+      : `<span style="display:inline-flex;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);align-items:center;justify-content:center;font-size:14px;margin-right:8px;vertical-align:middle">🎮</span>`;
+    return `<tr style="${bg}">
+      <td style="padding:12px 16px;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:${rank <= 3 ? 'var(--gold)' : 'var(--text3)'}">${medal} ${rank}</td>
+      <td style="padding:12px 16px">
+        <div style="display:flex;align-items:center;cursor:pointer" onclick="openPublicProfile('${p.uid}')">
+          ${avatar}<div style="font-weight:600;color:var(--cyan);text-decoration:underline dotted;text-underline-offset:3px">${p.name || '—'}</div>
+        </div>
+      </td>
+      <td style="padding:12px 16px;text-align:center">${p.matches || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--green)">${p.wins || 0}</td>
+      <td style="padding:12px 16px;text-align:center">${p.draws || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--red)">${p.losses || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--cyan)">${wp}%</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--yellow);font-weight:700">${p.goalsFor || 0}</td>
+      <td style="padding:12px 16px;text-align:center;color:var(--gold);font-weight:700">${p.mvp || 0}</td>
+      <td style="padding:12px 16px;text-align:center;font-family:'Libre Caslon Text',sans-serif;font-size:18px;font-weight:700;color:var(--cyan)">${(p.wins || 0) * 9 + (p.mvp || 0) * 5 + (p.draws || 0) * 3 + (p.goalsFor || 0) * 1}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `<div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+    <table style="width:100%;border-collapse:collapse;background:var(--card);min-width:600px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',monospace;letter-spacing:1px">#</th>
+        <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',monospace;letter-spacing:1px">PLAYER</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">M</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">W</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--yellow);font-family:'Libre Caslon Text',sans-serif">D</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--red);font-family:'Libre Caslon Text',sans-serif">L</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">WIN%</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--yellow);font-family:'Libre Caslon Text',sans-serif">⚽ GOALS</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--gold);font-family:'Libre Caslon Text',sans-serif">🏅 MVP</th>
+        <th style="padding:12px 16px;text-align:center;font-size:11px;color:var(--cyan);font-family:'Libre Caslon Text',sans-serif">⭐ SCORE</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
 
 // ── Load tournament data ──
 async function fetchTrnData() {
@@ -18264,5 +18572,3 @@ window.aiqaUseAsFaq = aiqaUseAsFaq;
 </script>
 </body>
 </html>
-
-
