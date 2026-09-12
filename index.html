@@ -3977,7 +3977,7 @@ if (document.readyState === 'loading') {
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">✏️ Edit Player Stats (Auction Tournament)</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্লেয়ার খুঁজে সরাসরি এখান থেকে তার overall stats (matches/wins/draws/losses/goals/MVP) edit করো — ঠিক Players ট্যাবের মতোই, শুধু এখানে খোঁজা আরো সহজ।</p>
-    <input type="text" class="form-input" id="trnStatsSearch" placeholder="🔍 Player খুঁজো..." oninput="filterTrnStatsAdmin(this.value)" style="margin-bottom:12px;max-width:320px">
+    <input type="text" class="form-input" id="trnStatsSearch" placeholder="🔍 Player খুঁজো..." oninput="filterTrnStatsAdmin(this.value)" onfocus="if(!allPlayersCache.length) loadTrnStatsAdminList()" style="margin-bottom:12px;max-width:320px">
     <div id="trnStatsPlayerList" style="max-height:400px;overflow-y:auto">
       <div style="text-align:center;padding:20px;color:var(--text3)"><span class="spinner"></span></div>
     </div>
@@ -4094,7 +4094,7 @@ if (document.readyState === 'loading') {
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">✏️ Edit Player 4-Man Stats</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্লেয়ার খুঁজে তার 4-Man Tournament-এর নিজস্ব breakdown (matches/wins/draws/losses/goals/MVP) সরাসরি সংশোধন করো — এটা Auction Tournament-এর Current Season stats কে touch করবে না।</p>
-    <input type="text" class="form-input" id="f4mStatsSearch" placeholder="🔍 Player খুঁজো..." oninput="filterF4mStatsAdmin(this.value)" style="margin-bottom:12px;max-width:320px">
+    <input type="text" class="form-input" id="f4mStatsSearch" placeholder="🔍 Player খুঁজো..." oninput="filterF4mStatsAdmin(this.value)" onfocus="if(!window._f4mStatsAdminCache.length) loadF4mStatsAdminList()" style="margin-bottom:12px;max-width:320px">
     <div id="f4mStatsPlayerList" style="max-height:400px;overflow-y:auto">
       <div style="text-align:center;padding:20px;color:var(--text3)"><span class="spinner"></span></div>
     </div>
@@ -6147,7 +6147,8 @@ function renderTrnStatsAdminList(players) {
   `).join('');
 }
 
-window.filterTrnStatsAdmin = function(q) {
+window.filterTrnStatsAdmin = async function(q) {
+  if (!allPlayersCache.length) await loadAllPlayers();
   const filtered = allPlayersCache.filter(p => (p.name||'').toLowerCase().includes(q.toLowerCase()));
   renderTrnStatsAdminList(filtered);
 };
@@ -10687,7 +10688,8 @@ function renderF4mStatsAdminList(players) {
   }).join('');
 }
 
-window.filterF4mStatsAdmin = function(q) {
+window.filterF4mStatsAdmin = async function(q) {
+  if (!window._f4mStatsAdminCache.length) await loadF4mStatsAdminList();
   const filtered = window._f4mStatsAdminCache.filter(p => (p.name || '').toLowerCase().includes(q.toLowerCase()));
   renderF4mStatsAdminList(filtered);
 };
