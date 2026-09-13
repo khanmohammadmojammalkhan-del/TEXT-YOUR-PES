@@ -4704,6 +4704,7 @@ window.loadRanking = async function() {
     }
     rankingData = [...users];
     sortRankingData(rankingData);
+    window.rankingData = rankingData;
     window._rankingMode = 'current';
     window._currentViewedSeasonName = null;
     renderRanking(rankingData);
@@ -4861,6 +4862,7 @@ window.loadMainRanking = async function() {
       return;
     }
     sortRankingData(rankingData);
+    window.rankingData = rankingData;
     window._rankingMode = 'main';
     window._currentViewedSeasonName = null;
     renderRanking(rankingData);
@@ -4884,6 +4886,7 @@ window.loadArchivedSeasonRanking = async function(seasonKey) {
     }
     rankingData = Object.entries(data).map(([uid, val]) => ({ uid, ...(val||{}) }));
     sortRankingData(rankingData);
+    window.rankingData = rankingData;
     window._rankingMode = 'archived';
     const cached = (window._rankingSeasonsCache||[]).find(s => s.key === seasonKey);
     window._currentViewedSeasonName = cached ? cached.name : seasonKey.replace(/_/g,' ');
@@ -9293,6 +9296,15 @@ window.openPublicProfile = async function(uid) {
       // Fallback to stored user data
       m = p.matches||0; w = p.wins||0; d = p.draws||0; l = p.losses||0;
       goals = p.goalsFor||0; ga = p.goalsAgainst||0; mvp = p.mvp||0;
+    }
+
+    // 4-Man Tournament results count toward the Main (all-time) Ranking (see
+    // computeMainRankingData/loadMainRanking), so fold the same stats4man
+    // breakdown in here too — otherwise a 4-Man-only player's card shows zeros.
+    if (p.stats4man) {
+      const s4 = p.stats4man;
+      m += s4.matches||0; w += s4.wins||0; d += s4.draws||0; l += s4.losses||0;
+      goals += s4.goalsFor||0; mvp += s4.mvp||0;
     }
   }
 
