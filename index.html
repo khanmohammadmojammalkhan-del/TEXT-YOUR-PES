@@ -2622,7 +2622,7 @@ if (document.readyState === 'loading') {
   <div class="trn-content active" id="trntab-standings">
     <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div style="font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-        <span style="border-left:3px solid var(--green);padding-left:6px;margin-right:12px">Top 2 প্রতি Group → Semi-Final</span>
+        <span style="border-left:3px solid var(--green);padding-left:6px;margin-right:12px">Top 4 প্রতি Group → Quarter-Final</span>
       </div>
       <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="loadTournamentStandings()">🔄 Refresh</button>
     </div>
@@ -2652,7 +2652,7 @@ if (document.readyState === 'loading') {
     </div>
 
     <div style="margin-top:16px;font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-      * ২টা group (A ও B), প্রতি group এ ৪টা team, double round-robin (home ও away)। প্রতি group থেকে Top 2 team সরাসরি Semi-Final এ যাবে (A1 vs B2, B1 vs A2)।
+      * ২টা group (A ও B), প্রতি group এ ৬টা team (মোট ১২টা), double round-robin (home ও away)। প্রতি group থেকে Top 4 team Quarter-Final এ যাবে (মোট 8 team)।
     </div>
   </div>
 
@@ -2683,7 +2683,7 @@ if (document.readyState === 'loading') {
 
   <!-- KNOCKOUT TAB -->
   <div class="trn-content" id="trntab-knockout">
-    <div style="margin-bottom:16px;font-size:13px;color:var(--text3)">Top 2 teams from each group (A ও B) qualify for Semi-Finals — মোট 4 team।</div>
+    <div style="margin-bottom:16px;font-size:13px;color:var(--text3)">Top 4 teams from each group (A ও B) qualify for Quarter-Finals — মোট 8 team।</div>
     <div id="trnKnockoutWrap">
       <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
     </div>
@@ -3944,7 +3944,7 @@ if (document.readyState === 'loading') {
 
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">⚽ Enter Match Results</div>
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Select a matchday to enter bout results. প্রতিটা matchday = 4 matches × 7 bout (double round-robin)।</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Select a matchday to enter bout results. প্রতিটা matchday = 6 matches × 7 bout (double round-robin)।</p>
     <div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
       <select class="form-input" id="trnMatchdaySelect" style="flex:1;min-width:200px" onchange="loadMatchdayForEntry()">
         <option value="">-- Select Matchday --</option>
@@ -3968,10 +3968,11 @@ if (document.readyState === 'loading') {
 
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">⚡ Knockout Stage</div>
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Set Semi-Final & Final matches.</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Set Quarter-Final, Semi-Final & Final matches.</p>
     <div id="trnKnockoutAdminArea"></div>
     <button class="btn btn-outline" onclick="loadKnockoutAdmin()" style="padding:9px 20px;font-size:13px;margin-top:10px">🔄 Load Knockout</button>
-    <button class="btn" onclick="autoSetSemis()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set from Top 2/Group</button>
+    <button class="btn" onclick="autoSetQuarters()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set QF from Top 4/Group</button>
+    <button class="btn" onclick="autoSetSemisFromQF()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🤖 Auto-Set SF from QF Winners</button>
   </div>
 
   <div class="trn-admin-section">
@@ -13519,6 +13520,10 @@ window.loadTrnKnockout = async function() {
       </div>`;
     };
 
+    const qf1 = ko.qf1 || null;
+    const qf2 = ko.qf2 || null;
+    const qf3 = ko.qf3 || null;
+    const qf4 = ko.qf4 || null;
     const sf1 = ko.semi1 || null;
     const sf2 = ko.semi2 || null;
     const final = ko.final || null;
@@ -13526,13 +13531,33 @@ window.loadTrnKnockout = async function() {
 
     wrap.innerHTML = `
       <div style="display:flex;align-items:flex-start;gap:32px;overflow-x:auto;padding:10px 0 20px;min-width:max-content">
+        <!-- Quarter Finals -->
+        <div style="display:flex;flex-direction:column;gap:24px;padding-top:0">
+          ${renderMatch(qf1, 'QUARTER-FINAL 1')}
+          ${renderMatch(qf2, 'QUARTER-FINAL 2')}
+          ${renderMatch(qf3, 'QUARTER-FINAL 3')}
+          ${renderMatch(qf4, 'QUARTER-FINAL 4')}
+        </div>
+        <!-- Connector lines QF → SF (SVG) -->
+        <div style="display:flex;align-items:center;padding-top:24px">
+          <svg width="60" height="300" style="overflow:visible">
+            <line x1="0" y1="30" x2="30" y2="30" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="0" y1="102" x2="30" y2="102" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="30" y1="30" x2="30" y2="102" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="30" y1="66" x2="60" y2="66" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="0" y1="174" x2="30" y2="174" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="0" y1="246" x2="30" y2="246" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="30" y1="174" x2="30" y2="246" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="30" y1="210" x2="60" y2="210" stroke="var(--border)" stroke-width="1.5"/>
+          </svg>
+        </div>
         <!-- Semi Finals -->
-        <div style="display:flex;flex-direction:column;gap:60px;padding-top:0">
+        <div style="display:flex;flex-direction:column;gap:96px;padding-top:36px">
           ${renderMatch(sf1, 'SEMI-FINAL 1')}
           ${renderMatch(sf2, 'SEMI-FINAL 2')}
         </div>
-        <!-- Connector lines (SVG) -->
-        <div style="display:flex;align-items:center;padding-top:60px">
+        <!-- Connector lines SF → Final (SVG) -->
+        <div style="display:flex;align-items:center;padding-top:96px">
           <svg width="60" height="180" style="overflow:visible">
             <line x1="0" y1="45" x2="30" y2="45" stroke="var(--border)" stroke-width="1.5"/>
             <line x1="0" y1="135" x2="30" y2="135" stroke="var(--border)" stroke-width="1.5"/>
@@ -13541,12 +13566,12 @@ window.loadTrnKnockout = async function() {
           </svg>
         </div>
         <!-- Final -->
-        <div style="padding-top:60px">
+        <div style="padding-top:132px">
           ${renderMatch(final, '🏆 FINAL')}
         </div>
         <!-- Champion -->
         ${champion ? `
-        <div style="display:flex;align-items:center;padding-top:60px">
+        <div style="display:flex;align-items:center;padding-top:132px">
           <svg width="40" height="40"><line x1="0" y1="20" x2="40" y2="20" stroke="var(--gold)" stroke-width="2"/></svg>
           <div style="background:linear-gradient(135deg,rgba(124,92,252,0.2),rgba(59,130,246,0.2));border:2px solid var(--gold);border-radius:14px;padding:14px 20px;text-align:center;min-width:140px">
             <div style="font-size:28px">${champion.emoji}</div>
@@ -13615,7 +13640,7 @@ function renderAdminTeamsList() {
       </div>
       <div style="flex:1">
         <div style="font-weight:700;font-size:14px;color:var(--text)">${safeName}</div>
-        <div style="font-size:12px;color:var(--text3)">👑 ${t.manager||'—'} • ${(t.players||[]).filter(p=>p&&p.isStarter).length}/7 starters · ${(t.players||[]).filter(p=>p&&!p.isStarter).length}/2 subs</div>
+        <div style="font-size:12px;color:var(--text3)">👑 ${t.manager||'—'} • ${(t.players||[]).filter(p=>p&&p.isStarter).length}/7 starters · ${(t.players||[]).filter(p=>p&&!p.isStarter).length}/3 subs</div>
       </div>
       <button class="btn-admin-edit" onclick="openEditTeamModal('${t.id}')">✏️ Edit</button>
       <button class="btn-admin-del" onclick="deleteTeam('${t.id}','${safeNameAttr}')">🗑️</button>
@@ -13718,7 +13743,7 @@ window.togglePlayerPick = function(uid, el) {
   const idx = _playerPickSelected.indexOf(uid);
   const cb = el.querySelector('input[type=checkbox]');
   if (idx === -1) {
-    if (_playerPickSelected.length >= 9) { alert('Maximum 9 players (7 starters + 2 subs)।'); return; }
+    if (_playerPickSelected.length >= 10) { alert('Maximum 10 players (7 starters + 3 subs)।'); return; }
     _playerPickSelected.push(uid);
     el.classList.add('selected'); if(cb) cb.checked = true;
   } else {
@@ -13844,11 +13869,11 @@ window.saveTeam = async function() {
   await new Promise(r => setTimeout(r, 500));
   await fetchTrnData();
   renderAdminTeamsList();
-  // Auto-generate fixtures if 8 teams
-  if (trnTeamsCache.length === 8) {
+  // Auto-generate fixtures if 12 teams
+  if (trnTeamsCache.length === 12) {
     const existing = trnMatchesCache.length;
     if (existing === 0) {
-      if (confirm('8 টা team তৈরি হয়েছে! Auto-generate করবো সব fixtures?')) {
+      if (confirm('12 টা team তৈরি হয়েছে! Auto-generate করবো সব fixtures?')) {
         await generateFixtures();
       }
     }
@@ -13864,32 +13889,37 @@ window.deleteTeam = async function(id, name) {
 };
 
 // ── Auto-generate Round Robin Fixtures ──
-// Group A/B double round robin: 4 teams each group, 6 matchdays per group
-// Each matchday = 4 matches (2 GRP-A + 2 GRP-B) × 7 x 1v1 bouts
+// Group A/B double round robin: 6 teams each group, 10 matchdays per group
+// Each matchday = 6 matches (3 GRP-A + 3 GRP-B) × 7 x 1v1 bouts
 async function generateFixtures() {
   const teams = trnTeamsCache;
-  if (teams.length !== 8) { alert('ঠিক 8টা team লাগবে fixture generate করতে।'); return; }
+  if (teams.length !== 12) { alert('ঠিক 12টা team লাগবে fixture generate করতে।'); return; }
 
   const groupA = teams.filter(t => (t.group||'A') === 'A');
   const groupB = teams.filter(t => (t.group||'B') === 'B');
 
-  if (groupA.length !== 4 || groupB.length !== 4) {
-    alert(`Group A: ${groupA.length} teams, Group B: ${groupB.length} teams — প্রতি group এ ঠিক 4টা team দরকার।`);
+  if (groupA.length !== 6 || groupB.length !== 6) {
+    alert(`Group A: ${groupA.length} teams, Group B: ${groupB.length} teams — প্রতি group এ ঠিক 6টা team দরকার।`);
     return;
   }
 
   // Double round-robin: each team plays every other team TWICE (home & away)
-  // 4 teams → 6 rounds, 2 matches per round per group → 12 matches per group
+  // N teams (even) → circle method single round-robin gives (N-1) rounds,
+  // (N/2) matches/round; doubled for home & away → 2*(N-1) rounds total.
   function getDoubleRoundRobinRounds(grpTeams) {
     const ids = grpTeams.map(t => t.id);
-    // Single round-robin using circle method (3 rounds)
+    const n = ids.length;
     const fixed = ids[0];
-    const rotating = ids.slice(1);
+    const rotating = ids.slice(1); // length n-1
     const singleRounds = [];
-    for (let r = 0; r < 3; r++) {
+    for (let r = 0; r < n - 1; r++) {
       const pairs = [];
-      pairs.push([fixed, rotating[r % 3]]);
-      pairs.push([rotating[(r + 1) % 3], rotating[(r + 2) % 3]]);
+      pairs.push([fixed, rotating[r % (n - 1)]]);
+      for (let i = 1; i < n / 2; i++) {
+        const a = rotating[(r + i) % (n - 1)];
+        const b = rotating[(r - i + (n - 1) * 2) % (n - 1)];
+        pairs.push([a, b]);
+      }
       singleRounds.push(pairs);
     }
     // Double: repeat with home/away swapped
@@ -13897,11 +13927,12 @@ async function generateFixtures() {
     singleRounds.forEach(round => {
       doubleRounds.push(round.map(([a, b]) => [b, a])); // swap home/away
     });
-    return doubleRounds; // 6 rounds total
+    return doubleRounds; // 2*(n-1) rounds total
   }
 
   const roundsA = getDoubleRoundRobinRounds(groupA);
   const roundsB = getDoubleRoundRobinRounds(groupB);
+  const totalRounds = roundsA.length; // same as roundsB.length
 
   const allFixtures = [];
 
@@ -13923,8 +13954,8 @@ async function generateFixtures() {
     }
   }
 
-  // Generate all 6 matchdays (Group A & B together each day)
-  for (let rIdx = 0; rIdx < 6; rIdx++) {
+  // Generate all matchdays (Group A & B together each day)
+  for (let rIdx = 0; rIdx < totalRounds; rIdx++) {
     const matchdayNum = rIdx + 1;
     // Group A
     (roundsA[rIdx] || []).forEach((pair, matchIdx) => {
@@ -13946,7 +13977,7 @@ async function generateFixtures() {
   if (!putRes.ok) { alert('❌ Fixture save failed: ' + await putRes.text()); return; }
   await new Promise(r => setTimeout(r, 500));
   await fetchTrnData();
-  alert(`✅ Fixtures generated!\nGroup A & B: 6 matchdays × 4 matches per day\nDouble round-robin (home & away)\nTotal: ${allFixtures.length} bouts`);
+  alert(`✅ Fixtures generated!\nGroup A & B: ${totalRounds} matchdays × 6 matches per day\nDouble round-robin (home & away)\nTotal: ${allFixtures.length} bouts`);
 }
 
 window.confirmRegenerateFixtures = async function() {
@@ -15987,14 +16018,18 @@ function renderKnockoutAdminArea() {
     </div>`;
   };
 
-  area.innerHTML = renderKOMatch('semi1', '⚡ SEMI-FINAL 1', ko.semi1) +
+  area.innerHTML = renderKOMatch('qf1', '🎟️ QUARTER-FINAL 1', ko.qf1) +
+    renderKOMatch('qf2', '🎟️ QUARTER-FINAL 2', ko.qf2) +
+    renderKOMatch('qf3', '🎟️ QUARTER-FINAL 3', ko.qf3) +
+    renderKOMatch('qf4', '🎟️ QUARTER-FINAL 4', ko.qf4) +
+    renderKOMatch('semi1', '⚡ SEMI-FINAL 1', ko.semi1) +
     renderKOMatch('semi2', '⚡ SEMI-FINAL 2', ko.semi2) +
     renderKOMatch('final', '🏆 FINAL', ko.final) +
     `<button class="btn btn-gold" onclick="saveKnockout()" style="width:100%;padding:11px;margin-top:8px">💾 Save Knockout (teams / manual score / status)</button>
      <span id="koSaveStatus" style="display:block;margin-top:8px;font-size:13px;color:var(--green)"></span>`;
 
   // Set current values
-  ['semi1','semi2','final'].forEach(key => {
+  ['qf1','qf2','qf3','qf4','semi1','semi2','final'].forEach(key => {
     const m = ko[key];
     if (!m) return;
     const t1sel = document.getElementById(`ko_t1_${key}`);
@@ -16153,6 +16188,10 @@ window.saveKnockout = async function() {
     return { team1: t1, team2: t2, score1: s1!==''?parseInt(s1):null, score2: s2!==''?parseInt(s2):null, status: st, bouts: trnKnockoutCache[key]?.bouts || null };
   };
   const payload = {
+    qf1: parseMatch('qf1'),
+    qf2: parseMatch('qf2'),
+    qf3: parseMatch('qf3'),
+    qf4: parseMatch('qf4'),
     semi1: parseMatch('semi1'),
     semi2: parseMatch('semi2'),
     final: parseMatch('final'),
@@ -16165,25 +16204,58 @@ window.saveKnockout = async function() {
   if (st) { st.textContent = '✅ Saved!'; setTimeout(()=>st.textContent='',2500); }
 };
 
-window.autoSetSemis = async function() {
+// Top 4 (per group) → Quarter-Final cross-group bracket:
+// QF1: A1 vs B4   QF2: A2 vs B3   QF3: B1 vs A4   QF4: B2 vs A3
+// SF1 = winner(QF1) vs winner(QF2)   SF2 = winner(QF3) vs winner(QF4)
+window.autoSetQuarters = async function() {
   await fetchTrnData();
   const groupATeams = trnTeamsCache.filter(t => (t.group||'A') === 'A');
   const groupBTeams = trnTeamsCache.filter(t => (t.group||'B') === 'B');
   const standingsA = calcStandings(groupATeams, trnMatchesCache);
   const standingsB = calcStandings(groupBTeams, trnMatchesCache);
-  if (standingsA.length < 2 || standingsB.length < 2) { alert('প্রতি group থেকে কমপক্ষে ২টা team-এর data লাগবে standings থেকে।'); return; }
-  const [a1, a2] = standingsA;
-  const [b1, b2] = standingsB;
-  // Cross-group pairing: Group A winner vs Group B runner-up, Group B winner vs Group A runner-up
+  if (standingsA.length < 4 || standingsB.length < 4) { alert('প্রতি group থেকে কমপক্ষে ৪টা team-এর data লাগবে standings থেকে।'); return; }
+  const [a1, a2, a3, a4] = standingsA;
+  const [b1, b2, b3, b4] = standingsB;
   const payload = {
-    semi1: { team1: a1.id, team2: b2.id, score1: null, score2: null, status: 'pending' },
-    semi2: { team1: b1.id, team2: a2.id, score1: null, score2: null, status: 'pending' },
+    qf1: { team1: a1.id, team2: b4.id, score1: null, score2: null, status: 'pending' },
+    qf2: { team1: a2.id, team2: b3.id, score1: null, score2: null, status: 'pending' },
+    qf3: { team1: b1.id, team2: a4.id, score1: null, score2: null, status: 'pending' },
+    qf4: { team1: b2.id, team2: a3.id, score1: null, score2: null, status: 'pending' },
+    semi1: trnKnockoutCache.semi1 || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
+    semi2: trnKnockoutCache.semi2 || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
     final: trnKnockoutCache.final || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
     champion: trnKnockoutCache.champion || '',
     updatedAt: new Date().toISOString()
   };
   await fetch(`${TRN_DB}/tournament/knockout.json`, { method: 'PUT', body: JSON.stringify(payload) });
-  alert(`✅ Semi-finals set!\nSF1: ${a1.name} (A1) vs ${b2.name} (B2)\nSF2: ${b1.name} (B1) vs ${a2.name} (A2)`);
+  alert(`✅ Quarter-finals set!\nQF1: ${a1.name} (A1) vs ${b4.name} (B4)\nQF2: ${a2.name} (A2) vs ${b3.name} (B3)\nQF3: ${b1.name} (B1) vs ${a4.name} (A4)\nQF4: ${b2.name} (B2) vs ${a3.name} (A3)`);
+  loadKnockoutAdmin();
+};
+
+// QF জয়ীদের নিয়ে Semi-Final বসায় — প্রতিটা QF অবশ্যই "completed" স্ট্যাটাসে থাকতে হবে
+// এবং টাই থাকা চলবে না (bout entry থেকে score1/score2 auto-calculate হয়)।
+window.autoSetSemisFromQF = async function() {
+  await fetchTrnData();
+  const ko = trnKnockoutCache;
+  const getWinner = (m, label) => {
+    if (!m || m.status !== 'completed' || m.score1 == null || m.score2 == null) { alert(`⚠️ ${label} এখনো শেষ হয়নি।`); return null; }
+    if (m.score1 === m.score2) { alert(`⚠️ ${label} টাই — আগে সমাধান করো।`); return null; }
+    return m.score1 > m.score2 ? m.team1 : m.team2;
+  };
+  const w1 = getWinner(ko.qf1, 'QF1');
+  const w2 = getWinner(ko.qf2, 'QF2');
+  const w3 = getWinner(ko.qf3, 'QF3');
+  const w4 = getWinner(ko.qf4, 'QF4');
+  if (!w1 || !w2 || !w3 || !w4) return;
+  const teamName = id => trnTeamsCache.find(t => t.id === id)?.name || id;
+  const payload = {
+    ...ko,
+    semi1: { team1: w1, team2: w2, score1: null, score2: null, status: 'pending' },
+    semi2: { team1: w3, team2: w4, score1: null, score2: null, status: 'pending' },
+    updatedAt: new Date().toISOString()
+  };
+  await fetch(`${TRN_DB}/tournament/knockout.json`, { method: 'PUT', body: JSON.stringify(payload) });
+  alert(`✅ Semi-finals set!\nSF1: ${teamName(w1)} (QF1) vs ${teamName(w2)} (QF2)\nSF2: ${teamName(w3)} (QF3) vs ${teamName(w4)} (QF4)`);
   loadKnockoutAdmin();
 };
 
@@ -17853,7 +17925,7 @@ const TYP_FAQ = [
   },
   {
     keywords: ['tournament', 'টুর্নামেন্ট', 'গ্রুপ এ', 'গ্রুপ বি', 'group', 'knockout', 'নকআউট', 'কাপ'],
-    answer: 'Tournament-এ ২টা Group (A ও B) থাকে, প্রতি group এ ৪টা দল, double round-robin ম্যাচ খেলে (প্রতি ম্যাচ 7v7 bout)। প্রতি group থেকে Top 2 দল Semi-Final এ যায় (A1 vs B2, B1 vs A2), তারপর Final হয়ে চ্যাম্পিয়ন নির্ধারিত হয়। প্রতিটা ম্যাচের রেজাল্ট কার্ড PNG আকারে ডাউনলোড করা যায়।'
+    answer: 'Tournament-এ ২টা Group (A ও B) থাকে, প্রতি group এ ৬টা দল (মোট ১২টা দল, প্রতি দলে ১০ জন করে), double round-robin ম্যাচ খেলে (প্রতি ম্যাচ 7v7 bout)। প্রতি group থেকে Top 4 দল Quarter-Final এ যায় (মোট 8 দল), তারপর Semi-Final ও Final হয়ে চ্যাম্পিয়ন নির্ধারিত হয়। প্রতিটা ম্যাচের রেজাল্ট কার্ড PNG আকারে ডাউনলোড করা যায়।'
   },
   {
     keywords: ['বিরোধ', 'dispute', 'ভুল ফলাফল', 'complain', 'অভিযোগ', 'রিপোর্ট'],
