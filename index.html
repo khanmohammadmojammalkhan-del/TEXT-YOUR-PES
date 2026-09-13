@@ -4678,7 +4678,11 @@ window._isAdminSession = false;
 const RANKING_DB = 'https://typ-championship-default-rtdb.firebaseio.com';
 
 // Shared sort: Score (Win=9, MVP=5, Draw=3, Goal=1)
-function sortRankingData(arr) {
+// Exposed on window because this file also has later classic <script> blocks
+// (this one is type="module", which does NOT leak plain function declarations
+// into the global scope) that call sortRankingData too — e.g. the Auction
+// Tournament's own Ranking tab (loadTrnCurrentSeasonRanking / loadTrnArchivedSeasonRanking).
+window.sortRankingData = function sortRankingData(arr) {
   arr.sort((a, b) => {
     // Primary: Score (win*9 + mvp*5 + draw*3 + goals*1)
     const sa = (a.wins||0)*9 + (a.mvp||0)*5 + (a.draws||0)*3 + (a.goalsFor||0)*1;
@@ -4690,7 +4694,7 @@ function sortRankingData(arr) {
     return (b.goalsFor||0) - (a.goalsFor||0);
   });
   return arr;
-}
+};
 
 // Current season (live) leaderboard only
 window.loadRanking = async function() {
@@ -11322,6 +11326,7 @@ window.loadF4mMatchdayForEntry = async function() {
       </div>
       <button class="btn btn-gold" style="margin-top:8px;padding:8px 20px;font-size:13px" onclick="saveF4mMatchdayResults('${id}')">💾 Save Results</button>
       <span id="f4mSaveStatus" style="margin-left:10px;font-size:13px;color:var(--green)"></span>
+      <button class="btn btn-outline" style="margin-top:8px;margin-left:8px;padding:8px 16px;font-size:12px;border-color:var(--red);color:var(--red)" onclick="f4mDeleteMatchday('${id}')">🗑️ Delete This Matchday</button>
       ${m.status === 'completed' ? f4mBuildCardControlsHtml(m, id) : ''}
     </div>`;
 };
@@ -12395,6 +12400,26 @@ window.f4mUndoDraw = async function(mid) {
   await loadF4mAdminMatchdays();
   document.getElementById('f4mMdSelect').value = mid;
   loadF4mMatchdayForEntry();
+};
+
+// ── Delete a single 4-Man matchday outright (e.g. an accidental duplicate
+// from double-clicking "Quarterfinal বসাও" / "Semifinal বসাও"). Only removes
+// the matchday record itself — if it was already 'completed', the player
+// stats (stats4man) it already added are NOT reversed automatically, so this
+// is meant for pending/upcoming duplicates, not for undoing a played match. ──
+window.f4mDeleteMatchday = async function(mid) {
+  const m = f4mMatchdaysCache.find(x => x.id === mid);
+  if (!m) return;
+  let msg = `⚠️ এই matchday (${m.label || m.koSlot || mid}) পুরোপুরি মুছে ফেলা হবে — এটা ফেরানো যাবে না। Continue?`;
+  if (m.status === 'completed') {
+    msg = `⚠️ এই matchday আগে থেকে 'completed' — মুছে ফেললেও এটার MVP/জয়-হার/গোল ইতিমধ্যে player stats-এ (stats4man) যোগ হয়ে থাকলে সেটা automatically বিয়োগ হবে না, ম্যানুয়ালি ঠিক করতে হবে। তারপরও মুছে ফেলতে চাও?`;
+  }
+  if (!confirm(msg)) return;
+  await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'DELETE' });
+  alert('✅ Matchday মুছে ফেলা হয়েছে।');
+  await loadF4mAdminMatchdays();
+  const area = document.getElementById('f4mMdEntryArea');
+  if (area) area.innerHTML = '';
 };
 
 // ── Sub/Swap: shared change-player flow (mirrors the Auction Tournament's pcConfirm pattern) ──
