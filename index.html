@@ -4058,9 +4058,9 @@ if (document.readyState === 'loading') {
     <div class="trn-admin-section-title">🥊 Knockout Stage (QF → SF → Final)</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতি group-এর সব matchday শেষ হলে নিচের বাটন চেপে Quarterfinal বসাও — Top 2 অটো ধরে নেবে (QF1: A1 vs B2, QF2: B1 vs A2, QF3: C1 vs D2, QF4: D1 vs C2)। Quarterfinal শেষ হলে Semifinal, তারপর Final একই রকম এক ক্লিকে বসবে। Aggregate score টাই হলে matchday টা "Enter Bout Results"-এ গিয়ে একটা Tie-Break bout যোগ করে সমাধান করা যাবে।</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-outline" onclick="generateF4mQuarterfinals()" style="padding:9px 18px;font-size:13px;border-color:var(--secondary);color:var(--secondary)">🎟️ Quarterfinal বসাও</button>
-      <button class="btn btn-outline" onclick="generateF4mSemifinals()" style="padding:9px 18px;font-size:13px;border-color:var(--secondary);color:var(--secondary)">🥈 Semifinal বসাও</button>
-      <button class="btn btn-outline" onclick="generateF4mFinal()" style="padding:9px 18px;font-size:13px;border-color:var(--gold);color:var(--gold)">🏆 Final বসাও</button>
+      <button class="btn btn-outline" onclick="generateF4mQuarterfinals(this)" style="padding:9px 18px;font-size:13px;border-color:var(--secondary);color:var(--secondary)">🎟️ Quarterfinal বসাও</button>
+      <button class="btn btn-outline" onclick="generateF4mSemifinals(this)" style="padding:9px 18px;font-size:13px;border-color:var(--secondary);color:var(--secondary)">🥈 Semifinal বসাও</button>
+      <button class="btn btn-outline" onclick="generateF4mFinal(this)" style="padding:9px 18px;font-size:13px;border-color:var(--gold);color:var(--gold)">🏆 Final বসাও</button>
     </div>
     <span id="f4mKoStatus" style="display:block;margin-top:10px;font-size:13px"></span>
     <div id="f4mKoBracket" style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
@@ -11103,7 +11103,17 @@ window.renderF4mGroupStandings = function() {
   }).join('');
 };
 
-window.generateF4mQuarterfinals = async function() {
+// Shared lock so rapid double-clicks on QF/SF/Final buttons can't both slip
+// past the "already exists" confirm() before the first click's fetch has
+// finished and refreshed f4mMatchdaysCache — that race is what let a
+// double-click on "Quarterfinal বসাও" create duplicate QF (and then
+// duplicate SF) matchdays.
+window._f4mKoLock = false;
+window.generateF4mQuarterfinals = async function(btn) {
+  if (window._f4mKoLock) return;
+  window._f4mKoLock = true;
+  if (btn) btn.disabled = true;
+  try {
   const status = document.getElementById('f4mKoStatus');
   const groups = ['A', 'B', 'C', 'D'];
   const counts = {};
@@ -11136,9 +11146,14 @@ window.generateF4mQuarterfinals = async function() {
   await fetch(`${F4M_DB}/typ4man/matchdays.json`, { method: 'PATCH', body: JSON.stringify(batchObj) });
   status.textContent = '✅ Quarterfinal বসানো হয়েছে!'; status.style.color = 'var(--green)';
   await loadF4mAdminMatchdays();
+  } finally { window._f4mKoLock = false; if (btn) btn.disabled = false; }
 };
 
-window.generateF4mSemifinals = async function() {
+window.generateF4mSemifinals = async function(btn) {
+  if (window._f4mKoLock) return;
+  window._f4mKoLock = true;
+  if (btn) btn.disabled = true;
+  try {
   const status = document.getElementById('f4mKoStatus');
   const qfs = f4mMatchdaysCache.filter(m => m.stage === 'qf');
   if (qfs.length < 4) { status.textContent = '⚠️ আগে ৪টা Quarterfinal বসাও।'; status.style.color = 'var(--red)'; return; }
@@ -11159,9 +11174,14 @@ window.generateF4mSemifinals = async function() {
   await fetch(`${F4M_DB}/typ4man/matchdays.json`, { method: 'PATCH', body: JSON.stringify(batchObj) });
   status.textContent = '✅ Semifinal বসানো হয়েছে!'; status.style.color = 'var(--green)';
   await loadF4mAdminMatchdays();
+  } finally { window._f4mKoLock = false; if (btn) btn.disabled = false; }
 };
 
-window.generateF4mFinal = async function() {
+window.generateF4mFinal = async function(btn) {
+  if (window._f4mKoLock) return;
+  window._f4mKoLock = true;
+  if (btn) btn.disabled = true;
+  try {
   const status = document.getElementById('f4mKoStatus');
   const sfs = f4mMatchdaysCache.filter(m => m.stage === 'sf');
   const bySlot = {}; sfs.forEach(m => bySlot[m.koSlot] = m);
@@ -11176,6 +11196,7 @@ window.generateF4mFinal = async function() {
   });
   status.textContent = '✅ Final বসানো হয়েছে! 🏆'; status.style.color = 'var(--green)';
   await loadF4mAdminMatchdays();
+  } finally { window._f4mKoLock = false; if (btn) btn.disabled = false; }
 };
 
 window.renderF4mKoBracket = function() {
