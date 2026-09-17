@@ -8022,7 +8022,8 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
     const [teamsSnap, matchesSnap, ctrlSnap] = await Promise.all([
       fetch(`${TRN_DB}/tournament/teams.json`).then(r => r.json()),
       fetch(`${TRN_DB}/tournament/matches.json`).then(r => r.json()),
-      fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`).then(r => r.json())
+      fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`).then(r => r.json()),
+      fetchTrnOfficials()
     ]);
     const teams = teamsSnap ? Object.entries(teamsSnap).map(([id,v]) => ({id,...v})) : [];
     const allMatches = matchesSnap ? Object.entries(matchesSnap).map(([id,v]) => ({id,...v})) : [];
@@ -8038,6 +8039,18 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
       ? allMatches.filter(m => m.day === day && m.homeTeam === homeId && m.awayTeam === awayId)
           .sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0))
       : [];
+
+    // 🎖️ Match Official — draw hok ba na hok, official ta group+matchNumber theke
+    // deterministic vabe ber hoy. Tai `bouts` (jeta draw na hole khali thake) na
+    // dekhe, ei pair-er shob bout record theke group/matchNumber niye assign kori.
+    const pairAll = allMatches
+      .filter(m => m.day === day && m.homeTeam === homeId && m.awayTeam === awayId)
+      .sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
+    const pairInfo = pairAll[0] || {};
+    window._pmdOfficialHtml = pmdOfficialCardHtml(
+      assignedOfficialForMatch(pairInfo.group, pairInfo.matchNumber),
+      pairInfo
+    );
 
     window._pmdKey = key;
     window._pmdBouts = bouts;
@@ -8164,12 +8177,34 @@ window.pmdSwitchTab = function(tab) {
   else pmdRenderDetailsTab();
 };
 
+// 🎖️ Match Official card — photo + naam + ki kaj kore, shob ek jaygay. Public
+// match detail-er Details tab-e dekhabo jate je keo bujhte pare ei match ta ke
+// porichalona korche.
+function pmdOfficialCardHtml(official, info) {
+  if (!official) return '';
+  const slot = (info && info.group && info.matchNumber)
+    ? `Group ${info.group} • Match ${info.matchNumber}` : '';
+  const photo = official.photo
+    ? `<img src="${official.photo}" style="width:100%;height:100%;object-fit:cover">`
+    : `<span style="font-size:20px">🎖️</span>`;
+  return `
+    <div style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+      <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:var(--bg3);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">${photo}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text3);margin-bottom:2px">🎖️ Match Official${slot ? ` • ${slot}` : ''}</div>
+        <div style="font-size:14.5px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${official.name || '—'}</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:3px;line-height:1.45">এই ম্যাচের দায়িত্বে — Room create, score যাচাই ও result submit করবেন। কোনো সমস্যা হলে ওনার সাথে যোগাযোগ করো।</div>
+      </div>
+    </div>`;
+}
+
 function pmdRenderDetailsTab() {
   const body = document.getElementById('pmdBody');
   if (!body) return;
   const chartHtml = pmdRenderProgressionChart();
   body.innerHTML = `
     ${window._pmdSummaryHtml || ''}
+    ${window._pmdOfficialHtml || ''}
     ${chartHtml}
     <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
       ${window._pmdBoutRowsHtml || ''}
@@ -8303,17 +8338,62 @@ function pmdCalcF4mStandingsStandalone(squadsObj, matchdaysArr, group) {
 function pmdRenderTableTab() {
   const body = document.getElementById('pmdBody');
   if (!body) return;
-  let rows = [];
+
+  // Auction Tournament-e 12 team 2 group-e vaga — tai ek table-e shob na dekhiye
+  // Group A ar Group B alada table-e dekhabo (Standings page-er motoi). Je group-e
+  // ei match ta hocche, shei table ta upore thakbe.
   if (window._pmdMode === 'trn') {
-    rows = calcStandings(window._pmdAllTeams || [], window._pmdAllMatches || []);
-  } else {
-    rows = pmdCalcF4mStandingsStandalone(window._pmdAllSquads || {}, window._pmdAllMatchdaysF4m || [], window._pmdGroup);
+    const teams = window._pmdAllTeams || [];
+    const matches = window._pmdAllMatches || [];
+    const homeId = window._pmdHomeId, awayId = window._pmdAwayId;
+    const groupOf = t => (t.group || 'A').toUpperCase();
+    const groupsPresent = [...new Set(teams.map(groupOf))].sort();
+
+    if (!teams.length) {
+      body.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Table পাওয়া যায়নি।</div>';
+      return;
+    }
+    // 1 group-i thakle vag korar mane nei — age-r motoi ekta table.
+    if (groupsPresent.length < 2) {
+      body.innerHTML = pmdStandingsTableHtml(calcStandings(teams, matches), homeId, awayId);
+      return;
+    }
+
+    const matchTeam = teams.find(t => t.id === homeId) || teams.find(t => t.id === awayId);
+    const ownGroup = matchTeam ? groupOf(matchTeam) : null;
+    const ordered = ownGroup
+      ? [ownGroup, ...groupsPresent.filter(g => g !== ownGroup)]
+      : groupsPresent;
+
+    body.innerHTML = ordered.map(g => {
+      const gTeams = teams.filter(t => groupOf(t) === g);
+      const isOwn = g === ownGroup;
+      return `
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <span style="font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:${isOwn ? 'var(--gold)' : 'var(--text3)'}">Group ${g}</span>
+            ${isOwn ? '<span style="font-size:9.5px;color:var(--text3)">• এই ম্যাচের গ্রুপ</span>' : ''}
+            <span style="flex:1;height:1px;background:var(--border)"></span>
+          </div>
+          ${pmdStandingsTableHtml(calcStandings(gTeams, matches), homeId, awayId)}
+        </div>`;
+    }).join('');
+    return;
   }
+
+  const rows = pmdCalcF4mStandingsStandalone(window._pmdAllSquads || {}, window._pmdAllMatchdaysF4m || [], window._pmdGroup);
   if (!rows.length) {
     body.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Table পাওয়া যায়নি।</div>';
     return;
   }
-  const homeId = window._pmdHomeId, awayId = window._pmdAwayId;
+  body.innerHTML = pmdStandingsTableHtml(rows, window._pmdHomeId, window._pmdAwayId);
+}
+
+// Ekta standings table-er HTML — trn-er per-group table ar 4-Man dutoi eita reuse kore.
+function pmdStandingsTableHtml(rows, homeId, awayId) {
+  if (!rows || !rows.length) {
+    return '<div style="color:var(--text3);font-size:12px;text-align:center;padding:14px">কোনো team নেই।</div>';
+  }
   const headRow = `<tr style="font-size:10px;color:var(--text3);text-transform:uppercase">
     <td style="padding:6px 4px">#</td><td style="padding:6px 4px;text-align:left">Team</td>
     <td style="padding:6px 4px">MP</td><td style="padding:6px 4px">W</td><td style="padding:6px 4px">D</td><td style="padding:6px 4px">L</td><td style="padding:6px 4px">GD</td><td style="padding:6px 4px">Pts</td>
@@ -8331,7 +8411,7 @@ function pmdRenderTableTab() {
       <td style="padding:6px 4px;text-align:center;color:var(--gold)">${r.pts}</td>
     </tr>`;
   }).join('');
-  body.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${headRow}${bodyRows}</table></div>`;
+  return `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${headRow}${bodyRows}</table></div>`;
 }
 
 // Josh dekhte fixture text — Messenger e paste korle sundor lagbe emon format.
@@ -8602,6 +8682,7 @@ window.openPublicF4mMatchDetail = async function(matchdayId) {
     window._pmdHomeId = mdSnap.squadA;
     window._pmdAwayId = mdSnap.squadB;
     window._pmdCtrl = {};
+    window._pmdOfficialHtml = ''; // 4-Man mode-e tournament official assign hoy na
     window._pmdMode = 'f4m';
     window._pmdAllSquads = squads;
     window._pmdAllMatchdaysF4m = allMatchdaysF4m;
