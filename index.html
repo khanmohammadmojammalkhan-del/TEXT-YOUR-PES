@@ -2589,7 +2589,7 @@ if (document.readyState === 'loading') {
       <div class="trn-type-card" onclick="selectTournamentType('auction')">
         <span class="ttc-icon">🏆</span>
         <div class="ttc-title">AUCTION TOURNAMENT</div>
-        <div class="ttc-desc">Team-based league • Double round-robin • Group standings, fixtures, knockout</div>
+        <div class="ttc-desc">Team-based league • 2টা করে ম্যাচ প্রতি প্রতিপক্ষ • 1st Position সরাসরি Semi-Final, 2nd/3rd Quarter-Final</div>
         <span class="ttc-arrow">➜</span>
       </div>
       <div class="trn-type-card" onclick="selectTournamentType('4man')">
@@ -2622,7 +2622,7 @@ if (document.readyState === 'loading') {
   <div class="trn-content active" id="trntab-standings">
     <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div style="font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-        <span style="border-left:3px solid var(--green);padding-left:6px;margin-right:12px">Top 4 প্রতি Group → Quarter-Final</span>
+        <span style="border-left:3px solid var(--green);padding-left:6px;margin-right:12px">1st Position → সরাসরি Semi-Final • 2nd ও 3rd Position → Quarter-Final</span>
       </div>
       <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="loadTournamentStandings()">🔄 Refresh</button>
     </div>
@@ -2652,7 +2652,7 @@ if (document.readyState === 'loading') {
     </div>
 
     <div style="margin-top:16px;font-size:12px;color:var(--text3);font-family:'Libre Caslon Text',sans-serif">
-      * ২টা group (A ও B), প্রতি group এ ৬টা team (মোট ১২টা), double round-robin (home ও away)। প্রতি group থেকে Top 4 team Quarter-Final এ যাবে (মোট 8 team)।
+      * ২টা group (A ও B), প্রতি group এ ৬টা team (মোট ১২টা), প্রতিটা দল বাকি ৫টা প্রতিপক্ষের বিপক্ষে ২টা করে ম্যাচ খেলবে (মোট ১০টা ম্যাচ প্রতি দল)। প্রতি group-এর 1st Position সরাসরি Semi-Final-এ কোয়ালিফাই করবে, 2nd ও 3rd Position Quarter-Final খেলবে (cross-group), আর 4th/5th/6th Position Eliminated হবে।
     </div>
   </div>
 
@@ -2683,7 +2683,7 @@ if (document.readyState === 'loading') {
 
   <!-- KNOCKOUT TAB -->
   <div class="trn-content" id="trntab-knockout">
-    <div style="margin-bottom:16px;font-size:13px;color:var(--text3)">Top 4 teams from each group (A ও B) qualify for Quarter-Finals — মোট 8 team।</div>
+    <div style="margin-bottom:16px;font-size:13px;color:var(--text3)">1st Position প্রতি group থেকে সরাসরি Semi-Final-এ, 2nd ও 3rd Position Quarter-Final খেলে (cross-group) — 4th/5th/6th Position Eliminated।</div>
     <div id="trnKnockoutWrap">
       <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
     </div>
@@ -3938,7 +3938,7 @@ if (document.readyState === 'loading') {
       <button class="btn btn-outline" onclick="loadTrnAdminTeams()" style="padding:9px 20px;font-size:13px">🔄 Load Teams</button>
       <button class="btn btn-outline" onclick="openCreateTeamModal()" style="padding:9px 20px;font-size:13px">➕ Create New Team</button>
       <button class="btn" onclick="confirmRegenerateFixtures()" style="padding:9px 20px;font-size:13px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🔄 Regenerate Fixtures</button>
-      <button class="btn" onclick="fixStartersTo9()" style="padding:9px 20px;font-size:13px;background:rgba(251,191,36,0.1);border:1px solid var(--gold);color:var(--gold)">🔧 Fix Starters (→7)</button>
+      <button class="btn" onclick="fixStartersTo9()" style="padding:9px 20px;font-size:13px;background:rgba(251,191,36,0.1);border:1px solid var(--gold);color:var(--gold)">🔧 Fix Starters (→8)</button>
     </div>
   </div>
 
@@ -3971,7 +3971,7 @@ if (document.readyState === 'loading') {
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Set Quarter-Final, Semi-Final & Final matches.</p>
     <div id="trnKnockoutAdminArea"></div>
     <button class="btn btn-outline" onclick="loadKnockoutAdmin()" style="padding:9px 20px;font-size:13px;margin-top:10px">🔄 Load Knockout</button>
-    <button class="btn" onclick="autoSetQuarters()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set QF from Top 4/Group</button>
+    <button class="btn" onclick="autoSetQuarters()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(124,92,252,0.15);border:1px solid var(--border);color:var(--gold)">🤖 Auto-Set Champion+QF from Group Standings</button>
     <button class="btn" onclick="autoSetSemisFromQF()" style="padding:9px 20px;font-size:13px;margin-top:10px;margin-left:8px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🤖 Auto-Set SF from QF Winners</button>
   </div>
 
@@ -4162,6 +4162,16 @@ if (document.readyState === 'loading') {
 <!-- ══════════════ MATCHDAY CONTROL (ADMIN) ══════════════ -->
 <div class="admin-section" id="adminTab-matchdayctrl">
   <div class="trn-admin-section">
+    <div class="trn-admin-section-title">🎖️ Match Officials (৬ জন)</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতিদিন Auction Tournament-এ ৬টা matchup থাকে (Group A: ৩টা + Group B: ৩টা) — প্রতিটা matchup স্বয়ংক্রিয়ভাবে Match নাম্বার অনুযায়ী একজন Official-এর কাছে assign হয়ে যায়, আলাদা করে প্রতিবার কিছু সিলেক্ট করা লাগে না। Official-দের admin panel-এ ঢোকার password তুমি নিজে ব্যক্তিগতভাবে দিয়ে দেবে।</p>
+    <div id="trnOfficialsList" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="loadTrnOfficialsAdmin()" style="padding:9px 20px;font-size:13px">🔄 Load Officials</button>
+      <button class="btn btn-outline" onclick="openCreateOfficialModal()" style="padding:9px 20px;font-size:13px">➕ Add Official</button>
+    </div>
+  </div>
+
+  <div class="trn-admin-section">
     <div class="trn-admin-section-title">🗓️ Matchday Control</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতিটা matchup-এর জন্য lineup submission unlock/lock করো, deadline সেট করো, এবং lineup জমা হওয়ার পর "Start Matchday" চেপে draw + fixture তৈরি করো।</p>
     <button class="btn btn-outline" onclick="loadMatchdayControlList()" style="padding:9px 20px;font-size:13px;margin-bottom:14px">🔄 Load Matchups</button>
@@ -4210,7 +4220,7 @@ if (document.readyState === 'loading') {
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">Select Players (7 starters + 2 subs = 9 max)</label>
+      <label class="form-label">Select Players (8 starters + 2 subs = 10 max)</label>
       <input type="text" class="form-input" id="playerPickSearch" placeholder="🔍 Search player..." oninput="filterPlayerPick()" style="margin-bottom:8px">
       <div class="player-pick-list" id="playerPickList"></div>
       <div style="margin-top:8px;font-size:12px;color:var(--cyan)" id="playerPickCount">0 selected</div>
@@ -4220,6 +4230,47 @@ if (document.readyState === 'loading') {
       <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('createTeamModal').classList.remove('show')">Cancel</button>
     </div>
     <div id="createTeamError" style="margin-top:10px;font-size:13px;color:var(--red)"></div>
+  </div>
+</div>
+
+<!-- CREATE/EDIT MATCH OFFICIAL MODAL -->
+<div class="modal-overlay" id="officialModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-title" id="officialModalTitle">➕ Add Match Official</div>
+    <input type="hidden" id="editOfficialId">
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-input" id="officialName" placeholder="e.g. Rafi">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Photo</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="officialPhotoPreview" style="width:64px;height:64px;border-radius:50%;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--bg3);overflow:hidden;flex-shrink:0">🎖️</div>
+        <div style="flex:1">
+          <label for="officialPhotoInput" style="display:inline-block;padding:8px 16px;background:rgba(99,102,241,0.12);border:1px solid var(--primary);color:var(--primary);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600">📁 Choose Image</label>
+          <input type="file" id="officialPhotoInput" accept="image/*" style="display:none" onchange="previewOfficialPhoto(this)">
+          <input type="hidden" id="officialPhotoUrl">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn btn-gold" style="flex:1" onclick="saveOfficial()">💾 Save</button>
+      <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('officialModal').classList.remove('show')">Cancel</button>
+    </div>
+    <div id="officialModalError" style="margin-top:10px;font-size:13px;color:var(--red)"></div>
+  </div>
+</div>
+
+<!-- PUBLIC: MATCH OFFICIAL INFO MODAL (clicking a fixture card shows this) -->
+<div class="modal-overlay" id="matchOfficialModal">
+  <div class="modal-box" style="max-width:340px;text-align:center">
+    <div class="modal-title" id="moTeamsLabel" style="font-size:14px">Team vs Team</div>
+    <div style="margin:16px 0">
+      <div id="moPhotoWrap" style="width:84px;height:84px;border-radius:50%;overflow:hidden;margin:0 auto 10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid var(--gold)">🎖️</div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Match Official</div>
+      <div id="moName" style="font-size:16px;font-weight:700;color:var(--text)">—</div>
+    </div>
+    <button class="btn btn-outline" style="width:100%" onclick="document.getElementById('matchOfficialModal').classList.remove('show')">Close</button>
   </div>
 </div>
 
@@ -13412,6 +13463,7 @@ window.loadTrnTeams = async function() {
 // ── FIXTURES PAGE ──
 window.loadTrnFixtures = async function() {
   await fetchTrnData();
+  await fetchTrnOfficials();
   trnAllFixtures = [...trnMatchesCache];
   filterFixtures('all', document.getElementById('fixFilterAll'));
 };
@@ -13487,7 +13539,12 @@ window.filterFixtures = function(type, btn) {
         ? `${badgeIcon} ${doneBouts.length}/${totalBouts} bouts done`
         : `${badgeIcon} ${totalBouts} bouts · Upcoming`;
 
-      return `<div class="match1v1-row">
+      const official = assignedOfficialForMatch(bouts[0]?.group, bouts[0]?.matchNumber);
+      const teamsLabel = `${(ht.name || match.homeTeam || '—').replace(/'/g, "\\'")} vs ${(at.name || match.awayTeam || '—').replace(/'/g, "\\'")}`;
+      const officialName = official ? official.name.replace(/'/g, "\\'") : '';
+      const officialPhoto = official ? (official.photo || '').replace(/'/g, "\\'") : '';
+
+      return `<div class="match1v1-row" style="cursor:pointer" onclick="showMatchOfficialInfo('${teamsLabel}','${officialName}','${officialPhoto}')" title="Match Official দেখতে ক্লিক করো">
         <div class="match1v1-player" style="color:${winH?'var(--cyan)':'var(--text2)'}">
           <span>${ht.logo ? `<img src="${ht.logo}" style="width:22px;height:22px;border-radius:4px;object-fit:cover">` : (ht.emoji||'🏟️')}</span>
           <span class="pname">${ht.name||match.homeTeam||'—'}</span>
@@ -13541,38 +13598,28 @@ window.loadTrnKnockout = async function() {
       </div>`;
     };
 
-    const qf1 = ko.qf1 || null;
-    const qf2 = ko.qf2 || null;
-    const qf3 = ko.qf3 || null;
-    const qf4 = ko.qf4 || null;
-    const sf1 = ko.semi1 || null;
-    const sf2 = ko.semi2 || null;
+    const qfTop = ko.qf2 || null;    // A3 vs B2 → feeds SF1
+    const qfBottom = ko.qf1 || null; // A2 vs B3 → feeds SF2
+    const sf1 = ko.semi1 || null;    // Group A Champion + QF2 Winner
+    const sf2 = ko.semi2 || null;    // Group B Champion + QF1 Winner
     const final = ko.final || null;
     const champion = ko.champion ? (teamMap[ko.champion] || { name: ko.champion, emoji: '🏆' }) : null;
 
     wrap.innerHTML = `
       <div style="display:flex;align-items:flex-start;gap:32px;overflow-x:auto;padding:10px 0 20px;min-width:max-content">
-        <!-- Quarter Finals -->
-        <div style="display:flex;flex-direction:column;gap:24px;padding-top:0">
-          ${renderMatch(qf1, 'QUARTER-FINAL 1')}
-          ${renderMatch(qf2, 'QUARTER-FINAL 2')}
-          ${renderMatch(qf3, 'QUARTER-FINAL 3')}
-          ${renderMatch(qf4, 'QUARTER-FINAL 4')}
+        <!-- Quarter Finals (2nd/3rd Position) -->
+        <div style="display:flex;flex-direction:column;gap:96px;padding-top:36px">
+          ${renderMatch(qfTop, 'QUARTER-FINAL 2')}
+          ${renderMatch(qfBottom, 'QUARTER-FINAL 1')}
         </div>
-        <!-- Connector lines QF → SF (SVG) -->
-        <div style="display:flex;align-items:center;padding-top:24px">
-          <svg width="60" height="300" style="overflow:visible">
-            <line x1="0" y1="30" x2="30" y2="30" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="0" y1="102" x2="30" y2="102" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="30" y1="30" x2="30" y2="102" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="30" y1="66" x2="60" y2="66" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="0" y1="174" x2="30" y2="174" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="0" y1="246" x2="30" y2="246" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="30" y1="174" x2="30" y2="246" stroke="var(--border)" stroke-width="1.5"/>
-            <line x1="30" y1="210" x2="60" y2="210" stroke="var(--border)" stroke-width="1.5"/>
+        <!-- Connector lines QF → SF (SVG) — direct pass-through, no merge (Group Champion already sits in SF) -->
+        <div style="display:flex;align-items:center;padding-top:36px">
+          <svg width="60" height="180" style="overflow:visible">
+            <line x1="0" y1="45" x2="60" y2="45" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="0" y1="135" x2="60" y2="135" stroke="var(--border)" stroke-width="1.5"/>
           </svg>
         </div>
-        <!-- Semi Finals -->
+        <!-- Semi Finals (Group Champion + QF Winner) -->
         <div style="display:flex;flex-direction:column;gap:96px;padding-top:36px">
           ${renderMatch(sf1, 'SEMI-FINAL 1')}
           ${renderMatch(sf2, 'SEMI-FINAL 2')}
@@ -13661,7 +13708,7 @@ function renderAdminTeamsList() {
       </div>
       <div style="flex:1">
         <div style="font-weight:700;font-size:14px;color:var(--text)">${safeName}</div>
-        <div style="font-size:12px;color:var(--text3)">👑 ${t.manager||'—'} • ${(t.players||[]).filter(p=>p&&p.isStarter).length}/7 starters · ${(t.players||[]).filter(p=>p&&!p.isStarter).length}/3 subs</div>
+        <div style="font-size:12px;color:var(--text3)">👑 ${t.manager||'—'} • ${(t.players||[]).filter(p=>p&&p.isStarter).length}/8 starters · ${(t.players||[]).filter(p=>p&&!p.isStarter).length}/2 subs</div>
       </div>
       <button class="btn-admin-edit" onclick="openEditTeamModal('${t.id}')">✏️ Edit</button>
       <button class="btn-admin-del" onclick="deleteTeam('${t.id}','${safeNameAttr}')">🗑️</button>
@@ -13764,7 +13811,7 @@ window.togglePlayerPick = function(uid, el) {
   const idx = _playerPickSelected.indexOf(uid);
   const cb = el.querySelector('input[type=checkbox]');
   if (idx === -1) {
-    if (_playerPickSelected.length >= 10) { alert('Maximum 10 players (7 starters + 3 subs)।'); return; }
+    if (_playerPickSelected.length >= 10) { alert('Maximum 10 players (8 starters + 2 subs)।'); return; }
     _playerPickSelected.push(uid);
     el.classList.add('selected'); if(cb) cb.checked = true;
   } else {
@@ -13776,7 +13823,7 @@ window.togglePlayerPick = function(uid, el) {
 
 function updatePlayerPickCount() {
   const el = document.getElementById('playerPickCount');
-  if (el) el.textContent = `${_playerPickSelected.length} selected (${Math.min(_playerPickSelected.length,7)} starters + ${Math.max(0,_playerPickSelected.length-7)} subs)`;
+  if (el) el.textContent = `${_playerPickSelected.length} selected (${Math.min(_playerPickSelected.length,8)} starters + ${Math.max(0,_playerPickSelected.length-8)} subs)`;
 }
 
 window.previewTeamLogo = function(input) {
@@ -13826,7 +13873,7 @@ window.saveTeam = async function() {
   const allUsers = window._trnAllUsers || [];
   const players = _playerPickSelected.map((uid, i) => {
     const u = allUsers.find(u => u.uid === uid) || {};
-    return { uid, name: u.name || '—', isStarter: i < 7 };
+    return { uid, name: u.name || '—', isStarter: i < 8 };
   });
 
   const teamId = document.getElementById('editTeamId').value;
@@ -13959,9 +14006,9 @@ async function generateFixtures() {
 
   // Helper to push bouts for a match
   function pushBouts(t1, t2, matchdayNum, matchIdx, group) {
-    const t1S = (t1.players||[]).filter(p=>p.isStarter).slice(0,7);
-    const t2S = (t2.players||[]).filter(p=>p.isStarter).slice(0,7);
-    const bouts = Math.min(t1S.length, t2S.length, 7);
+    const t1S = (t1.players||[]).filter(p=>p.isStarter).slice(0,8);
+    const t2S = (t2.players||[]).filter(p=>p.isStarter).slice(0,8);
+    const bouts = Math.min(t1S.length, t2S.length, 8);
     const matchdayLabel = `Matchday ${matchdayNum} — GRP-${group} Match ${matchIdx+1}: ${t1.name} vs ${t2.name}`;
     for (let k = 0; k < bouts; k++) {
       allFixtures.push({
@@ -14014,9 +14061,9 @@ window.confirmRegenerateFixtures = async function() {
   loadTrnMatchdays();
 };
 
-// ── Admin: One-click fix — promote each team's players so first 7 (existing order) become starters ──
+// ── Admin: One-click fix — promote each team's players so first 8 (existing order) become starters ──
 window.fixStartersTo9 = async function() {
-  if (!confirm('সব টিমের প্লেয়ার লিস্ট চেক করে প্রথম ৭ জনকে starter বানিয়ে দেওয়া হবে (আগের ক্রম অনুযায়ী)। Continue?')) return;
+  if (!confirm('সব টিমের প্লেয়ার লিস্ট চেক করে প্রথম ৮ জনকে starter বানিয়ে দেওয়া হবে (আগের ক্রম অনুযায়ী)। Continue?')) return;
 
   const res = await fetch(`${TRN_DB}/tournament/teams.json`);
   const data = await res.json() || {};
@@ -14031,10 +14078,10 @@ window.fixStartersTo9 = async function() {
     const players = team.players || [];
     if (!players.length) { skippedCount++; continue; }
 
-    const alreadySeven = players.filter(p => p.isStarter).length === Math.min(players.length, 7);
-    const updatedPlayers = players.map((p, i) => ({ ...p, isStarter: i < 7 }));
+    const alreadyEight = players.filter(p => p.isStarter).length === Math.min(players.length, 8);
+    const updatedPlayers = players.map((p, i) => ({ ...p, isStarter: i < 8 }));
 
-    if (alreadySeven && JSON.stringify(updatedPlayers) === JSON.stringify(players)) { skippedCount++; continue; }
+    if (alreadyEight && JSON.stringify(updatedPlayers) === JSON.stringify(players)) { skippedCount++; continue; }
 
     const patchRes = await fetch(`${TRN_DB}/tournament/teams/${teamId}.json`, {
       method: 'PATCH',
@@ -14044,16 +14091,178 @@ window.fixStartersTo9 = async function() {
     await new Promise(r => setTimeout(r, 150)); // Firebase-কে একটু breathing room দেওয়া
   }
 
-  alert(`✅ Fix সম্পন্ন!\n${fixedCount}টা team আপডেট হয়েছে, ${skippedCount}টা আগে থেকেই ঠিক ছিল।\n\nএখন "🔄 Regenerate Fixtures" বাটনে চাপ দাও — তাহলে সব ম্যাচে 7/7 bout দেখাবে।`);
+  alert(`✅ Fix সম্পন্ন!\n${fixedCount}টা team আপডেট হয়েছে, ${skippedCount}টা আগে থেকেই ঠিক ছিল।\n\nএখন "🔄 Regenerate Fixtures" বাটনে চাপ দাও — তাহলে সব ম্যাচে 8/8 bout দেখাবে।`);
 
   await loadTrnAdminTeams();
 };
 
 // ══════════════════════════════════════════
+// 🎖️ MATCH OFFICIALS — 6 total, 1 handles 1 matchup per matchday
+// প্রতিদিন 6টা matchup thake (Group A: matchNumber 1-3, Group B: matchNumber 1-3).
+// Slot 1-3 = Group A Match 1-3, Slot 4-6 = Group B Match 1-3 — eivabe 6 official-er
+// shathe 6 matchup-er ekta fixed, deterministic mapping toiri hoy. Kono admin
+// action lage na — draw/fixture generate howar shathe shathei official o thik
+// hoye jay, karon eta shudhu group+matchNumber theke calculate kora hoy.
+// ══════════════════════════════════════════
+let trnOfficialsCache = [];
+
+async function fetchTrnOfficials() {
+  try {
+    const res = await fetch(`${TRN_DB}/tournament/officials.json`);
+    const data = await res.json() || {};
+    trnOfficialsCache = Object.entries(data)
+      .map(([id, v]) => ({ id, ...v }))
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  } catch (e) { trnOfficialsCache = []; }
+  return trnOfficialsCache;
+}
+
+function assignedOfficialForMatch(group, matchNumber) {
+  if (!trnOfficialsCache.length || !matchNumber) return null;
+  const slot = (group === 'B') ? (matchNumber + 3) : matchNumber; // 1..6
+  const idx = ((slot - 1) % trnOfficialsCache.length + trnOfficialsCache.length) % trnOfficialsCache.length;
+  return trnOfficialsCache[idx];
+}
+
+// ── ADMIN: Manage Match Officials ──
+window.loadTrnOfficialsAdmin = async function() {
+  const container = document.getElementById('trnOfficialsList');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)"><span class="spinner"></span></div>';
+  await fetchTrnOfficials();
+  renderTrnOfficialsAdminList();
+};
+
+function renderTrnOfficialsAdminList() {
+  const container = document.getElementById('trnOfficialsList');
+  if (!container) return;
+  if (!trnOfficialsCache.length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px">কোনো Official যুক্ত করা হয়নি।</div>';
+    return;
+  }
+  container.innerHTML = trnOfficialsCache.map((o, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px">
+      <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">
+        ${o.photo ? `<img src="${o.photo}" style="width:100%;height:100%;object-fit:cover">` : '🎖️'}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;color:var(--text)">${o.name || '—'}</div>
+        <div style="font-size:11px;color:var(--text3)">Slot ${i + 1} • ${i < 3 ? `Group A Match ${i + 1}` : `Group B Match ${i - 2}`}</div>
+      </div>
+      <button class="btn-admin-edit" onclick="openEditOfficialModal('${o.id}')">✏️</button>
+      <button class="btn-admin-del" onclick="deleteOfficial('${o.id}','${(o.name || '').replace(/'/g, "\\'")}')">🗑️</button>
+    </div>
+  `).join('');
+}
+
+window.openCreateOfficialModal = function() {
+  document.getElementById('officialModalTitle').textContent = '➕ Add Match Official';
+  document.getElementById('editOfficialId').value = '';
+  document.getElementById('officialName').value = '';
+  document.getElementById('officialPhotoUrl').value = '';
+  document.getElementById('officialPhotoInput').value = '';
+  document.getElementById('officialPhotoPreview').innerHTML = '🎖️';
+  document.getElementById('officialModalError').textContent = '';
+  document.getElementById('officialModal').classList.add('show');
+};
+
+window.openEditOfficialModal = function(id) {
+  const o = trnOfficialsCache.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('officialModalTitle').textContent = '✏️ Edit Match Official';
+  document.getElementById('editOfficialId').value = id;
+  document.getElementById('officialName').value = o.name || '';
+  document.getElementById('officialPhotoUrl').value = o.photo || '';
+  document.getElementById('officialPhotoInput').value = '';
+  document.getElementById('officialPhotoPreview').innerHTML = o.photo ? `<img src="${o.photo}" style="width:100%;height:100%;object-fit:cover">` : '🎖️';
+  document.getElementById('officialModalError').textContent = '';
+  document.getElementById('officialModal').classList.add('show');
+};
+
+window.previewOfficialPhoto = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('officialPhotoPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+  };
+  reader.readAsDataURL(file);
+};
+
+// Team logo-r moto e: image ke resize kore (max 200px) base64 banaiye shorashori
+// Firebase-e save kori, alada image-hosting service lage na.
+window.saveOfficial = async function() {
+  const errEl = document.getElementById('officialModalError');
+  errEl.textContent = '';
+  const name = document.getElementById('officialName').value.trim();
+  if (!name) { errEl.textContent = '❌ Name দিন।'; return; }
+  const id = document.getElementById('editOfficialId').value;
+
+  let photo = document.getElementById('officialPhotoUrl').value || '';
+  const photoFile = document.getElementById('officialPhotoInput').files[0];
+  if (photoFile) {
+    errEl.textContent = '⏳ Photo processing...';
+    try {
+      photo = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX = 200;
+            let w = img.width, h = img.height;
+            if (w > h) { if (w > MAX) { h = h * (MAX / w); w = MAX; } }
+            else { if (h > MAX) { w = w * (MAX / h); h = MAX; } }
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(w); canvas.height = Math.round(h);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(photoFile);
+      });
+    } catch (e) {
+      errEl.textContent = '❌ Photo process failed: ' + e.message;
+      return;
+    }
+    errEl.textContent = '';
+  }
+
+  const payload = { name, updatedAt: new Date().toISOString() };
+  if (photo) payload.photo = photo;
+
+  if (id) {
+    await fetch(`${TRN_DB}/tournament/officials/${id}.json`, { method: 'PATCH', body: JSON.stringify(payload) });
+  } else {
+    payload.order = trnOfficialsCache.length + 1;
+    await fetch(`${TRN_DB}/tournament/officials.json`, { method: 'POST', body: JSON.stringify(payload) });
+  }
+
+  document.getElementById('officialModal').classList.remove('show');
+  await loadTrnOfficialsAdmin();
+};
+
+window.deleteOfficial = async function(id, name) {
+  if (!confirm(`⚠️ "${name}" কে Match Official list থেকে মুছে ফেলা হবে। Continue?`)) return;
+  await fetch(`${TRN_DB}/tournament/officials/${id}.json`, { method: 'DELETE' });
+  await loadTrnOfficialsAdmin();
+};
+
+// ── PUBLIC: clicking a fixture card shows the assigned Match Official ──
+window.showMatchOfficialInfo = function(teamsLabel, name, photo) {
+  document.getElementById('moTeamsLabel').textContent = teamsLabel;
+  document.getElementById('moName').textContent = name || 'এখনো assign করা হয়নি';
+  document.getElementById('moPhotoWrap').innerHTML = photo ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover">` : '🎖️';
+  document.getElementById('matchOfficialModal').classList.add('show');
+};
+
+// ══════════════════════════════════════════
 // 🗓️ MATCHDAY CONTROL (Manager Panel + Admin)
 // ══════════════════════════════════════════
-// A "matchup" key groups the 7 pre-generated bout records that belong to one
-// team-vs-team fixture on a given day (boutNumber 1-3 = Deadline1 3v3, 4-7 = Deadline2 4v4).
+// A "matchup" key groups the 8 pre-generated bout records that belong to one
+// team-vs-team fixture on a given day (boutNumber 1-3 = Deadline1 3v3, 4-5 = Deadline2 2v2, 6-8 = Deadline3 3v3).
 function mdcMatchdayKey(m) { return `${m.day}_${m.homeTeam}_${m.awayTeam}`; }
 
 // ── ADMIN: Matchday Control list ──
@@ -14063,6 +14272,7 @@ window.loadMatchdayControlList = async function() {
   container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)"><span class="spinner"></span></div>';
   try {
     await fetchTrnData();
+    await fetchTrnOfficials();
     const [ctrlRes, lineupRes] = await Promise.all([
       fetch(`${TRN_DB}/tournament/matchdayControl.json`),
       fetch(`${TRN_DB}/tournament/matchdayLineups.json`)
@@ -14095,12 +14305,13 @@ function mdcRenderCard(key, bouts, teamMap) {
   bouts = bouts.slice().sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
   const first = bouts[0];
   const ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
-  const ctrl = (window._mdcCtrl || {})[key] || { status: 'locked', deadline1: '', deadline2: '' };
+  const ctrl = (window._mdcCtrl || {})[key] || { status: 'locked', deadline1: '', deadline2: '', deadline3: '' };
   const lineups = (window._mdcLineups || {})[key] || {};
-  const homeOk = lineups[first.homeTeam] && lineups[first.homeTeam].deadline1 && lineups[first.homeTeam].deadline2;
-  const awayOk = lineups[first.awayTeam] && lineups[first.awayTeam].deadline1 && lineups[first.awayTeam].deadline2;
+  const homeOk = lineups[first.homeTeam] && lineups[first.homeTeam].deadline1 && lineups[first.homeTeam].deadline2 && lineups[first.homeTeam].deadline3;
+  const awayOk = lineups[first.awayTeam] && lineups[first.awayTeam].deadline1 && lineups[first.awayTeam].deadline2 && lineups[first.awayTeam].deadline3;
   const statusColors = { locked: 'var(--text3)', lineup_open: 'var(--gold)', lineup_locked: 'var(--red)', drawn: 'var(--green)' };
   const statusLabels = { locked: '🔒 Locked', lineup_open: '🟢 Lineup Open', lineup_locked: '🟡 Lineup Locked', drawn: '✅ Drawn' };
+  const official = assignedOfficialForMatch(first.group, first.matchNumber);
 
   return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
@@ -14108,14 +14319,22 @@ function mdcRenderCard(key, bouts, teamMap) {
       <div style="font-size:11px;font-weight:700;color:${statusColors[ctrl.status] || 'var(--text3)'}">${statusLabels[ctrl.status] || ctrl.status}</div>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Day ${first.day} • Group ${first.group || '—'} • ${bouts.length} bouts</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    ${official ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:6px 10px;background:var(--bg3);border-radius:8px">
+      <div style="width:26px;height:26px;border-radius:50%;overflow:hidden;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">${official.photo ? `<img src="${official.photo}" style="width:100%;height:100%;object-fit:cover">` : '🎖️'}</div>
+      <span style="font-size:12px;color:var(--text2)">Match Official: <b style="color:var(--text)">${official.name}</b></span>
+    </div>` : ''}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label" style="font-size:10px">Deadline 1 (3v3)</label>
         <input type="datetime-local" class="form-input" id="mdc-dl1-${key}" value="${ctrl.deadline1 || ''}" style="font-size:12px;padding:7px 8px">
       </div>
       <div class="form-group" style="margin-bottom:0">
-        <label class="form-label" style="font-size:10px">Deadline 2 (4v4)</label>
+        <label class="form-label" style="font-size:10px">Deadline 2 (2v2)</label>
         <input type="datetime-local" class="form-input" id="mdc-dl2-${key}" value="${ctrl.deadline2 || ''}" style="font-size:12px;padding:7px 8px">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="font-size:10px">Deadline 3 (3v3)</label>
+        <input type="datetime-local" class="form-input" id="mdc-dl3-${key}" value="${ctrl.deadline3 || ''}" style="font-size:12px;padding:7px 8px">
       </div>
     </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Lineup: ${ht.name || 'Home'} ${homeOk ? '✅' : '❌'} • ${at.name || 'Away'} ${awayOk ? '✅' : '❌'}</div>
@@ -14134,8 +14353,9 @@ function mdcRenderCard(key, bouts, teamMap) {
 window.mdcSaveControl = async function(key) {
   const dl1 = document.getElementById(`mdc-dl1-${key}`).value;
   const dl2 = document.getElementById(`mdc-dl2-${key}`).value;
+  const dl3 = document.getElementById(`mdc-dl3-${key}`).value;
   const existing = (window._mdcCtrl || {})[key] || {};
-  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ deadline1: dl1, deadline2: dl2, status: existing.status || 'locked' }) });
+  await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ deadline1: dl1, deadline2: dl2, deadline3: dl3, status: existing.status || 'locked' }) });
   alert('✅ Deadline সেভ হয়েছে!');
   loadMatchdayControlList();
 };
@@ -14174,16 +14394,17 @@ window.mdcStartMatchday = async function(key) {
   const homeLU = lineups[homeId] || lastAll[homeId];
   const awayLU = lineups[awayId] || lastAll[awayId];
 
-  if (!homeLU || !awayLU || !homeLU.deadline1 || !homeLU.deadline2 || !awayLU.deadline1 || !awayLU.deadline2) {
+  if (!homeLU || !awayLU || !homeLU.deadline1 || !homeLU.deadline2 || !homeLU.deadline3 || !awayLU.deadline1 || !awayLU.deadline2 || !awayLU.deadline3) {
     alert(`❌ Lineup অসম্পূর্ণ।\n${ht.name || 'Home'}: ${homeLU ? 'পাওয়া গেছে' : 'নেই'}\n${at.name || 'Away'}: ${awayLU ? 'পাওয়া গেছে' : 'নেই'}\n\nদুই টিমের manager-কেই lineup submit করতে হবে, নাহলে আগের matchday-র lineup fallback হিসেবে থাকতে হবে।`);
     return;
   }
-  if (!confirm(`🎲 ${ht.name} vs ${at.name} — Draw করা হবে?\n\nDeadline1 (3v3) ও Deadline2 (4v4) দুই দলের lineup থেকে random pairing হয়ে fixture তৈরি হবে।`)) return;
+  if (!confirm(`🎲 ${ht.name} vs ${at.name} — Draw করা হবে?\n\nDeadline1 (3v3), Deadline2 (2v2) ও Deadline3 (3v3) — দুই দলের lineup থেকে random pairing হয়ে fixture তৈরি হবে।`)) return;
 
   const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } return a; };
   const homeD1 = shuffle(homeLU.deadline1), awayD1 = shuffle(awayLU.deadline1);
   const homeD2 = shuffle(homeLU.deadline2), awayD2 = shuffle(awayLU.deadline2);
-  const pairing = [...homeD1.map((uid, i) => ({ h: uid, a: awayD1[i] })), ...homeD2.map((uid, i) => ({ h: uid, a: awayD2[i] }))];
+  const homeD3 = shuffle(homeLU.deadline3), awayD3 = shuffle(awayLU.deadline3);
+  const pairing = [...homeD1.map((uid, i) => ({ h: uid, a: awayD1[i] })), ...homeD2.map((uid, i) => ({ h: uid, a: awayD2[i] })), ...homeD3.map((uid, i) => ({ h: uid, a: awayD3[i] }))];
 
   const userMap = {}; (await getAllUsers()).forEach(u => userMap[u.uid] = u);
 
@@ -15065,14 +15286,81 @@ window.mdcSaveMVP = async function(key) {
   }
 };
 
+// ── Auction Tournament: draw-er por Messenger-e paste korar fixture text ──
+// Fixed template: 3 deadline block (bout 1-3 / 4-5 / 6-8), protyekta block
+// matchdayControl-e save kora deadline1/2/3 (datetime-local) theke calculate hoy —
+// Response Time = deadline - 10 min, Sub/Swap Deadline = Response start - 1 sec.
+// Player-er jaygay tar full name bosano hoy.
+function mdcFmtClock(d, withSec) {
+  let h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return withSec ? `${h}:${m}:${String(d.getSeconds()).padStart(2, '0')} ${ap}` : `${h}:${m} ${ap}`;
+}
+
+function buildAuctionFixtureText(bouts, ht, at, ctrl, seasonLabel, userMap) {
+  if (!bouts.length) return '';
+  const SEP = '━━━━━━━━━━━━━━━━━━';
+  const dispName = (uid, fallback) => {
+    const u = userMap[uid];
+    return (u && u.name) || fallback || '—';
+  };
+  const groups = [
+    { label: '01', dl: ctrl.deadline1, bouts: bouts.slice(0, 3) },
+    { label: '02', dl: ctrl.deadline2, bouts: bouts.slice(3, 5) },
+    { label: '03', dl: ctrl.deadline3, bouts: bouts.slice(5, 8) }
+  ];
+
+  let n = 0;
+  const lines = [];
+  lines.push(`TYP AUCTION TOUR — SEASON ${seasonLabel || '?'}`);
+  lines.push('MATCH DAY FIXTURE');
+  lines.push(`${ht.name || 'TEAM'} vs ${at.name || 'TEAM'}`);
+  lines.push(SEP);
+
+  groups.forEach(g => {
+    lines.push(`Deadline — ${g.label}`);
+    const dl = g.dl ? new Date(g.dl) : null;
+    if (dl && !isNaN(dl)) {
+      const respStart = new Date(dl.getTime() - 10 * 60000);
+      const subSwap = new Date(respStart.getTime() - 1000);
+      lines.push(`Deadline : ${mdcFmtClock(dl)}`);
+      lines.push(`Response Time : ${mdcFmtClock(respStart)} – ${mdcFmtClock(dl)}`);
+      lines.push(`Sub/Swap Deadline : ${mdcFmtClock(subSwap, true)}`);
+    } else {
+      lines.push('Deadline : —');
+      lines.push('Response Time : —');
+      lines.push('Sub/Swap Deadline : —');
+    }
+    lines.push(SEP);
+    g.bouts.forEach(b => {
+      n++;
+      lines.push(`${n}) ${dispName(b.player1uid, b.player1)} vs ${dispName(b.player2uid, b.player2)}`);
+    });
+    lines.push(SEP);
+  });
+
+  lines.push('POINT TABLE');
+  lines.push('');
+  lines.push(`1. ${ht.name || 'TEAM'} : 00 PTS`);
+  lines.push(`2. ${at.name || 'TEAM'} : 00 PTS`);
+  lines.push(SEP);
+  lines.push('TYP — TEXT YOUR PES');
+  lines.push('🌐 https://typ-bd.vercel.app/');
+  return lines.join('\n');
+}
+
 window.mdcCopyFixtureText = async function(key) {
   const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key).sort((a, b) => (a.boutNumber || 0) - (b.boutNumber || 0));
   if (!bouts.length) { alert('❌ কোনো bout নেই।'); return; }
   const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
   const first = bouts[0], ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
-  const matchNo = first.day || '?';
   const seasonLabel = (trnSettingsCache.seasonName || '').replace(/season/i, '').trim();
-  const text = buildJossFixtureText(bouts, ht, at, matchNo, seasonLabel);
+  const ctrl = (window._mdcCtrl || {})[key] || {};
+  const allUsers = await getAllUsers();
+  const userMap = {}; allUsers.forEach(u => userMap[u.uid] = u);
+  const text = buildAuctionFixtureText(bouts, ht, at, ctrl, seasonLabel, userMap);
   try {
     await navigator.clipboard.writeText(text);
     alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
@@ -15161,7 +15449,7 @@ window.pcConfirm = async function() {
 // ══════════════════════════════════════════
 window._mgrTeamId = null;
 window._mgrTeam = null;
-window._mgrLineupDraft = { deadline1: [], deadline2: [] };
+window._mgrLineupDraft = { deadline1: [], deadline2: [], deadline3: [] };
 
 window.openManagerLogin = function(teamId) {
   const t = (trnTeamsCache || []).find(x => x.id === teamId);
@@ -15235,7 +15523,7 @@ window.mgrRenderMatchdayList = async function() {
     const opp = teamMap[oppId] || {};
     const ctrl = ctrlAll[key] || { status: 'locked' };
     const myLineup = (lineupAll[key] || {})[teamId];
-    const submitted = myLineup && myLineup.deadline1 && myLineup.deadline2;
+    const submitted = myLineup && myLineup.deadline1 && myLineup.deadline2 && myLineup.deadline3;
     return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div>
         <div style="font-weight:700;font-size:13px;color:var(--text)">Day ${first.day} — vs ${opp.name || '—'}</div>
@@ -15390,16 +15678,18 @@ window.mgrLoadUidSubmissions = async function() {
 window.mgrOpenLineupEditor = function(key) {
   const teamId = window._mgrTeamId;
   const team = window._mgrTeam;
-  const existing = ((window._mgrLineupAll || {})[key] || {})[teamId] || { deadline1: [], deadline2: [] };
-  window._mgrLineupDraft = { deadline1: [...(existing.deadline1 || [])], deadline2: [...(existing.deadline2 || [])] };
+  const existing = ((window._mgrLineupAll || {})[key] || {})[teamId] || { deadline1: [], deadline2: [], deadline3: [] };
+  window._mgrLineupDraft = { deadline1: [...(existing.deadline1 || [])], deadline2: [...(existing.deadline2 || [])], deadline3: [...(existing.deadline3 || [])] };
   const body = document.getElementById('mgrPanelBody');
   const roster = team.players || [];
   body.innerHTML = `
     <button class="btn btn-outline" onclick="mgrRenderMatchdayList()" style="padding:6px 12px;font-size:11px;margin-bottom:12px">← ফিরে যাও</button>
     <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕚 Deadline 1 — 3v3 (৩ জন বাছাই করো)</div>
     <div id="mgrD1List" style="margin-bottom:16px"></div>
-    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕛 Deadline 2 — 4v4 (৪ জন বাছাই করো)</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕛 Deadline 2 — 2v2 (২ জন বাছাই করো)</div>
     <div id="mgrD2List" style="margin-bottom:16px"></div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕐 Deadline 3 — 3v3 (৩ জন বাছাই করো)</div>
+    <div id="mgrD3List" style="margin-bottom:16px"></div>
     <div id="mgrLineupError" style="font-size:12px;color:var(--red);margin-bottom:10px"></div>
     <button class="btn btn-gold" onclick="mgrSubmitLineup('${key}')" style="padding:10px 20px;width:100%">💾 Lineup জমা দাও</button>
   `;
@@ -15419,7 +15709,8 @@ function mgrRenderLineupPickers(roster) {
     }).join('');
   };
   render('mgrD1List', 'deadline1', 3);
-  render('mgrD2List', 'deadline2', 4);
+  render('mgrD2List', 'deadline2', 2);
+  render('mgrD3List', 'deadline3', 3);
 }
 
 window.mgrTogglePick = function(ev, field, uid, max) {
@@ -15435,12 +15726,13 @@ window.mgrTogglePick = function(ev, field, uid, max) {
 
 window.mgrSubmitLineup = async function(key) {
   const errEl = document.getElementById('mgrLineupError');
-  const { deadline1, deadline2 } = window._mgrLineupDraft;
+  const { deadline1, deadline2, deadline3 } = window._mgrLineupDraft;
   if (deadline1.length !== 3) { errEl.textContent = '❌ Deadline 1-এর জন্য ঠিক ৩ জন বাছাই করো।'; return; }
-  if (deadline2.length !== 4) { errEl.textContent = '❌ Deadline 2-এর জন্য ঠিক ৪ জন বাছাই করো।'; return; }
+  if (deadline2.length !== 2) { errEl.textContent = '❌ Deadline 2-এর জন্য ঠিক ২ জন বাছাই করো।'; return; }
+  if (deadline3.length !== 3) { errEl.textContent = '❌ Deadline 3-এর জন্য ঠিক ৩ জন বাছাই করো।'; return; }
   const teamId = window._mgrTeamId;
   await fetch(`${TRN_DB}/tournament/matchdayLineups/${key}/${teamId}.json`, {
-    method: 'PUT', body: JSON.stringify({ deadline1, deadline2, submittedAt1: new Date().toISOString(), submittedAt2: new Date().toISOString() })
+    method: 'PUT', body: JSON.stringify({ deadline1, deadline2, deadline3, submittedAt1: new Date().toISOString(), submittedAt2: new Date().toISOString(), submittedAt3: new Date().toISOString() })
   });
   alert('✅ Lineup জমা হয়েছে!');
   mgrRenderMatchdayList();
@@ -16039,18 +16331,16 @@ function renderKnockoutAdminArea() {
     </div>`;
   };
 
-  area.innerHTML = renderKOMatch('qf1', '🎟️ QUARTER-FINAL 1', ko.qf1) +
-    renderKOMatch('qf2', '🎟️ QUARTER-FINAL 2', ko.qf2) +
-    renderKOMatch('qf3', '🎟️ QUARTER-FINAL 3', ko.qf3) +
-    renderKOMatch('qf4', '🎟️ QUARTER-FINAL 4', ko.qf4) +
-    renderKOMatch('semi1', '⚡ SEMI-FINAL 1', ko.semi1) +
-    renderKOMatch('semi2', '⚡ SEMI-FINAL 2', ko.semi2) +
+  area.innerHTML = renderKOMatch('qf1', '🎟️ QUARTER-FINAL 1 (2nd vs 3rd) → SF2', ko.qf1) +
+    renderKOMatch('qf2', '🎟️ QUARTER-FINAL 2 (3rd vs 2nd) → SF1', ko.qf2) +
+    renderKOMatch('semi1', '⚡ SEMI-FINAL 1 (Group A Champion + QF2 Winner)', ko.semi1) +
+    renderKOMatch('semi2', '⚡ SEMI-FINAL 2 (Group B Champion + QF1 Winner)', ko.semi2) +
     renderKOMatch('final', '🏆 FINAL', ko.final) +
     `<button class="btn btn-gold" onclick="saveKnockout()" style="width:100%;padding:11px;margin-top:8px">💾 Save Knockout (teams / manual score / status)</button>
      <span id="koSaveStatus" style="display:block;margin-top:8px;font-size:13px;color:var(--green)"></span>`;
 
   // Set current values
-  ['qf1','qf2','qf3','qf4','semi1','semi2','final'].forEach(key => {
+  ['qf1','qf2','semi1','semi2','final'].forEach(key => {
     const m = ko[key];
     if (!m) return;
     const t1sel = document.getElementById(`ko_t1_${key}`);
@@ -16211,8 +16501,6 @@ window.saveKnockout = async function() {
   const payload = {
     qf1: parseMatch('qf1'),
     qf2: parseMatch('qf2'),
-    qf3: parseMatch('qf3'),
-    qf4: parseMatch('qf4'),
     semi1: parseMatch('semi1'),
     semi2: parseMatch('semi2'),
     final: parseMatch('final'),
@@ -16225,36 +16513,39 @@ window.saveKnockout = async function() {
   if (st) { st.textContent = '✅ Saved!'; setTimeout(()=>st.textContent='',2500); }
 };
 
-// Top 4 (per group) → Quarter-Final cross-group bracket:
-// QF1: A1 vs B4   QF2: A2 vs B3   QF3: B1 vs A4   QF4: B2 vs A3
-// SF1 = winner(QF1) vs winner(QF2)   SF2 = winner(QF3) vs winner(QF4)
+// New format: Group Champion (1st) সরাসরি Semifinal-এ, 2nd ও 3rd Position Quarter-Final খেলে (cross-group),
+// 4th/5th/6th Eliminated।
+// QF1: Group A 2nd vs Group B 3rd → Winner → SF2
+// QF2: Group A 3rd vs Group B 2nd → Winner → SF1
+// SF1: Group A Champion vs QF2 Winner
+// SF2: Group B Champion vs QF1 Winner
 window.autoSetQuarters = async function() {
   await fetchTrnData();
   const groupATeams = trnTeamsCache.filter(t => (t.group||'A') === 'A');
   const groupBTeams = trnTeamsCache.filter(t => (t.group||'B') === 'B');
   const standingsA = calcStandings(groupATeams, trnMatchesCache);
   const standingsB = calcStandings(groupBTeams, trnMatchesCache);
-  if (standingsA.length < 4 || standingsB.length < 4) { alert('প্রতি group থেকে কমপক্ষে ৪টা team-এর data লাগবে standings থেকে।'); return; }
-  const [a1, a2, a3, a4] = standingsA;
-  const [b1, b2, b3, b4] = standingsB;
+  if (standingsA.length < 3 || standingsB.length < 3) { alert('প্রতি group থেকে কমপক্ষে ৩টা team-এর data লাগবে standings থেকে (1st, 2nd, 3rd Position)।'); return; }
+  const [a1, a2, a3] = standingsA;
+  const [b1, b2, b3] = standingsB;
   const payload = {
-    qf1: { team1: a1.id, team2: b4.id, score1: null, score2: null, status: 'pending' },
-    qf2: { team1: a2.id, team2: b3.id, score1: null, score2: null, status: 'pending' },
-    qf3: { team1: b1.id, team2: a4.id, score1: null, score2: null, status: 'pending' },
-    qf4: { team1: b2.id, team2: a3.id, score1: null, score2: null, status: 'pending' },
-    semi1: trnKnockoutCache.semi1 || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
-    semi2: trnKnockoutCache.semi2 || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
+    qf1: { team1: a2.id, team2: b3.id, score1: null, score2: null, status: 'pending' },
+    qf2: { team1: a3.id, team2: b2.id, score1: null, score2: null, status: 'pending' },
+    semi1: { team1: a1.id, team2: trnKnockoutCache.semi1?.team2 || '', score1: null, score2: null, status: 'pending' },
+    semi2: { team1: b1.id, team2: trnKnockoutCache.semi2?.team2 || '', score1: null, score2: null, status: 'pending' },
     final: trnKnockoutCache.final || { team1: '', team2: '', score1: null, score2: null, status: 'pending' },
     champion: trnKnockoutCache.champion || '',
     updatedAt: new Date().toISOString()
   };
   await fetch(`${TRN_DB}/tournament/knockout.json`, { method: 'PUT', body: JSON.stringify(payload) });
-  alert(`✅ Quarter-finals set!\nQF1: ${a1.name} (A1) vs ${b4.name} (B4)\nQF2: ${a2.name} (A2) vs ${b3.name} (B3)\nQF3: ${b1.name} (B1) vs ${a4.name} (A4)\nQF4: ${b2.name} (B2) vs ${a3.name} (A3)`);
+  alert(`✅ Quarter-finals set!\nQF1: ${a2.name} (A2) vs ${b3.name} (B3) → Winner যাবে SF2-তে\nQF2: ${a3.name} (A3) vs ${b2.name} (B2) → Winner যাবে SF1-এ\n\nSF1: ${a1.name} (Group A Champion) vs QF2 Winner\nSF2: ${b1.name} (Group B Champion) vs QF1 Winner`);
   loadKnockoutAdmin();
 };
 
-// QF জয়ীদের নিয়ে Semi-Final বসায় — প্রতিটা QF অবশ্যই "completed" স্ট্যাটাসে থাকতে হবে
-// এবং টাই থাকা চলবে না (bout entry থেকে score1/score2 auto-calculate হয়)।
+// QF জয়ীদের নিয়ে Semi-Final-এর ২য় স্লট বসায় (১ম স্লটে আগে থেকেই Group Champion বসানো থাকে) —
+// প্রতিটা QF অবশ্যই "completed" স্ট্যাটাসে থাকতে হবে এবং টাই থাকা চলবে না
+// (bout entry থেকে score1/score2 auto-calculate হয়)।
+// QF1 Winner → SF2 (Group B Champion-এর সাথে)   QF2 Winner → SF1 (Group A Champion-এর সাথে)
 window.autoSetSemisFromQF = async function() {
   await fetchTrnData();
   const ko = trnKnockoutCache;
@@ -16265,18 +16556,17 @@ window.autoSetSemisFromQF = async function() {
   };
   const w1 = getWinner(ko.qf1, 'QF1');
   const w2 = getWinner(ko.qf2, 'QF2');
-  const w3 = getWinner(ko.qf3, 'QF3');
-  const w4 = getWinner(ko.qf4, 'QF4');
-  if (!w1 || !w2 || !w3 || !w4) return;
+  if (!w1 || !w2) return;
+  if (!ko.semi1?.team1 || !ko.semi2?.team1) { alert('⚠️ আগে "Auto-Set Champion+QF from Group Standings" চেপে Group Champion-দের SF-এ বসাও।'); return; }
   const teamName = id => trnTeamsCache.find(t => t.id === id)?.name || id;
   const payload = {
     ...ko,
-    semi1: { team1: w1, team2: w2, score1: null, score2: null, status: 'pending' },
-    semi2: { team1: w3, team2: w4, score1: null, score2: null, status: 'pending' },
+    semi1: { ...ko.semi1, team2: w2, score1: null, score2: null, status: 'pending' },
+    semi2: { ...ko.semi2, team2: w1, score1: null, score2: null, status: 'pending' },
     updatedAt: new Date().toISOString()
   };
   await fetch(`${TRN_DB}/tournament/knockout.json`, { method: 'PUT', body: JSON.stringify(payload) });
-  alert(`✅ Semi-finals set!\nSF1: ${teamName(w1)} (QF1) vs ${teamName(w2)} (QF2)\nSF2: ${teamName(w3)} (QF3) vs ${teamName(w4)} (QF4)`);
+  alert(`✅ Semi-finals set!\nSF1: ${teamName(ko.semi1.team1)} (Group A Champion) vs ${teamName(w2)} (QF2 Winner)\nSF2: ${teamName(ko.semi2.team1)} (Group B Champion) vs ${teamName(w1)} (QF1 Winner)`);
   loadKnockoutAdmin();
 };
 
@@ -17946,7 +18236,7 @@ const TYP_FAQ = [
   },
   {
     keywords: ['tournament', 'টুর্নামেন্ট', 'গ্রুপ এ', 'গ্রুপ বি', 'group', 'knockout', 'নকআউট', 'কাপ'],
-    answer: 'Tournament-এ ২টা Group (A ও B) থাকে, প্রতি group এ ৬টা দল (মোট ১২টা দল, প্রতি দলে ১০ জন করে), double round-robin ম্যাচ খেলে (প্রতি ম্যাচ 7v7 bout)। প্রতি group থেকে Top 4 দল Quarter-Final এ যায় (মোট 8 দল), তারপর Semi-Final ও Final হয়ে চ্যাম্পিয়ন নির্ধারিত হয়। প্রতিটা ম্যাচের রেজাল্ট কার্ড PNG আকারে ডাউনলোড করা যায়।'
+    answer: 'Tournament-এ ২টা Group (A ও B) থাকে, প্রতি group এ ৬টা দল (মোট ১২টা দল, প্রতি দলে ১০ জন করে), প্রতিটা দল বাকি ৫টা প্রতিপক্ষের বিপক্ষে ২টা করে ম্যাচ খেলে (মোট ১০টা ম্যাচ প্রতি দল, প্রতি ম্যাচ 8v8 bout)। প্রতি group-এর 1st Position (Group Champion) সরাসরি Semi-Final-এ কোয়ালিফাই করে, 2nd ও 3rd Position Quarter-Final খেলে (cross-group, বিজয়ী Semi-Final-এ যায়), আর 4th/5th/6th Position Eliminated হয়। তারপর Semi-Final ও Final হয়ে চ্যাম্পিয়ন নির্ধারিত হয়। প্রতিটা ম্যাচের রেজাল্ট কার্ড PNG আকারে ডাউনলোড করা যায়।'
   },
   {
     keywords: ['বিরোধ', 'dispute', 'ভুল ফলাফল', 'complain', 'অভিযোগ', 'রিপোর্ট'],
