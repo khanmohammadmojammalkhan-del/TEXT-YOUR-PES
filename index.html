@@ -4172,6 +4172,16 @@ if (document.readyState === 'loading') {
   </div>
 
   <div class="trn-admin-section">
+    <div class="trn-admin-section-title">📅 Officials Full Schedule</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">পুরো season-এর সব Matchday-তে কোন Official কোন matchup control করবে — একসাথে পুরো list দেখো, এবং Officials-দের Messenger group-এ আগে থেকে জানিয়ে দেওয়ার জন্য Text হিসেবে Copy করো।</p>
+    <div id="trnOfficialsScheduleList" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="loadTrnOfficialsSchedule()" style="padding:9px 20px;font-size:13px">🔄 Load Schedule</button>
+      <button class="btn btn-outline" onclick="copyOfficialsScheduleText()" style="padding:9px 20px;font-size:13px">📋 Copy as Text (Messenger)</button>
+    </div>
+  </div>
+
+  <div class="trn-admin-section">
     <div class="trn-admin-section-title">🗓️ Matchday Control</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতিটা matchup-এর জন্য lineup submission unlock/lock করো, deadline সেট করো, এবং lineup জমা হওয়ার পর "Start Matchday" চেপে draw + fixture তৈরি করো।</p>
     <button class="btn btn-outline" onclick="loadMatchdayControlList()" style="padding:9px 20px;font-size:13px;margin-bottom:14px">🔄 Load Matchups</button>
@@ -14204,6 +14214,97 @@ function assignedOfficialForMatch(group, matchNumber) {
   const idx = ((slot - 1) % trnOfficialsCache.length + trnOfficialsCache.length) % trnOfficialsCache.length;
   return trnOfficialsCache[idx];
 }
+
+// ── 🎖️ ADMIN: Full Officials Schedule — every matchday's 6 matchups
+// (Group A Match 1-3, Group B Match 1-3) with the deterministically-assigned
+// official, listed for the whole season at once, so officials can be told
+// their upcoming duties well before each matchday instead of one at a time. ──
+window.loadTrnOfficialsSchedule = async function() {
+  const container = document.getElementById('trnOfficialsScheduleList');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)"><span class="spinner"></span></div>';
+  try {
+    await fetchTrnData();
+    await fetchTrnOfficials();
+    if (!trnOfficialsCache.length) {
+      container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)">আগে Match Official যোগ করো।</div>';
+      return;
+    }
+    const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
+    const groups = {};
+    trnMatchesCache.forEach(m => {
+      const key = mdcMatchdayKey(m);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(m);
+    });
+    const keys = Object.keys(groups);
+    if (!keys.length) {
+      container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)">কোনো matchup পাওয়া যায়নি — আগে Fixtures generate করো।</div>';
+      return;
+    }
+    // Ekta row protiti matchup-er jonno (day + group + matchNumber theke).
+    const rows = keys.map(key => {
+      const bouts = groups[key];
+      const first = bouts[0];
+      const ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
+      const official = assignedOfficialForMatch(first.group, first.matchNumber);
+      return { day: parseInt(first.day) || 0, group: first.group || '—', matchNumber: first.matchNumber || 0, ht, at, official };
+    }).sort((a, b) => (a.day - b.day) || String(a.group).localeCompare(String(b.group)) || (a.matchNumber - b.matchNumber));
+
+    window._trnOfficialsScheduleRows = rows;
+
+    const byDay = {};
+    rows.forEach(r => { if (!byDay[r.day]) byDay[r.day] = []; byDay[r.day].push(r); });
+    const days = Object.keys(byDay).sort((a, b) => parseInt(a) - parseInt(b));
+
+    container.innerHTML = days.map(d => `
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">📅 Matchday ${d}</div>
+        ${byDay[d].map(r => `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px">
+            <div style="font-size:12px;color:var(--text)"><b>${r.ht.name || '—'}</b> vs <b>${r.at.name || '—'}</b> <span style="color:var(--text3);font-size:10.5px">(Group ${r.group} • Match ${r.matchNumber})</span></div>
+            <div style="font-size:12px;color:${r.official ? 'var(--text2)' : 'var(--red)'}">🎖️ ${r.official ? r.official.name : 'Assign করা নেই'}</div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+  } catch (e) {
+    container.innerHTML = `<div style="color:var(--red);padding:30px;text-align:center">❌ ${e.message}</div>`;
+  }
+};
+
+// ── 🎖️ Copy the full officials schedule as shareable text, grouped by
+// official — so each official's complete upcoming duty list (across every
+// matchday) can be pasted into Messenger and they're informed in advance. ──
+window.copyOfficialsScheduleText = async function() {
+  const rows = window._trnOfficialsScheduleRows;
+  if (!rows || !rows.length) { alert('❌ আগে "🔄 Load Schedule" চাপো।'); return; }
+  const seasonLabel = (trnSettingsCache.seasonName || '').replace(/season/i, '').trim();
+  const byOfficial = {};
+  rows.forEach(r => {
+    const name = r.official ? r.official.name : 'Unassigned';
+    if (!byOfficial[name]) byOfficial[name] = [];
+    byOfficial[name].push(r);
+  });
+  const SEP = '━━━━━━━━━━━━━━━━━━';
+  const lines = [`TYP AUCTION TOUR — SEASON ${seasonLabel || '?'}`, 'MATCH OFFICIALS SCHEDULE', SEP];
+  Object.keys(byOfficial).forEach(name => {
+    lines.push(`🎖️ ${name}`);
+    byOfficial[name].forEach(r => {
+      lines.push(`Day ${r.day} • Group ${r.group} • Match ${r.matchNumber} — ${r.ht.name || '—'} vs ${r.at.name || '—'}`);
+    });
+    lines.push(SEP);
+  });
+  lines.push('TYP — TEXT YOUR PES');
+  lines.push('🌐 https://typ-bd.vercel.app/');
+  const text = lines.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('✅ Copy হয়ে গেছে! এখন Officials-দের Messenger group-এ paste করো।');
+  } catch (e) {
+    prompt('Copy করতে সমস্যা হলে ম্যানুয়ালি সিলেক্ট করে কপি করো:', text);
+  }
+};
 
 // ── ADMIN: Manage Match Officials ──
 window.loadTrnOfficialsAdmin = async function() {
