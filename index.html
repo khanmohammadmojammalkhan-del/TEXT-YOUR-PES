@@ -8093,7 +8093,7 @@ window.openPublicMatchDetail = async function(day, homeId, awayId) {
     }
 
     const boutRows = bouts.length ? bouts.map((b, i) => {
-      const dl = i < 3 ? '1st DL' : '2nd DL';
+      const dl = i < 3 ? 'DL 1' : (i < 5 ? 'DL 2' : 'DL 3');
       const done = b.status === 'completed';
       const scoreTxt = done ? `<span style="color:var(--gold);font-weight:700;padding:0 6px">${b.homeScore} – ${b.awayScore}</span>` : `<span style="color:var(--text3);padding:0 6px">vs</span>`;
       return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
@@ -14556,7 +14556,7 @@ function renderFixtureBlock(key, bouts, allowSide) {
     </div>`;
   }
   const rows = bouts.map((b, i) => {
-    const dl = i < 3 ? '1st DL' : '2nd DL';
+    const dl = i < 3 ? 'DL 1' : (i < 5 ? 'DL 2' : 'DL 3');
     // shudhu admin (isAdminView) sub/swap korte parbe — manager der jonno button dekhabe na
     const homeBtn = isAdminView ? `<button class="btn btn-outline" onclick="mdcChangePlayer('${key}','${b.id}','home')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
     const awayBtn = isAdminView ? `<button class="btn btn-outline" onclick="mdcChangePlayer('${key}','${b.id}','away')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
