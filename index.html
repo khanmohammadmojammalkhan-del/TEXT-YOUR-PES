@@ -8470,9 +8470,12 @@ window.pmdCopyFixtureText = async function() {
   const bouts = window._pmdBouts || [];
   const ht = window._pmdHome || {}, at = window._pmdAway || {};
   if (!bouts.length) return;
-  const matchNo = bouts[0].day || '?';
-  const seasonLabel = (trnSettingsCache.seasonName || '').replace(/season/i, '').trim();
-  const text = buildJossFixtureText(bouts, ht, at, matchNo, seasonLabel);
+  // Admin Matchday Control-er moto e same Auction fixture template ( ( ) score slot shoho ) —
+  // duita Copy button-e ekই text ashe. Public modal-e login lagena, tai userMap faka; naam bout theke.
+  const _sn = trnSettingsCache.seasonName || '';
+  const _sm = _sn.match(/(\d+)\s*$/) || _sn.match(/(\d+)/);
+  const seasonLabel = _sm ? _sm[1] : _sn.replace(/season/i, '').trim();
+  const text = buildAuctionFixtureText(bouts, ht, at, {}, seasonLabel, {});
   try {
     await navigator.clipboard.writeText(text);
     alert('✅ Copy হয়ে গেছে! এখন Messenger-এ paste করো।');
