@@ -15542,10 +15542,11 @@ function buildAuctionFixtureText(bouts, ht, at, ctrl, seasonLabel, userMap) {
     const u = userMap[uid];
     return (u && u.name) || fallback || '—';
   };
+  // Deadline/Response/Sub-Swap time gulo FIXED — protyek matchday-e ekdom same thake
   const groups = [
-    { label: '01', dl: ctrl.deadline1, bouts: bouts.slice(0, 3) },
-    { label: '02', dl: ctrl.deadline2, bouts: bouts.slice(3, 5) },
-    { label: '03', dl: ctrl.deadline3, bouts: bouts.slice(5, 8) }
+    { label: '01', dl: '11:00 PM', resp: '10:50 PM – 11:00 PM', sub: '10:49:59 PM', bouts: bouts.slice(0, 3) },
+    { label: '02', dl: '12:00 AM', resp: '11:50 PM – 12:00 AM', sub: '11:49:59 PM', bouts: bouts.slice(3, 5) },
+    { label: '03', dl: '1:00 AM',  resp: '12:50 AM – 1:00 AM',  sub: '12:49:59 AM', bouts: bouts.slice(5, 8) }
   ];
 
   let n = 0;
@@ -15557,18 +15558,9 @@ function buildAuctionFixtureText(bouts, ht, at, ctrl, seasonLabel, userMap) {
 
   groups.forEach(g => {
     lines.push(`Deadline — ${g.label}`);
-    const dl = g.dl ? new Date(g.dl) : null;
-    if (dl && !isNaN(dl)) {
-      const respStart = new Date(dl.getTime() - 10 * 60000);
-      const subSwap = new Date(respStart.getTime() - 1000);
-      lines.push(`Deadline : ${mdcFmtClock(dl)}`);
-      lines.push(`Response Time : ${mdcFmtClock(respStart)} – ${mdcFmtClock(dl)}`);
-      lines.push(`Sub/Swap Deadline : ${mdcFmtClock(subSwap, true)}`);
-    } else {
-      lines.push('Deadline : —');
-      lines.push('Response Time : —');
-      lines.push('Sub/Swap Deadline : —');
-    }
+    lines.push(`Deadline : ${g.dl}`);
+    lines.push(`Response Time : ${g.resp}`);
+    lines.push(`Sub/Swap Deadline : ${g.sub}`);
     lines.push(SEP);
     g.bouts.forEach(b => {
       n++;
@@ -15591,7 +15583,9 @@ window.mdcCopyFixtureText = async function(key) {
   if (!bouts.length) { alert('❌ কোনো bout নেই।'); return; }
   const teamMap = {}; trnTeamsCache.forEach(t => teamMap[t.id] = t);
   const first = bouts[0], ht = teamMap[first.homeTeam] || {}, at = teamMap[first.awayTeam] || {};
-  const seasonLabel = (trnSettingsCache.seasonName || '').replace(/season/i, '').trim();
+  const _sn = trnSettingsCache.seasonName || '';
+  const _sm = _sn.match(/(\d+)\s*$/) || _sn.match(/(\d+)/);
+  const seasonLabel = _sm ? _sm[1] : _sn.replace(/season/i, '').trim();
   const ctrl = (window._mdcCtrl || {})[key] || {};
   const allUsers = await getAllUsers();
   const userMap = {}; allUsers.forEach(u => userMap[u.uid] = u);
