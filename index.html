@@ -10462,7 +10462,8 @@ async function typRecordMatchHistory({ homeName, awayName, homeScore, awayScore,
     };
     const key = Date.now() + '_' + Math.random().toString(36).slice(2, 7);
     await fetch(`${F4M_DB}/matches/${key}.json`, { method: 'PUT', body: JSON.stringify(matchData) });
-  } catch (e) { console.warn('typRecordMatchHistory failed', e); }
+    return key;
+  } catch (e) { console.warn('typRecordMatchHistory failed', e); return null; }
 }
 window.typRecordMatchHistory = typRecordMatchHistory;
 
@@ -14678,6 +14679,13 @@ function renderFixtureBlock(key, bouts, allowSide) {
       ${awayBtn}<span style="flex:1;text-align:right">${b.player2 || '—'}</span>
     </div>`;
   }).join('');
+  const pasteBlock = showScoreInputs ? `
+    <div style="margin-top:10px;padding:10px;border:1px dashed var(--secondary);border-radius:8px">
+      <label class="form-label" style="font-size:11px">📥 Result Text Paste (Auto Fill)</label>
+      <textarea id="mdc-paste-${key}" class="form-input" rows="5" placeholder="Fixture text-এর নামের পাশের ( ) তে score বসিয়ে এখানে paste করো..." style="width:100%;font-size:12px;margin-top:4px"></textarea>
+      <button class="btn btn-outline" onclick="mdcAutoFillScores('${key}')" style="margin-top:6px;padding:7px 14px;font-size:11px;width:100%">⚡ Auto Fill Scores</button>
+      <div id="mdc-paste-status-${key}" style="font-size:11px;margin-top:6px;line-height:1.6"></div>
+    </div>` : '';
   const saveBtn = showScoreInputs ? `
     <button class="btn btn-gold" onclick="mdcSaveBoutResults('${key}')" style="margin-top:10px;padding:8px 14px;font-size:12px;width:100%">✅ Save Match Result</button>
     <div id="mdc-save-status-${key}" style="font-size:11px;color:var(--green);margin-top:6px;text-align:center"></div>
@@ -14690,6 +14698,7 @@ function renderFixtureBlock(key, bouts, allowSide) {
   ` : '';
   return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
     ${rows}
+    ${pasteBlock}
     ${saveBtn}
     ${mvpBlock}
     <button class="btn btn-outline" onclick="mdcCopyFixtureText('${key}')" style="margin-top:10px;padding:7px 14px;font-size:11px;width:100%">📋 Copy as Text (Messenger)</button>
@@ -14703,9 +14712,19 @@ function renderFixtureBlock(key, bouts, allowSide) {
 // The lineups themselves are left intact (use "Reset Lineup" separately if
 // those also need to be cleared).
 window.mdcDeleteFixture = async function(key) {
-  if (!confirm('⚠️ এই matchday-এর drawn fixture (player pairing + স্কোর) মুছে দেওয়া হবে।\n\nLineup ঠিকই থাকবে, শুধু draw/pairing রিসেট হবে — পরে আবার "Start Matchday" চেপে নতুন করে draw করতে পারবে। Continue?')) return;
+  if (!confirm('⚠️ এই matchday-এর drawn fixture (player pairing + স্কোর) মুছে দেওয়া হবে।\n\nআগে save করা কোনো result থাকলে সেগুলোর stat player profile থেকেও ফেরত নেওয়া হবে।\nLineup ঠিকই থাকবে, শুধু draw/pairing রিসেট হবে — পরে আবার "Start Matchday" চেপে নতুন করে draw করতে পারবে। Continue?')) return;
   const bouts = trnMatchesCache.filter(m => mdcMatchdayKey(m) === key);
   if (!bouts.length) { alert('❌ কোনো bout পাওয়া যায়নি।'); return; }
+
+  // Already-saved result thakle profile stat reverse korar jonno age delta hishab kori
+  const statDelta = {};
+  for (const b of bouts) {
+    const prev = (await fetch(`${TRN_DB}/tournament/matches/${b.id}.json`).then(r => r.json()).catch(() => null)) || b;
+    if (prev.status === 'completed' && prev.homeScore != null && prev.awayScore != null && prev.player1uid && prev.player2uid) {
+      mdcApplyBoutStat(statDelta, prev.player1uid, prev.player2uid, Number(prev.homeScore), Number(prev.awayScore), -1);
+    }
+  }
+
   for (const b of bouts) {
     await fetch(`${TRN_DB}/tournament/matches/${b.id}.json`, {
       method: 'PATCH', body: JSON.stringify({
@@ -14716,6 +14735,18 @@ window.mdcDeleteFixture = async function(key) {
       })
     });
   }
+  await mdcFlushStatDeltas(statDelta);
+  window._allUsersCache = [];
+
+  // Team-level history record thakle seta-o muche flag reset
+  try {
+    const ctrl = await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`).then(r => r.json()).catch(() => null);
+    if (ctrl && ctrl.historyKey) {
+      await fetch(`${F4M_DB}/matches/${ctrl.historyKey}.json`, { method: 'DELETE' });
+      await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: false, historyKey: null }) });
+    }
+  } catch (e) { console.warn('history cleanup failed', e); }
+
   await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ status: 'lineup_locked' }) });
   alert('✅ Fixture ডিলিট হয়েছে! স্ট্যাটাস "Lineup Locked"-এ ফিরে গেছে।');
   await fetchTrnData();
@@ -15318,25 +15349,51 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   link.click();
 }
 
+// Bout result-er profile stat contribution (matches/wins/draws/losses/goalsFor).
+// sign = +1 result add korte, -1 ager result ferot (reverse) nite. Correction-e
+// ager result reverse + notun result apply = net delta, tai profile always thik thake.
+function mdcApplyBoutStat(statDelta, p1uid, p2uid, hs, aw, sign) {
+  const ens = uid => statDelta[uid] || (statDelta[uid] = { matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0 });
+  const a = ens(p1uid), b = ens(p2uid);
+  a.matches += sign; b.matches += sign;
+  a.goalsFor += sign * hs; b.goalsFor += sign * aw;
+  if (hs > aw) { a.wins += sign; b.losses += sign; }
+  else if (aw > hs) { b.wins += sign; a.losses += sign; }
+  else { a.draws += sign; b.draws += sign; }
+}
+
+// Delta gulo Firebase profile-e likhe (fresh read kore, negative hole 0-te clamp).
+async function mdcFlushStatDeltas(statDelta) {
+  let n = 0;
+  for (const [uid, d] of Object.entries(statDelta)) {
+    if (!d.matches && !d.wins && !d.draws && !d.losses && !d.goalsFor) continue;
+    const base = await fetch(`${TRN_DB}/users/${uid}.json`).then(r => r.json()).catch(() => null);
+    if (!base) continue;
+    const updated = {
+      matches:  Math.max(0, (base.matches  || 0) + d.matches),
+      wins:     Math.max(0, (base.wins     || 0) + d.wins),
+      draws:    Math.max(0, (base.draws    || 0) + d.draws),
+      losses:   Math.max(0, (base.losses   || 0) + d.losses),
+      goalsFor: Math.max(0, (base.goalsFor || 0) + d.goalsFor),
+    };
+    await fetch(`${TRN_DB}/users/${uid}.json`, { method: 'PATCH', body: JSON.stringify(updated) });
+    n++;
+  }
+  return n;
+}
+
 // Matchday Control theke shorashori bout score save — tournament/matches update kore
-// ebong player profile stats (matches/wins/draws/losses/goalsFor) auto add hoy,
-// thik "Tournament" section-er score entry-r moto e (double-count avoid kora hoy
-// already-completed bout gulor jonno).
+// ebong player profile stats auto update hoy. Score bhul hoye pore thik korle
+// (already-completed bout) ager result reverse kore notun result apply kora hoy,
+// tai profile stat double-count ba stale thake na.
 window.mdcSaveBoutResults = async function(key) {
   const statusEl = document.getElementById(`mdc-save-status-${key}`);
   if (statusEl) statusEl.textContent = '⏳ Saving...';
 
   const homeInputs = document.querySelectorAll(`#mdc-fixture-${key} .mdc-score-home`);
-  const allUsers = await getAllUsers();
-  const userMap = {};
-  allUsers.forEach(u => { userMap[u.uid] = u; });
-
   const statDelta = {};
-  const ensureDelta = (uid) => {
-    if (!statDelta[uid]) statDelta[uid] = { matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0 };
-  };
 
-  let saved = 0, profilesUpdated = 0;
+  let saved = 0, corrected = 0;
   let teamHomeId = '', teamAwayId = '', totalBouts = 0, filledBouts = 0;
   let homeAgg = 0, awayAgg = 0;
 
@@ -15352,8 +15409,11 @@ window.mdcSaveBoutResults = async function(key) {
     const awayScore = parseInt(as_);
     const bout = trnMatchesCache.find(m => m.id === id);
     if (!bout) continue;
-    const alreadySaved = bout.status === 'completed';
-    const p1uid = bout.player1uid, p2uid = bout.player2uid;
+
+    // DB theke fresh bout — ager saved result ekhan theke nite hoy
+    const prev = (await fetch(`${TRN_DB}/tournament/matches/${id}.json`).then(r => r.json()).catch(() => null)) || bout;
+    const wasDone = prev.status === 'completed' && prev.homeScore != null && prev.awayScore != null;
+    const p1uid = prev.player1uid, p2uid = prev.player2uid;
     teamHomeId = bout.homeTeam; teamAwayId = bout.awayTeam;
     filledBouts++;
     homeAgg += homeScore; awayAgg += awayScore;
@@ -15363,36 +15423,23 @@ window.mdcSaveBoutResults = async function(key) {
       body: JSON.stringify({ homeScore, awayScore, status: 'completed', updatedAt: new Date().toISOString() })
     });
 
-    if (!alreadySaved && p1uid && p2uid && userMap[p1uid] && userMap[p2uid]) {
-      ensureDelta(p1uid); ensureDelta(p2uid);
-      statDelta[p1uid].matches += 1; statDelta[p2uid].matches += 1;
-      statDelta[p1uid].goalsFor += homeScore; statDelta[p2uid].goalsFor += awayScore;
-      if (homeScore > awayScore) { statDelta[p1uid].wins += 1; statDelta[p2uid].losses += 1; }
-      else if (awayScore > homeScore) { statDelta[p2uid].wins += 1; statDelta[p1uid].losses += 1; }
-      else { statDelta[p1uid].draws += 1; statDelta[p2uid].draws += 1; }
+    if (p1uid && p2uid) {
+      if (!wasDone) {
+        mdcApplyBoutStat(statDelta, p1uid, p2uid, homeScore, awayScore, +1);
+      } else if (Number(prev.homeScore) !== homeScore || Number(prev.awayScore) !== awayScore) {
+        mdcApplyBoutStat(statDelta, p1uid, p2uid, Number(prev.homeScore), Number(prev.awayScore), -1);
+        mdcApplyBoutStat(statDelta, p1uid, p2uid, homeScore, awayScore, +1);
+        corrected++;
+      }
     }
     saved++;
   }
 
-  for (const [uid, delta] of Object.entries(statDelta)) {
-    const base = userMap[uid];
-    if (!base) continue;
-    const updated = {
-      matches: (base.matches || 0) + delta.matches,
-      wins: (base.wins || 0) + delta.wins,
-      draws: (base.draws || 0) + delta.draws,
-      losses: (base.losses || 0) + delta.losses,
-      goalsFor: (base.goalsFor || 0) + delta.goalsFor,
-    };
-    await fetch(`${TRN_DB}/users/${uid}.json`, { method: 'PATCH', body: JSON.stringify(updated) });
-    profilesUpdated++;
-  }
+  const profilesUpdated = await mdcFlushStatDeltas(statDelta);
 
   // ── Team-level match-history record ──
-  // Match Results page-e team vs team result dekhabe (individual bout na),
-  // tai shob bout complete hole ekbar-e ekta team-level record log kora hoy,
-  // matchdayControl node-er 'historyLogged' flag diye guard kore jate ekই
-  // fixture-er jonno duplicate record na hoy.
+  // Shob bout complete hole ekbar team-level record log hoy ('historyLogged' guard).
+  // Record-er key 'historyKey' e save thake — porey score correct korle oi record-o update hoy.
   if (teamHomeId && teamAwayId && totalBouts > 0 && filledBouts === totalBouts) {
     try {
       const ctrl = await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`).then(r => r.json()).catch(() => null);
@@ -15401,8 +15448,10 @@ window.mdcSaveBoutResults = async function(key) {
         trnTeamsCache.forEach(t => { teamMap[t.id] = t; });
         const htName = (teamMap[teamHomeId] || {}).name || 'Home';
         const atName = (teamMap[teamAwayId] || {}).name || 'Away';
-        await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: homeAgg, awayScore: awayAgg, tournament: 'Tournament' });
-        await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: true }) });
+        const hk = await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: homeAgg, awayScore: awayAgg, tournament: 'Tournament' });
+        await fetch(`${TRN_DB}/tournament/matchdayControl/${key}.json`, { method: 'PATCH', body: JSON.stringify(hk ? { historyLogged: true, historyKey: hk } : { historyLogged: true }) });
+      } else if (ctrl.historyKey) {
+        await fetch(`${F4M_DB}/matches/${ctrl.historyKey}.json`, { method: 'PATCH', body: JSON.stringify({ home_score: homeAgg, away_score: awayAgg }) });
       }
     } catch (e) { console.warn('team history log failed', e); }
   }
@@ -15412,7 +15461,7 @@ window.mdcSaveBoutResults = async function(key) {
   await mdcShowFixture(key);
   const newStatusEl = document.getElementById(`mdc-save-status-${key}`);
   if (newStatusEl) {
-    newStatusEl.textContent = `✅ ${saved} bout saved! 👤 ${profilesUpdated} profile updated.`;
+    newStatusEl.textContent = `✅ ${saved} bout saved! 👤 ${profilesUpdated} profile updated.` + (corrected ? ` 🔧 ${corrected}টা bout সংশোধন হয়েছে।` : '');
     setTimeout(() => { if (newStatusEl) newStatusEl.textContent = ''; }, 5000);
   }
 };
@@ -15481,6 +15530,11 @@ function mdcFmtClock(d, withSec) {
   return withSec ? `${h}:${m}:${String(d.getSeconds()).padStart(2, '0')} ${ap}` : `${h}:${m} ${ap}`;
 }
 
+// Serial number -> keycap emoji (1 -> 1️⃣, 10 -> 1️⃣0️⃣)
+function mdcEmojiNum(n) {
+  return String(n).split('').map(d => d + '\uFE0F\u20E3').join('');
+}
+
 function buildAuctionFixtureText(bouts, ht, at, ctrl, seasonLabel, userMap) {
   if (!bouts.length) return '';
   const SEP = '━━━━━━━━━━━━━━━━━━';
@@ -15518,18 +15572,17 @@ function buildAuctionFixtureText(bouts, ht, at, ctrl, seasonLabel, userMap) {
     lines.push(SEP);
     g.bouts.forEach(b => {
       n++;
-      lines.push(`${n}) ${dispName(b.player1uid, b.player1)} vs ${dispName(b.player2uid, b.player2)}`);
+      lines.push(`${mdcEmojiNum(n)} ${dispName(b.player1uid, b.player1)} ( ) vs ${dispName(b.player2uid, b.player2)} ( )`);
     });
     lines.push(SEP);
   });
 
   lines.push('POINT TABLE');
   lines.push('');
-  lines.push(`1. ${ht.name || 'TEAM'} : 00 PTS`);
-  lines.push(`2. ${at.name || 'TEAM'} : 00 PTS`);
+  lines.push(`${mdcEmojiNum(1)} ${ht.name || 'TEAM'} : 00 PTS`);
+  lines.push(`${mdcEmojiNum(2)} ${at.name || 'TEAM'} : 00 PTS`);
   lines.push(SEP);
   lines.push('TYP — TEXT YOUR PES');
-  lines.push('🌐 https://typ-bd.vercel.app/');
   return lines.join('\n');
 }
 
@@ -15549,6 +15602,86 @@ window.mdcCopyFixtureText = async function(key) {
   } catch (e) {
     prompt('Copy করতে সমস্যা হলে ম্যানুয়ালি সিলেক্ট করে কপি করো:', text);
   }
+};
+
+// ── Result text paste → score inputs auto-fill ──
+// Fixture text-e naam-er pashe ( ) slot thake. Score boshiye paste korle
+// parser serial number dhore score gulo input-e boshiye dey. Auto-save hoy na —
+// admin check kore "Save Match Result" chapbe.
+function mdcParseResultText(text) {
+  const D = '০১২৩৪৫৬৭৮৯';
+  const out = { rows: [], bad: [] };
+  String(text || '').split(/\r?\n/).forEach(raw => {
+    const line = raw.replace(/[০-৯]/g, d => D.indexOf(d)).replace(/[\uFE0F\u20E3]/g, '').trim();
+    const m = line.match(/^(\d{1,2})\s*[).:\-]?\s*(.+)$/);
+    if (!m || !/\svs\.?\s/i.test(m[2])) return;
+    const n = parseInt(m[1], 10);
+    const slots = [...m[2].matchAll(/[(\[（]\s*(\d{1,2})?\s*[)\]）]/g)];
+    if (slots.length !== 2) { out.bad.push(n); return; }
+    const names = m[2].replace(/[(\[（][^)\]）]*[)\]）]/g, ' ').split(/\s+vs\.?\s+/i).map(x => x.trim());
+    out.rows.push({ n, home: slots[0][1], away: slots[1][1], p1: names[0] || '', p2: names[1] || '' });
+  });
+  return out;
+}
+
+window.mdcAutoFillScores = async function(key) {
+  const ta = document.getElementById(`mdc-paste-${key}`);
+  const st = document.getElementById(`mdc-paste-status-${key}`);
+  if (!ta || !st) return;
+  const homeInputs = [...document.querySelectorAll(`#mdc-fixture-${key} .mdc-score-home`)];
+  const awayInputs = [...document.querySelectorAll(`#mdc-fixture-${key} .mdc-score-away`)];
+  const { rows, bad } = mdcParseResultText(ta.value);
+  if (!rows.length && !bad.length) {
+    st.style.color = 'var(--red)';
+    st.textContent = '❌ কোনো "1️⃣ Player ( ) vs Player ( )" লাইন পাওয়া যায়নি।';
+    return;
+  }
+  const allUsers = await getAllUsers();
+  const userMap = {}; allUsers.forEach(u => { userMap[u.uid] = u; });
+  const norm = x => String(x || '').toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+  const same = (typed, ...cands) => {
+    const t = norm(typed);
+    if (!t) return true;
+    return cands.some(c => { const y = norm(c); return y && (t.includes(y) || y.includes(t)); });
+  };
+
+  const plan = [], half = [], outOfRange = [];
+  rows.forEach(r => {
+    const i = r.n - 1;
+    if (i < 0 || i >= homeInputs.length) { outOfRange.push(r.n); return; }
+    if (r.home === undefined && r.away === undefined) return;      // slot khali — skip
+    if (r.home === undefined || r.away === undefined) { half.push(r.n); return; }
+    const b = trnMatchesCache.find(x => x.id === homeInputs[i].dataset.id) || {};
+    const match = same(r.p1, b.player1, (userMap[b.player1uid] || {}).name)
+               && same(r.p2, b.player2, (userMap[b.player2uid] || {}).name);
+    plan.push({ i, n: r.n, home: r.home, away: r.away, match });
+  });
+
+  if (plan.length && plan.every(p => !p.match)) {
+    st.style.color = 'var(--red)';
+    st.textContent = '❌ কোনো নাম মেলেনি — এটা সম্ভবত অন্য matchup-এর text। কিছু fill করা হয়নি।';
+    return;
+  }
+
+  plan.forEach(p => {
+    homeInputs[p.i].value = p.home;
+    awayInputs[p.i].value = p.away;
+    [homeInputs[p.i], awayInputs[p.i]].forEach(el => {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.style.borderColor = p.match ? 'var(--green)' : 'var(--gold)';
+    });
+  });
+
+  const msgs = [];
+  if (plan.length) msgs.push(`✅ ${plan.length}টা bout fill হয়েছে — সব চেক করে নিচে "Save Match Result" চাপো।`);
+  else msgs.push('ℹ️ সব ( ) খালি — নামের পাশে score বসিয়ে আবার paste করো।');
+  const mism = plan.filter(p => !p.match).map(p => '#' + p.n);
+  if (mism.length) msgs.push(`⚠️ নাম মেলেনি (score বসেছে, ভালো করে দেখো): ${mism.join(', ')}`);
+  if (half.length) msgs.push(`⚠️ শুধু একটা score আছে (বাদ দেওয়া হয়েছে): ${half.map(n => '#' + n).join(', ')}`);
+  if (bad.length) msgs.push(`⚠️ লাইন পড়া যায়নি: ${bad.map(n => '#' + n).join(', ')}`);
+  if (outOfRange.length) msgs.push(`⚠️ এই matchup-এ নেই: ${outOfRange.map(n => '#' + n).join(', ')}`);
+  st.style.color = msgs.length > 1 ? 'var(--gold)' : 'var(--green)';
+  st.innerHTML = msgs.join('<br>');
 };
 
 // ── Sub/Swap: shared change-player flow ──
@@ -16290,8 +16423,9 @@ window.saveTrnMatchResults = async function() {
     const p2uid = p2Sel ? p2Sel.value : '';
 
     // Get previous match data to check if already saved (to avoid double counting)
-    const prevMatch = trnMatchesCache.find(m => m.id === id);
-    const alreadySaved = prevMatch?.status === 'completed';
+    const prevCached = trnMatchesCache.find(m => m.id === id);
+    const prevMatch = (await fetch(`${TRN_DB}/tournament/matches/${id}.json`).then(r => r.json()).catch(() => null)) || prevCached;
+    const alreadySaved = prevMatch?.status === 'completed' && prevMatch?.homeScore != null && prevMatch?.awayScore != null;
     if (prevMatch) { teamHomeId = prevMatch.homeTeam; teamAwayId = prevMatch.awayTeam; }
     filledBouts++;
     homeAgg += homeScore; awayAgg += awayScore;
@@ -16309,29 +16443,18 @@ window.saveTrnMatchResults = async function() {
     });
 
     // ── AUTO UPDATE MAIN PLAYER PROFILE STATS ──
-    // Only update if not already saved before (avoid double counting)
-    if (!alreadySaved && p1uid && p2uid && userMap[p1uid] && userMap[p2uid]) {
-      ensureDelta(p1uid);
-      ensureDelta(p2uid);
-
-      // matches played
-      statDelta[p1uid].matches += 1;
-      statDelta[p2uid].matches += 1;
-
-      // goals (only goalsFor, no goalsAgainst)
-      statDelta[p1uid].goalsFor += homeScore;
-      statDelta[p2uid].goalsFor += awayScore;
-
-      // win / draw / loss
-      if (homeScore > awayScore) {
-        statDelta[p1uid].wins   += 1;
-        statDelta[p2uid].losses += 1;
-      } else if (awayScore > homeScore) {
-        statDelta[p2uid].wins   += 1;
-        statDelta[p1uid].losses += 1;
+    // Notun result add hoy; already-saved bout-er score/player bodlale ager result reverse hoye
+    // notun result apply hoy (correction-e profile thik thake, double-count hoy na).
+    if (p1uid && p2uid) {
+      if (!alreadySaved) {
+        mdcApplyBoutStat(statDelta, p1uid, p2uid, homeScore, awayScore, +1);
       } else {
-        statDelta[p1uid].draws += 1;
-        statDelta[p2uid].draws += 1;
+        const oP1 = prevMatch.player1uid, oP2 = prevMatch.player2uid;
+        const oH = Number(prevMatch.homeScore), oA = Number(prevMatch.awayScore);
+        if (oP1 !== p1uid || oP2 !== p2uid || oH !== homeScore || oA !== awayScore) {
+          if (oP1 && oP2) mdcApplyBoutStat(statDelta, oP1, oP2, oH, oA, -1);
+          mdcApplyBoutStat(statDelta, p1uid, p2uid, homeScore, awayScore, +1);
+        }
       }
     }
 
@@ -16339,23 +16462,7 @@ window.saveTrnMatchResults = async function() {
   }
 
   // ── FLUSH STAT DELTAS TO FIREBASE ──
-  const DB = TRN_DB;
-  for (const [uid, delta] of Object.entries(statDelta)) {
-    const base = userMap[uid];
-    if (!base) continue;
-    const updated = {
-      matches:  (base.matches  || 0) + delta.matches,
-      wins:     (base.wins     || 0) + delta.wins,
-      draws:    (base.draws    || 0) + delta.draws,
-      losses:   (base.losses   || 0) + delta.losses,
-      goalsFor: (base.goalsFor || 0) + delta.goalsFor,
-    };
-    await fetch(`${DB}/users/${uid}.json`, {
-      method: 'PATCH',
-      body: JSON.stringify(updated)
-    });
-    profilesUpdated++;
-  }
+  profilesUpdated += await mdcFlushStatDeltas(statDelta);
 
   // ── Team-level match-history record ──
   // Match Results page-e team vs team result dekhabe (individual player bout
@@ -16370,8 +16477,10 @@ window.saveTrnMatchResults = async function() {
         const teamMap = window._trnCurrentTeamMap || {};
         const htName = (teamMap[teamHomeId] || {}).name || 'Home';
         const atName = (teamMap[teamAwayId] || {}).name || 'Away';
-        await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: homeAgg, awayScore: awayAgg, tournament: 'Tournament' });
-        await fetch(`${TRN_DB}/tournament/matchdayControl/${mdKey}.json`, { method: 'PATCH', body: JSON.stringify({ historyLogged: true }) });
+        const hk = await typRecordMatchHistory({ homeName: htName, awayName: atName, homeScore: homeAgg, awayScore: awayAgg, tournament: 'Tournament' });
+        await fetch(`${TRN_DB}/tournament/matchdayControl/${mdKey}.json`, { method: 'PATCH', body: JSON.stringify(hk ? { historyLogged: true, historyKey: hk } : { historyLogged: true }) });
+      } else if (ctrl.historyKey) {
+        await fetch(`${F4M_DB}/matches/${ctrl.historyKey}.json`, { method: 'PATCH', body: JSON.stringify({ home_score: homeAgg, away_score: awayAgg }) });
       }
     } catch (e) { console.warn('team history log failed', e); }
   }
