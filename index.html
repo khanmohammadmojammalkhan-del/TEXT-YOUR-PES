@@ -11358,7 +11358,7 @@ window.renderF4mKoBracket = function() {
       const aName = f4mSquadName(m.squadA), bName = f4mSquadName(m.squadB);
       let resultLine = '⏳ চলছে...';
       if (r && r.draw) resultLine = `⚖️ Tie (${r.aggA}-${r.aggB}) — Tie-Break দরকার`;
-      else if (r) resultLine = `${r.aggA}-${r.aggB} — 🏆 ${f4mSquadName(r.winner)}`;
+      else if (r) resultLine = `${r.aggA}-${r.aggB} — 🏆 ${f4mSquadName(r.winner)}${Object.keys(m.bouts || {}).length > 3 ? ' (⚖️ Tie-Break)' : ''}`;
       return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
         <div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:700">${stageLabel[stage]} ${m.koSlot ? '· ' + m.koSlot : ''}</div>
         <div style="font-size:13px;font-weight:700;margin:4px 0">${aName} <span style="color:var(--text3)">vs</span> ${bName}</div>
@@ -11471,9 +11471,11 @@ window.loadF4mMatchdayForEntry = async function() {
       ${drawBlock}
       ${boutKeys.map(k => {
         const b = m.bouts[k];
+        const isTb = f4mIsTieBreakBout(b, k);
         const chBtnA = m.drawn ? `<button class="btn btn-outline" onclick="f4mChangePlayerAdmin('${id}','${k}','A')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
         const chBtnB = m.drawn ? `<button class="btn btn-outline" onclick="f4mChangePlayerAdmin('${id}','${k}','B')" style="padding:3px 7px;font-size:9px">🔁</button>` : '';
         return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+          ${isTb ? '<div style="width:100%;font-size:11px;font-weight:700;color:var(--yellow)">⚖️ Tie-Break (1v1) — যে জিতবে তার squad পরের round-এ যাবে। যেকোনো player নামানো যাবে।</div>' : ''}
           <select class="form-input f4m-player-a" data-bout="${k}" data-mid="${id}" style="flex:1;min-width:110px;font-size:12px;padding:6px">${optsFor(squadA, b.playerAUid)}</select>${chBtnA}
           <input type="number" min="0" class="form-input f4m-score-a" data-bout="${k}" data-mid="${id}" value="${b.scoreA ?? ''}" style="width:52px;text-align:center">
           <span style="color:var(--text3)">-</span>
@@ -11524,12 +11526,20 @@ function f4mBuildCardControlsHtml(m, id) {
     </div>`;
 }
 
+// Tie-break bout = extra bout added after the 3 regular ones (b4, b5 ...).
+// 'tieBreak' flag is set on new ones; key-index check keeps older ones working.
+function f4mIsTieBreakBout(b, key) {
+  if (b && b.tieBreak) return true;
+  const n = parseInt(String(key).replace(/\D/g, ''), 10);
+  return !isNaN(n) && n > 3;
+}
+
 window.f4mAddTieBreakBout = async function(mid) {
   const m = f4mMatchdaysCache.find(x => x.id === mid);
   if (!m) return;
   const keys = Object.keys(m.bouts || {});
   const nextKey = 'b' + (keys.length + 1);
-  const bouts = { ...m.bouts, [nextKey]: { playerAUid: '', playerBUid: '', scoreA: null, scoreB: null, done: false } };
+  const bouts = { ...m.bouts, [nextKey]: { playerAUid: '', playerBUid: '', scoreA: null, scoreB: null, done: false, tieBreak: true } };
   await fetch(`${F4M_DB}/typ4man/matchdays/${mid}.json`, { method: 'PATCH', body: JSON.stringify({ bouts, status: 'pending' }) });
   await loadF4mAdminMatchdays();
   document.getElementById('f4mMdSelect').value = mid;
@@ -12183,7 +12193,8 @@ window.saveF4mMatchdayResults = async function(mid) {
     const pa = paSel ? paSel.value : '', pb = pbSel ? pbSel.value : '';
     if (sa === '' || sb === '') { allFilled = false; return; }
     if (!pa || !pb) { playersMissing = true; return; }
-    usedA.push(pa); usedB.push(pb);
+    // Tie-break 1v1: je-kono player khelte pare (age bout-e khelleo) — duplicate check-er baire
+    if (!f4mIsTieBreakBout(m.bouts[k], k)) { usedA.push(pa); usedB.push(pb); }
     const scoreA = parseInt(sa), scoreB = parseInt(sb);
     bouts[k] = { ...bouts[k], playerAUid: pa, playerBUid: pb, scoreA, scoreB, done: true, historyLogged: true };
     aggA += scoreA; aggB += scoreB;
