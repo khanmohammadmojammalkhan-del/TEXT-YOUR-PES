@@ -4056,7 +4056,7 @@ if (document.readyState === 'loading') {
 
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">🥊 Knockout Stage (QF → SF → Final)</div>
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতি group-এর সব matchday শেষ হলে নিচের বাটন চেপে Quarterfinal বসাও — Top 2 অটো ধরে নেবে (QF1: A1 vs B2, QF2: B1 vs A2, QF3: C1 vs D2, QF4: D1 vs C2)। Quarterfinal শেষ হলে Semifinal, তারপর Final একই রকম এক ক্লিকে বসবে। Aggregate score টাই হলে matchday টা "Enter Bout Results"-এ গিয়ে একটা Tie-Break bout যোগ করে সমাধান করা যাবে।</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতি group-এর সব matchday শেষ হলে নিচের বাটন চেপে Quarterfinal বসাও — Top 2 অটো ধরে নেবে (QF1: A1 vs B2, QF2: B1 vs A2, QF3: C1 vs D2, QF4: D1 vs C2)। Quarterfinal শেষ হলে Semifinal (SF1: QF2 vs QF4, SF2: QF3 vs QF1), তারপর Final একই রকম এক ক্লিকে বসবে। Aggregate score টাই হলে matchday টা "Enter Bout Results"-এ গিয়ে একটা Tie-Break bout যোগ করে সমাধান করা যাবে।</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn btn-outline" onclick="generateF4mQuarterfinals(this)" style="padding:9px 18px;font-size:13px;border-color:var(--secondary);color:var(--secondary)">🎟️ Quarterfinal বসাও</button>
       <button class="btn btn-outline" onclick="generateF4mSemifinals(this)" style="padding:9px 18px;font-size:13px;border-color:var(--secondary);color:var(--secondary)">🥈 Semifinal বসাও</button>
@@ -11312,12 +11312,40 @@ window.generateF4mSemifinals = async function(btn) {
     if (!r || r.draw) { status.textContent = `⚠️ ${slot} এখনো শেষ হয়নি অথবা টাই — Tie-Break bout যোগ করে সমাধান করো।`; status.style.color = 'var(--red)'; return; }
     results[slot] = r.winner;
   }
-  if (f4mMatchdaysCache.some(m => m.stage === 'sf')) { if (!confirm('⚠️ আগে থেকে Semifinal আছে — আবার বসালে ডুপ্লিকেট হবে। Continue?')) return; }
-  const batchObj = {
-    [`sf_${Date.now()}_1`]: { label: 'Semifinal 1', squadA: results.QF1, squadB: results.QF2, bouts: f4mEmptyBouts(), status: 'pending', stage: 'sf', koSlot: 'SF1', createdAt: new Date().toISOString() },
-    [`sf_${Date.now()}_2`]: { label: 'Semifinal 2', squadA: results.QF3, squadB: results.QF4, bouts: f4mEmptyBouts(), status: 'pending', stage: 'sf', koSlot: 'SF2', createdAt: new Date().toISOString() },
-  };
-  await fetch(`${F4M_DB}/typ4man/matchdays.json`, { method: 'PATCH', body: JSON.stringify(batchObj) });
+  // ── Semifinal pairing: SF1 = QF2 winner vs QF4 winner, SF2 = QF3 winner vs QF1 winner ──
+  const sfPairs = [['SF1', 'QF2', 'QF4'], ['SF2', 'QF3', 'QF1']];
+  const existingSfs = f4mMatchdaysCache.filter(m => m.stage === 'sf');
+  const sfBySlot = {}; existingSfs.forEach(m => sfBySlot[m.koSlot] = m);
+  if (existingSfs.some(m => m.status === 'completed' || Object.values(m.bouts || {}).some(b => b.done))) {
+    status.textContent = '⚠️ Semifinal-এ আগেই result বসে গেছে — pairing আর বদলানো যাবে না।'; status.style.color = 'var(--red)'; return;
+  }
+  if (existingSfs.length && !confirm('⚠️ Semifinal আগে থেকেই আছে — নতুন pairing (SF1: QF2 vs QF4, SF2: QF3 vs QF1) অনুযায়ী বদলে দেওয়া হবে।\n\nSquad-এর জমা দেওয়া Lineup থাকবে, তবে আগের Draw/pairing মুছে যাবে (আবার Draw করতে হবে)। Continue?')) return;
+  const oldLineup = {};
+  existingSfs.forEach(o => {
+    if (o.lineupA) oldLineup[o.squadA] = { lu: o.lineupA, ts: o.lineupASubmittedAt || null };
+    if (o.lineupB) oldLineup[o.squadB] = { lu: o.lineupB, ts: o.lineupBSubmittedAt || null };
+  });
+  const nowMs = Date.now();
+  const newRecords = {};
+  for (let i = 0; i < sfPairs.length; i++) {
+    const [slot, qa, qb] = sfPairs[i];
+    const a = results[qa], b = results[qb];
+    const old = sfBySlot[slot];
+    if (old) {
+      // Age-r matchday record (date/id) rekhe shudhu pairing + draw reset
+      const la = oldLineup[a], lb = oldLineup[b];
+      await fetch(`${F4M_DB}/typ4man/matchdays/${old.id}.json`, { method: 'PATCH', body: JSON.stringify({
+        squadA: a, squadB: b, bouts: f4mEmptyBouts(), status: 'pending', drawn: false,
+        usedLineupA: null, usedLineupASource: null, usedLineupB: null, usedLineupBSource: null,
+        lineupA: la ? la.lu : null, lineupASubmittedAt: la ? la.ts : null,
+        lineupB: lb ? lb.lu : null, lineupBSubmittedAt: lb ? lb.ts : null
+      }) });
+      await fetch(`${F4M_DB}/typ4man/matchdaySubs/${old.id}.json`, { method: 'DELETE' });
+    } else {
+      newRecords[`sf_${nowMs}_${i + 1}`] = { label: `Semifinal ${i + 1}`, squadA: a, squadB: b, bouts: f4mEmptyBouts(), status: 'pending', stage: 'sf', koSlot: slot, createdAt: new Date().toISOString() };
+    }
+  }
+  if (Object.keys(newRecords).length) await fetch(`${F4M_DB}/typ4man/matchdays.json`, { method: 'PATCH', body: JSON.stringify(newRecords) });
   status.textContent = '✅ Semifinal বসানো হয়েছে!'; status.style.color = 'var(--green)';
   await loadF4mAdminMatchdays();
   } finally { window._f4mKoLock = false; if (btn) btn.disabled = false; }
