@@ -15682,6 +15682,78 @@ window.mdcAutoFillScores = async function(key) {
   st.innerHTML = msgs.join('<br>');
 };
 
+// ── Tournament section (Enter Match Results) — Result text paste → score inputs auto-fill ──
+// mdcAutoFillScores-er-i tournament-section version. Same parser (mdcParseResultText) use kore.
+// Auto-save hoy na — admin check kore "💾 Save Results" chapbe.
+window.trnAutoFillScores = async function() {
+  const ta = document.getElementById('trn-paste-text');
+  const st = document.getElementById('trn-paste-status');
+  const area = document.getElementById('trnMatchEntryArea');
+  if (!ta || !st || !area) return;
+  const homeInputs = [...area.querySelectorAll('.trn-score-home')];
+  const awayInputs = [...area.querySelectorAll('.trn-score-away')];
+  const { rows, bad } = mdcParseResultText(ta.value);
+  if (!rows.length && !bad.length) {
+    st.style.color = 'var(--red)';
+    st.textContent = '❌ কোনো "1️⃣ Player ( ) vs Player ( )" লাইন পাওয়া যায়নি।';
+    return;
+  }
+  const allUsers = await getAllUsers();
+  const userMap = {}; allUsers.forEach(u => { userMap[u.uid] = u; });
+  const norm = x => String(x || '').toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g, '');
+  const same = (typed, ...cands) => {
+    const t = norm(typed);
+    if (!t) return true;
+    return cands.some(c => { const y = norm(c); return y && (t.includes(y) || y.includes(t)); });
+  };
+  const selName = (id, cls) => {
+    const sel = area.querySelector(`.${cls}[data-id="${id}"]`);
+    return (sel && sel.value && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].text : '';
+  };
+
+  const plan = [], half = [], outOfRange = [];
+  rows.forEach(r => {
+    const i = r.n - 1;
+    if (i < 0 || i >= homeInputs.length) { outOfRange.push(r.n); return; }
+    if (r.home === undefined && r.away === undefined) return;      // slot khali — skip
+    if (r.home === undefined || r.away === undefined) { half.push(r.n); return; }
+    const id = homeInputs[i].dataset.id;
+    const b = trnMatchesCache.find(x => x.id === id) || {};
+    const n1 = [selName(id, 'trn-player1-select'), b.player1, (userMap[b.player1uid] || {}).name].filter(Boolean);
+    const n2 = [selName(id, 'trn-player2-select'), b.player2, (userMap[b.player2uid] || {}).name].filter(Boolean);
+    const checkable = n1.length > 0 && n2.length > 0;   // player select kora na thakle name verify kora jay na
+    const match = !checkable || (same(r.p1, ...n1) && same(r.p2, ...n2));
+    plan.push({ i, n: r.n, home: r.home, away: r.away, match, checkable });
+  });
+
+  const checkable = plan.filter(p => p.checkable);
+  if (checkable.length && checkable.every(p => !p.match)) {
+    st.style.color = 'var(--red)';
+    st.textContent = '❌ কোনো নাম মেলেনি — এটা সম্ভবত অন্য matchup-এর text। কিছু fill করা হয়নি।';
+    return;
+  }
+
+  plan.forEach(p => {
+    homeInputs[p.i].value = p.home;
+    awayInputs[p.i].value = p.away;
+    [homeInputs[p.i], awayInputs[p.i]].forEach(el => {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.style.borderColor = p.match ? 'var(--green)' : 'var(--gold)';
+    });
+  });
+
+  const msgs = [];
+  if (plan.length) msgs.push(`✅ ${plan.length}টা bout fill হয়েছে — সব চেক করে নিচে "Save Results" চাপো।`);
+  else msgs.push('ℹ️ সব ( ) খালি — নামের পাশে score বসিয়ে আবার paste করো।');
+  const mism = plan.filter(p => !p.match).map(p => '#' + p.n);
+  if (mism.length) msgs.push(`⚠️ নাম মেলেনি (score বসেছে, ভালো করে দেখো): ${mism.join(', ')}`);
+  if (half.length) msgs.push(`⚠️ শুধু একটা score আছে (বাদ দেওয়া হয়েছে): ${half.map(n => '#' + n).join(', ')}`);
+  if (bad.length) msgs.push(`⚠️ লাইন পড়া যায়নি: ${bad.map(n => '#' + n).join(', ')}`);
+  if (outOfRange.length) msgs.push(`⚠️ এই matchup-এ নেই: ${outOfRange.map(n => '#' + n).join(', ')}`);
+  st.style.color = msgs.length > 1 ? 'var(--gold)' : 'var(--green)';
+  st.innerHTML = msgs.join('<br>');
+};
+
 // ── Sub/Swap: shared change-player flow ──
 window.mdcChangePlayer = function(key, matchId, side) { openPlayerChangeModal(key, matchId, side, 'admin'); };
 window.mgrChangePlayer = function(key, matchId, side) { openPlayerChangeModal(key, matchId, side, window._mgrTeamId); };
@@ -16215,6 +16287,12 @@ window.renderSelectedMatchup = async function() {
       </div>
     </div>
     <div style="padding:12px">${boutRows}</div>
+    <div style="margin:0 12px 12px;padding:10px;border:1px dashed var(--secondary);border-radius:8px">
+      <label class="form-label" style="font-size:11px">📥 Result Text Paste (Auto Fill)</label>
+      <textarea id="trn-paste-text" class="form-input" rows="5" placeholder="Fixture text-এর নামের পাশের ( ) তে score বসিয়ে এখানে paste করো..." style="width:100%;font-size:12px;margin-top:4px"></textarea>
+      <button class="btn btn-outline" onclick="trnAutoFillScores()" style="margin-top:6px;padding:7px 14px;font-size:11px;width:100%">⚡ Auto Fill Scores</button>
+      <div id="trn-paste-status" style="font-size:11px;margin-top:6px;line-height:1.6"></div>
+    </div>
   </div>`;
 
   window._trnCurrentMatchupKey = key;
