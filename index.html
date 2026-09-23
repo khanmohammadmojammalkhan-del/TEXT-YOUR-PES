@@ -16919,6 +16919,12 @@ window.downloadMatchupResultCard = async function(matchupKey) {
       awayScore: as_,
       player1: getPlayerName(p1Sel, m.player1),
       player2: getPlayerName(p2Sel, m.player2),
+      // FIX: uid ও নাম-এর সাথে সিঙ্কে রাখতে হবে, নাহলে dropdown থেকে player
+      // পাল্টালে card-এ নতুন নামের পাশে পুরোনো player-এর ছবি বসে যায়।
+      player1uid: (p1Sel && p1Sel.value) ? p1Sel.value : m.player1uid,
+      player2uid: (p2Sel && p2Sel.value) ? p2Sel.value : m.player2uid,
+      p1AvatarUrl: (p1Sel && p1Sel.value && p1Sel.value !== m.player1uid) ? '' : m.p1AvatarUrl,
+      p2AvatarUrl: (p2Sel && p2Sel.value && p2Sel.value !== m.player2uid) ? '' : m.p2AvatarUrl,
     };
   }).filter(m => m.homeScore !== null && m.awayScore !== null)
     .sort((a,b) => (a.boutNumber||0)-(b.boutNumber||0));
@@ -16975,6 +16981,12 @@ window.downloadMatchdayResultCard = async function() {
       awayScore: as_,
       player1: getPlayerName(p1Sel, m.player1),
       player2: getPlayerName(p2Sel, m.player2),
+      // FIX: uid ও নাম-এর সাথে সিঙ্কে রাখতে হবে, নাহলে dropdown থেকে player
+      // পাল্টালে card-এ নতুন নামের পাশে পুরোনো player-এর ছবি বসে যায়।
+      player1uid: (p1Sel && p1Sel.value) ? p1Sel.value : m.player1uid,
+      player2uid: (p2Sel && p2Sel.value) ? p2Sel.value : m.player2uid,
+      p1AvatarUrl: (p1Sel && p1Sel.value && p1Sel.value !== m.player1uid) ? '' : m.p1AvatarUrl,
+      p2AvatarUrl: (p2Sel && p2Sel.value && p2Sel.value !== m.player2uid) ? '' : m.p2AvatarUrl,
     };
   }).filter(m => m.homeScore !== null && m.awayScore !== null);
 
