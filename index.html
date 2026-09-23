@@ -168,43 +168,6 @@ body::before {
     radial-gradient(ellipse 50% 40% at 85% 90%, rgba(124,58,237,0.07) 0%, transparent 55%);
 }
 
-/* ── SITE-WIDE MOVING BG PATTERN (same style as intro screen) ── */
-.site-grid-floor {
-  position:absolute; inset:-40px;
-  background-image:
-    linear-gradient(rgba(0,229,255,0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,0.045) 1px, transparent 1px);
-  background-size: 40px 40px;
-  -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 20%, #000 0%, transparent 78%);
-  mask-image: radial-gradient(ellipse 90% 75% at 50% 20%, #000 0%, transparent 78%);
-  animation: siteGridDrift 10s linear infinite;
-}
-@keyframes siteGridDrift {
-  from { background-position: 0 0, 0 0; }
-  to   { background-position: 40px 40px, 40px 40px; }
-}
-.site-scanline {
-  position:absolute; left:0; right:0; height:2px;
-  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.35), transparent);
-  animation: siteScan 7s ease-in-out infinite;
-  opacity:0.5;
-}
-@keyframes siteScan {
-  0%   { top:-5%;  opacity:0; }
-  10%  { opacity:0.5; }
-  50%  { top:100vh; opacity:0.5; }
-  60%  { opacity:0; }
-  100% { top:100vh; opacity:0; }
-}
-[data-theme="light"] .site-grid-floor { background-image:
-    linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
-}
-[data-theme="light"] .site-scanline { background: linear-gradient(90deg, transparent, rgba(124,58,237,0.25), transparent); }
-@media (prefers-reduced-motion: reduce) {
-  .site-grid-floor, .site-scanline { animation: none; }
-}
-
 /* ── FOOTBALL FIELD PATTERN (HOME PAGE ONLY) ── */
 #page-home .hero {
   position: relative;
@@ -234,73 +197,6 @@ body::before {
   z-index: 1;
 }
 
-/* Floating football animation */
-@keyframes floatBall {
-  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.06; }
-  33% { transform: translateY(-18px) rotate(120deg); opacity: 0.1; }
-  66% { transform: translateY(8px) rotate(240deg); opacity: 0.07; }
-}
-
-@keyframes floatBall2 {
-  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.05; }
-  50% { transform: translateY(-22px) rotate(180deg); opacity: 0.09; }
-}
-
-.football-float {
-  position: absolute;
-  font-size: 64px;
-  animation: floatBall 8s ease-in-out infinite;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-}
-
-.football-float:nth-child(2) { animation: floatBall2 11s ease-in-out infinite; animation-delay: -3s; }
-.football-float:nth-child(3) { animation: floatBall 14s ease-in-out infinite; animation-delay: -6s; }
-.football-float:nth-child(4) { animation: floatBall2 9s ease-in-out infinite; animation-delay: -1s; }
-.football-float:nth-child(5) { animation: floatBall 12s ease-in-out infinite; animation-delay: -8s; }
-
-/* Grass stripes below hero */
-#page-home .grass-stripe {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    180deg,
-    rgba(52,211,153,0.025) 0px,
-    rgba(52,211,153,0.025) 60px,
-    rgba(52,211,153,0.015) 60px,
-    rgba(52,211,153,0.015) 120px
-  );
-}
-
-/* Hero field lines glow */
-.hero-field-line {
-  position: absolute;
-  background: rgba(0,229,255,0.12);
-  pointer-events: none;
-}
-
-/* Corner flag decoration */
-.corner-flag {
-  position: absolute;
-  width: 2px;
-  height: 28px;
-  background: rgba(124,58,237,0.5);
-  border-radius: 2px;
-  z-index: 0;
-}
-
-.corner-flag::before {
-  content: '⚑';
-  position: absolute;
-  top: -16px;
-  left: 1px;
-  font-size: 12px;
-  color: rgba(124,58,237,0.6);
-}
-
 /* Hero content above pattern */
 .hero > * {
   position: relative;
@@ -316,18 +212,6 @@ body::before {
 
 [data-theme="light"] .stats-bar {
   background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(124,58,237,0.05));
-}
-
-/* Football pattern watermark behind sections */
-.football-section-pattern {
-  position: absolute;
-  right: -30px;
-  opacity: 0.04;
-  font-size: 160px;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
 }
 
 /* Live match section – pitch feel */
@@ -1193,73 +1077,6 @@ select.form-input option { background: var(--card); color: var(--text); }
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
-
-<!-- ═══════════════ SITE-WIDE MOVING BG PATTERN ═══════════════ -->
-<div id="siteBgLayer" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden">
-  <canvas id="siteMeshCanvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-  <div class="site-grid-floor"></div>
-  <div class="site-scanline"></div>
-</div>
-<script>
-(function() {
-  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const canvas = document.getElementById('siteMeshCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-  const count = window.innerWidth < 600 ? 26 : 42;
-  for (let i = 0; i < count; i++) {
-    particles.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.6 + 0.6,
-      dx: (Math.random() - 0.5) * 0.22,
-      dy: (Math.random() - 0.5) * 0.22,
-      o: Math.random() * 0.4 + 0.15,
-      hue: Math.random() > 0.5 ? '0,229,255' : '124,58,237'
-    });
-  }
-  const LINK_DIST = 140;
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      for (let j = i + 1; j < particles.length; j++) {
-        const q = particles[j];
-        const dx = p.x - q.x, dy = p.y - q.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < LINK_DIST) {
-          ctx.strokeStyle = `rgba(0,229,255,${0.08 * (1 - dist / LINK_DIST)})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(q.x, q.y);
-          ctx.stroke();
-        }
-      }
-    }
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.hue},${p.o})`;
-      ctx.fill();
-      if (!reduceMotion) {
-        p.x += p.dx; p.y += p.dy;
-        if (p.x < 0 || p.x > W) p.dx *= -1;
-        if (p.y < 0 || p.y > H) p.dy *= -1;
-      }
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-</script>
 
 <!-- ═══════════════ INTRO SCREEN ═══════════════ -->
 <div id="introScreen" style="position:fixed;inset:0;z-index:99999;background:#05050A;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:20px;box-sizing:border-box">
@@ -14945,47 +14762,46 @@ window.mdcDownloadMVPCard = async function(key) {
 };
 
 // ══════════════════════════════════════════
-// 🎴 CANVAS — standalone "Man of the Match" polaroid card
+// 🎴 CANVAS — standalone "Man of the Match" premium player card
+// One unified dark "trading-card" theme (was a white-paper + navy-plaque
+// mashup with lots of separate pill/chip boxes) — full-bleed photo, gold
+// foil headline sitting straight on the background, a shield-shaped rating
+// badge, viewfinder-style corner brackets instead of a boxed frame, and a
+// single dark stat bar instead of stacked white chips.
 // ══════════════════════════════════════════
 async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goals, conceded, dayLabel, fileSuffix, opponentName, myScore, oppScore, rating }) {
-  // Bigger canvas (was 1000x1480) — more room for the photo so faces don't
-  // get cropped, and a higher-res export for sharing.
   const CARD_W = 1080, CARD_H = 1680;
   const canvas = document.createElement('canvas');
   canvas.width = CARD_W; canvas.height = CARD_H;
   const ctx = canvas.getContext('2d');
 
-  // ── PALETTE — clean white card, dark navy title plaque, gold accents ──
-  const PAPER      = '#ffffff';
-  const PAPER_SOFT = '#faf6ea';
-  const INK        = '#15202b';
-  const INK_SOFT   = 'rgba(21,32,43,0.62)';
-  const NAVY       = '#0f1e30';
-  const NAVY_DEEP  = '#081220';
-  const GOLD       = '#c79a3d';
-  const GOLD_DEEP  = '#916f21';
-  const GOLD_SOFT  = 'rgba(199,154,61,0.35)';
-  const LINE_COL   = 'rgba(15,30,48,0.10)';
+  // ── PALETTE — one unified deep-navy card with gold-foil accents ──
+  const BG_TOP    = '#0c1729';
+  const BG_BOT    = '#050810';
+  const INK       = '#f1f4f9';
+  const INK_SOFT  = 'rgba(241,244,249,0.55)';
+  const GOLD      = '#d8b25c';
+  const GOLD_HI   = '#f5e2ac';
+  const GOLD_DEEP = '#9c772c';
+  const LINE_COL  = 'rgba(216,178,92,0.22)';
+  const PANEL_BG  = 'rgba(255,255,255,0.045)';
 
-  // Match rating (out of 10) — same tiering as the public profile's rating badge.
   const ratingVal = Math.max(0, Math.min(10, parseFloat(rating) || 6.0));
   const ratingStr = ratingVal.toFixed(1);
-  const RATING_COL = ratingVal >= 8.5 ? '#e0b84a' : ratingVal >= 7.0 ? '#5fbf72' : ratingVal >= 5.5 ? '#9a7bdb' : '#8a93a0';
 
-  // ── Ensure display fonts are loaded before drawing on canvas ──
   try {
     await document.fonts.load("900 84px 'Anton'");
-    await document.fonts.load("700 44px 'Libre Caslon Text'");
+    await document.fonts.load("700 44px 'Inter'");
     await document.fonts.ready;
   } catch (e) { /* fonts may already be cached — ignore */ }
 
-  function roundRect(x,y,w,h,r) {
+  function roundRect(x, y, w, h, r) {
     ctx.beginPath();
-    ctx.moveTo(x+r,y);
-    ctx.arcTo(x+w,y,x+w,y+h,r);
-    ctx.arcTo(x+w,y+h,x,y+h,r);
-    ctx.arcTo(x,y+h,x,y,r);
-    ctx.arcTo(x,y,x+w,y,r);
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
   }
 
@@ -15000,166 +14816,106 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     return size;
   }
 
-  // Builds a small repeating-tile pattern (used for subtle textured backgrounds).
-  function makeTilePattern(draw, size) {
-    const tile = document.createElement('canvas');
-    tile.width = size; tile.height = size;
-    draw(tile.getContext('2d'), size);
-    return ctx.createPattern(tile, 'repeat');
-  }
-  const diagonalHatch = makeTilePattern((tctx, s) => {
-    tctx.strokeStyle = 'rgba(15,30,48,0.55)';
-    tctx.lineWidth = 1;
-    tctx.beginPath(); tctx.moveTo(0, s); tctx.lineTo(s, 0); tctx.stroke();
-  }, 20);
-  const goldDotGrid = makeTilePattern((tctx, s) => {
-    tctx.fillStyle = 'rgba(199,154,61,0.9)';
-    tctx.beginPath(); tctx.arc(s/2, s/2, 1.3, 0, Math.PI*2); tctx.fill();
-  }, 24);
-
-  // ── Background: clean white + very faint diagonal texture + warm vignette ──
-  ctx.fillStyle = PAPER;
-  ctx.fillRect(0, 0, CARD_W, CARD_H);
-  ctx.save();
-  ctx.globalAlpha = 0.05;
-  ctx.fillStyle = diagonalHatch;
-  ctx.fillRect(0, 0, CARD_W, CARD_H);
-  ctx.restore();
-  const vign = ctx.createRadialGradient(CARD_W/2, CARD_H*0.4, 140, CARD_W/2, CARD_H*0.48, CARD_H*0.75);
-  vign.addColorStop(0, 'rgba(199,154,61,0.07)');
-  vign.addColorStop(1, 'rgba(199,154,61,0)');
-  ctx.fillStyle = vign;
+  // ── Background: deep navy vertical gradient + a soft gold glow behind the ──
+  // headline + a whisper of dot texture, so the whole card reads as ONE piece
+  // instead of a white card with a dark box glued on top of it.
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, CARD_H);
+  bgGrad.addColorStop(0, BG_TOP);
+  bgGrad.addColorStop(1, BG_BOT);
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  // ── Outer gold frame ──
-  ctx.strokeStyle = GOLD_SOFT;
-  ctx.lineWidth = 2;
-  roundRect(20, 20, CARD_W-40, CARD_H-40, 22);
-  ctx.stroke();
+  const glow = ctx.createRadialGradient(CARD_W/2, 200, 40, CARD_W/2, 200, 560);
+  glow.addColorStop(0, 'rgba(216,178,92,0.16)');
+  glow.addColorStop(1, 'rgba(216,178,92,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  // ── Decorative dotted diamond corners ──
-  function drawDotDiamond(cx, cy, rings, spacing, color) {
-    ctx.fillStyle = color;
-    for (let r = 0; r <= rings; r++) {
-      const n = r === 0 ? 1 : r * 4;
-      for (let i = 0; i < n; i++) {
-        const ang = (Math.PI * 2 * i) / n + Math.PI/4;
-        const dist = r * spacing;
-        const x = cx + Math.cos(ang) * dist;
-        const y = cy + Math.sin(ang) * dist;
-        const size = 3 - r * 0.11;
-        if (size <= 0.4) continue;
-        ctx.beginPath();
-        ctx.arc(x, y, Math.max(size, 1), 0, Math.PI*2);
-        ctx.fill();
-      }
+  ctx.fillStyle = 'rgba(255,255,255,0.035)';
+  for (let x = 16; x < CARD_W - 16; x += 28) {
+    for (let y = 16; y < CARD_H - 16; y += 28) {
+      ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill();
     }
   }
-  drawDotDiamond(70, 160, 7, 13, 'rgba(15,30,48,0.10)');
-  drawDotDiamond(CARD_W-70, CARD_H-160, 7, 13, 'rgba(15,30,48,0.10)');
 
-  // ── Eyebrow tag ──
+  // outer hairline frame
+  ctx.strokeStyle = LINE_COL;
+  ctx.lineWidth = 1.5;
+  roundRect(24, 24, CARD_W-48, CARD_H-48, 26);
+  ctx.stroke();
+
+  // ── Eyebrow ──
   ctx.textAlign = 'center';
-  ctx.font = "700 15px 'Libre Caslon Text', sans-serif";
+  ctx.font = "700 15px Inter, Arial";
   ctx.fillStyle = INK_SOFT;
   ctx.save();
-  ctx.letterSpacing = '6px';
-  ctx.fillText('TYP CHAMPIONSHIP PRESENTS', CARD_W/2, 72);
+  ctx.letterSpacing = '7px';
+  ctx.fillText('TYP CHAMPIONSHIP PRESENTS', CARD_W/2, 86);
   ctx.restore();
 
-  // ── Title plaque: dark navy banner holding the "MAN [OF/THE] MATCH" lockup ──
-  const plaqueX = 60, plaqueY = 96, plaqueW = CARD_W-120, plaqueH = 160;
-  ctx.save();
-  ctx.shadowColor = 'rgba(15,30,48,0.28)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 9;
-  const plaqueGrad = ctx.createLinearGradient(plaqueX, plaqueY, plaqueX, plaqueY+plaqueH);
-  plaqueGrad.addColorStop(0, '#16283e');
-  plaqueGrad.addColorStop(1, NAVY_DEEP);
-  ctx.fillStyle = plaqueGrad;
-  roundRect(plaqueX, plaqueY, plaqueW, plaqueH, 18);
-  ctx.fill();
-  ctx.restore();
-  // faint gold dot-grid texture inside the plaque
-  ctx.save();
-  roundRect(plaqueX, plaqueY, plaqueW, plaqueH, 18);
-  ctx.clip();
-  ctx.globalAlpha = 0.12;
-  ctx.fillStyle = goldDotGrid;
-  ctx.fillRect(plaqueX, plaqueY, plaqueW, plaqueH);
-  ctx.restore();
-  ctx.strokeStyle = GOLD;
-  ctx.lineWidth = 2;
-  roundRect(plaqueX, plaqueY, plaqueW, plaqueH, 18);
-  ctx.stroke();
-  ctx.strokeStyle = 'rgba(199,154,61,0.35)';
-  ctx.lineWidth = 1;
-  roundRect(plaqueX+8, plaqueY+8, plaqueW-16, plaqueH-16, 12);
-  ctx.stroke();
-
-  // ── "MAN [OF/THE] MATCH" lockup — big Anton words with a small stacked "OF / THE" ──
+  // ── Headline: gold-foil "MAN [OF/THE] MATCH" sitting directly on the ──
+  // background (no separate boxed plaque fighting the photo panel below it)
   {
-    const baseY = plaqueY + plaqueH/2 + 34;
-    const bigSize = 92, theSize = 38, ofSize = 21;
-    const gap = 22;
+    const baseY = 194;
+    const bigSize = 96, theSize = 40, ofSize = 22;
+    const gap = 24;
 
-    ctx.font = `${bigSize}px 'Anton', sans-serif`;
+    ctx.font = `900 ${bigSize}px 'Anton', sans-serif`;
     const manW = ctx.measureText('MAN').width;
     const matchW = ctx.measureText('MATCH').width;
-    ctx.font = `${theSize}px 'Anton', sans-serif`;
+    ctx.font = `900 ${theSize}px 'Anton', sans-serif`;
     const theW = ctx.measureText('THE').width;
-    ctx.font = `${ofSize}px 'Anton', sans-serif`;
+    ctx.font = `900 ${ofSize}px 'Anton', sans-serif`;
     const ofW = ctx.measureText('OF').width;
     const stackW = Math.max(theW, ofW) + 4;
 
     const totalW = manW + gap + stackW + gap + matchW;
     const startX = CARD_W/2 - totalW/2;
 
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 3;
+    const goldGrad = ctx.createLinearGradient(startX, baseY - bigSize, startX + totalW, baseY);
+    goldGrad.addColorStop(0, GOLD_HI);
+    goldGrad.addColorStop(0.5, GOLD);
+    goldGrad.addColorStop(1, GOLD_DEEP);
 
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 3;
     ctx.textAlign = 'left';
-    ctx.font = `${bigSize}px 'Anton', sans-serif`;
+    ctx.fillStyle = goldGrad;
+    ctx.font = `900 ${bigSize}px 'Anton', sans-serif`;
     ctx.fillText('MAN', startX, baseY);
     ctx.fillText('MATCH', startX + manW + gap + stackW + gap, baseY);
 
     const stackCenterX = startX + manW + gap + stackW/2;
     ctx.textAlign = 'center';
-    ctx.font = `${theSize}px 'Anton', sans-serif`;
+    ctx.fillStyle = INK;
+    ctx.font = `900 ${theSize}px 'Anton', sans-serif`;
     ctx.fillText('THE', stackCenterX, baseY);
-    ctx.font = `${ofSize}px 'Anton', sans-serif`;
-    ctx.fillStyle = GOLD;
+    ctx.fillStyle = GOLD_HI;
+    ctx.font = `900 ${ofSize}px 'Anton', sans-serif`;
     ctx.fillText('OF', stackCenterX, baseY - theSize*0.92);
-
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.restore();
   }
 
-  let cursorY = plaqueY + plaqueH + 34;
+  // thin gold rule under the headline
+  ctx.strokeStyle = LINE_COL;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(CARD_W/2 - 160, 224); ctx.lineTo(CARD_W/2 + 160, 224); ctx.stroke();
+
+  let cursorY = 262;
 
   // ══════════════════════════════════════════
-  // ── Big poster-style photo panel ──
-  // Full-bleed photo, top-anchored crop (so heads never get cut off the way a
-  // pure centre-crop would), with the rating badge, matchday tag, player name
-  // and team overlaid directly on the photo — a bigger, more premium panel
-  // that needs far less of the photo cropped away than the old boxed layout.
+  // ── Full-bleed photo panel — gold viewfinder corner brackets instead of ──
+  // a full stroked box, so it feels like one continuous card rather than a
+  // frame glued onto a frame.
   // ══════════════════════════════════════════
-  const panelX = 60, panelW = CARD_W - 120;
+  const panelX = 56, panelW = CARD_W - 112;
   const panelY = cursorY, panelH = 900;
   const panelBottom = panelY + panelH;
 
   ctx.save();
-  ctx.shadowColor = 'rgba(15,30,48,0.28)';
-  ctx.shadowBlur = 34;
-  ctx.shadowOffsetY = 16;
-  ctx.fillStyle = NAVY_DEEP;
-  roundRect(panelX, panelY, panelW, panelH, 22);
-  ctx.fill();
-  ctx.restore();
-
-  ctx.save();
-  roundRect(panelX, panelY, panelW, panelH, 22);
+  roundRect(panelX, panelY, panelW, panelH, 18);
   ctx.clip();
 
   const avatarImg = avatarUrl ? await bdLoadImage(avatarUrl) : null;
@@ -15167,14 +14923,14 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     const scale = Math.max(panelW / avatarImg.width, panelH / avatarImg.height);
     const dw = avatarImg.width * scale, dh = avatarImg.height * scale;
     const dx = panelX + (panelW - dw) / 2;
-    // Bias the vertical crop toward the top of the photo (instead of dead-centre)
-    // so a player's face stays in frame instead of getting cropped off the top.
+    // Bias the vertical crop toward the top of the photo so a player's face
+    // stays in frame instead of getting cropped off the top.
     const topBias = 0.14;
     const dy = panelY - (dh - panelH) * topBias;
     ctx.drawImage(avatarImg, dx, dy, dw, dh);
   } else {
     const phGrad = ctx.createLinearGradient(panelX, panelY, panelX, panelY+panelH);
-    phGrad.addColorStop(0, '#2b3d52'); phGrad.addColorStop(1, '#141f30');
+    phGrad.addColorStop(0, '#20304a'); phGrad.addColorStop(1, '#0a1220');
     ctx.fillStyle = phGrad;
     ctx.fillRect(panelX, panelY, panelW, panelH);
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
@@ -15184,66 +14940,87 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.textBaseline = 'alphabetic';
   }
 
+  // soft top darken so the matchday tag / rating badge stay legible
+  const topScrim = ctx.createLinearGradient(0, panelY, 0, panelY+150);
+  topScrim.addColorStop(0, 'rgba(4,8,16,0.40)');
+  topScrim.addColorStop(1, 'rgba(4,8,16,0)');
+  ctx.fillStyle = topScrim;
+  ctx.fillRect(panelX, panelY, panelW, 150);
+
   // bottom scrim so the name/team stay legible over any photo
-  const scrimH = 270;
+  const scrimH = 300;
   const scrim = ctx.createLinearGradient(0, panelBottom - scrimH, 0, panelBottom);
-  scrim.addColorStop(0, 'rgba(8,18,32,0)');
-  scrim.addColorStop(1, 'rgba(8,18,32,0.86)');
+  scrim.addColorStop(0, 'rgba(4,8,16,0)');
+  scrim.addColorStop(1, 'rgba(4,8,16,0.92)');
   ctx.fillStyle = scrim;
   ctx.fillRect(panelX, panelBottom - scrimH, panelW, scrimH);
 
   ctx.restore(); // end panel clip
 
-  ctx.strokeStyle = GOLD;
-  ctx.lineWidth = 3;
-  roundRect(panelX, panelY, panelW, panelH, 22);
-  ctx.stroke();
+  // gold viewfinder corner brackets
+  function drawBracket(x, y, dx, dy, len) {
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x, y + dy*len);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + dx*len, y);
+    ctx.stroke();
+  }
+  drawBracket(panelX+3, panelY+3, 1, 1, 46);
+  drawBracket(panelX+panelW-3, panelY+3, -1, 1, 46);
+  drawBracket(panelX+3, panelBottom-3, 1, -1, 46);
+  drawBracket(panelX+panelW-3, panelBottom-3, -1, -1, 46);
 
   // matchday tag — floating pill over the top-left of the photo
   if (dayLabel) {
-    ctx.font = "700 17px 'Libre Caslon Text', sans-serif";
-    const tagPad = 18;
+    ctx.font = "700 16px Inter, Arial";
+    const tagPad = 16;
     const tagW = ctx.measureText(dayLabel).width + tagPad*2;
-    const tagH = 40, tagX = panelX + 20, tagY = panelY + 20;
-    ctx.fillStyle = 'rgba(8,18,32,0.72)';
+    const tagH = 36, tagX = panelX + 24, tagY = panelY + 24;
+    ctx.fillStyle = 'rgba(4,8,16,0.55)';
     roundRect(tagX, tagY, tagW, tagH, tagH/2);
     ctx.fill();
-    ctx.strokeStyle = GOLD_SOFT; ctx.lineWidth = 1.2;
+    ctx.strokeStyle = LINE_COL; ctx.lineWidth = 1.2;
     roundRect(tagX, tagY, tagW, tagH, tagH/2);
     ctx.stroke();
-    ctx.fillStyle = '#f4e9d0';
+    ctx.fillStyle = INK;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(dayLabel, tagX + tagPad, tagY + tagH/2 + 1);
     ctx.textBaseline = 'alphabetic';
   }
 
-  // ── Match-rating badge — FIFA-OVR-style circle overlapping the top-right corner ──
+  // ── Match-rating badge — gold shield overlapping the top-right corner ──
   {
-    const rR = 68;
-    const cx = panelX + panelW - 58, cy = panelY + 58;
+    const bw = 106, bh = 116, bx = panelX + panelW - bw - 22, by = panelY + 16;
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
     ctx.shadowBlur = 18;
     ctx.shadowOffsetY = 6;
-    const badgeGrad = ctx.createRadialGradient(cx-16, cy-16, 6, cx, cy, rR);
-    badgeGrad.addColorStop(0, '#132234');
-    badgeGrad.addColorStop(1, '#08121e');
-    ctx.fillStyle = badgeGrad;
-    ctx.beginPath(); ctx.arc(cx, cy, rR, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(bx + bw/2, by);
+    ctx.lineTo(bx + bw, by + bh*0.28);
+    ctx.lineTo(bx + bw, by + bh*0.60);
+    ctx.quadraticCurveTo(bx + bw, by + bh*0.90, bx + bw/2, by + bh);
+    ctx.quadraticCurveTo(bx, by + bh*0.90, bx, by + bh*0.60);
+    ctx.lineTo(bx, by + bh*0.28);
+    ctx.closePath();
+    const shieldGrad = ctx.createLinearGradient(bx, by, bx, by+bh);
+    shieldGrad.addColorStop(0, '#182b46'); shieldGrad.addColorStop(1, '#070c17');
+    ctx.fillStyle = shieldGrad;
+    ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = RATING_COL; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(cx, cy, rR, 0, Math.PI*2); ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(cx, cy, rR-7, 0, Math.PI*2); ctx.stroke();
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 2.4; ctx.stroke();
 
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = RATING_COL;
-    ctx.font = "700 42px 'Libre Caslon Text', sans-serif";
-    ctx.fillText(ratingStr, cx, cy - 9);
-    ctx.font = "700 12px 'Libre Caslon Text', sans-serif";
+    ctx.fillStyle = GOLD_HI;
+    ctx.font = "900 34px 'Anton', sans-serif";
+    ctx.fillText(ratingStr, bx + bw/2, by + bh*0.42);
+    ctx.font = "700 11px Inter, Arial";
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
     ctx.save(); ctx.letterSpacing = '2px';
-    ctx.fillText('RATING', cx, cy + 22);
+    ctx.fillText('RATING', bx + bw/2, by + bh*0.42 + 26);
     ctx.restore();
     ctx.textBaseline = 'alphabetic';
   }
@@ -15252,65 +15029,62 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   {
     const nameMaxW = panelW - 60;
     const nameText = (playerName || '—').toUpperCase();
-    const nameSize = fitFont(nameText, nameMaxW, 62, 32, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
+    const nameSize = fitFont(nameText, nameMaxW, 68, 30, s=>`900 ${s}px 'Anton', sans-serif`);
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#ffffff';
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 2;
-    const nameY = panelBottom - 74;
-    ctx.font = `700 ${nameSize}px 'Libre Caslon Text', sans-serif`;
+    ctx.fillStyle = INK;
+    const nameY = panelBottom - 82;
+    ctx.font = `900 ${nameSize}px 'Anton', sans-serif`;
     ctx.fillText(nameText, panelX + 30, nameY);
 
     if (teamName) {
       const teamLine = `${teamEmoji||'🛡️'}  ${teamName.toUpperCase()}`;
-      const teamSize = fitFont(teamLine, nameMaxW, 26, 16, s=>`600 ${s}px 'Libre Caslon Text', sans-serif`);
-      ctx.font = `600 ${teamSize}px 'Libre Caslon Text', sans-serif`;
+      const teamSize = fitFont(teamLine, nameMaxW, 22, 14, s=>`700 ${s}px Inter, Arial`);
+      ctx.font = `700 ${teamSize}px Inter, Arial`;
       ctx.fillStyle = GOLD;
-      ctx.fillText(teamLine, panelX + 30, nameY + 38);
+      ctx.fillText(teamLine, panelX + 30, nameY + 34);
     }
-    ctx.restore();
   }
 
   cursorY = panelBottom + 30;
 
-  // ── 1v1 bout strip: exactly who this MVP played against (aligned to the photo panel) ──
+  // ── 1v1 bout strip: exactly who this MVP played against (dark, unified) ──
   const hasBoutInfo = !!opponentName;
   if (hasBoutInfo) {
-    const stripY = cursorY, stripH = 72, stripW = panelW, stripX = panelX;
-    ctx.fillStyle = PAPER_SOFT;
+    const stripY = cursorY, stripH = 76, stripW = panelW, stripX = panelX;
+    ctx.fillStyle = PANEL_BG;
     roundRect(stripX, stripY, stripW, stripH, 16);
     ctx.fill();
-    ctx.strokeStyle = GOLD_SOFT;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = LINE_COL;
+    ctx.lineWidth = 1.4;
     roundRect(stripX, stripY, stripW, stripH, 16);
     ctx.stroke();
 
     const midY = stripY + stripH/2 + 9;
     const scoreText = (myScore != null && oppScore != null) ? `${myScore} – ${oppScore}` : 'VS';
-    ctx.font = "700 28px 'Libre Caslon Text', sans-serif";
-    const scoreW = ctx.measureText(scoreText).width + 42;
+    ctx.font = "900 30px 'Anton', sans-serif";
+    const scoreW = ctx.measureText(scoreText).width + 48;
 
     ctx.textAlign = 'right';
     ctx.fillStyle = INK;
-    const nameFont1 = fitFont((playerName||'').toUpperCase(), 330, 24, 14, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
-    ctx.font = `700 ${nameFont1}px 'Libre Caslon Text', sans-serif`;
-    ctx.fillText((playerName||'').toUpperCase(), CARD_W/2 - scoreW/2 - 18, midY);
+    const nameFont1 = fitFont((playerName||'').toUpperCase(), 330, 20, 12, s=>`700 ${s}px Inter, Arial`);
+    ctx.font = `700 ${nameFont1}px Inter, Arial`;
+    ctx.fillText((playerName||'').toUpperCase(), CARD_W/2 - scoreW/2 - 20, midY);
 
     ctx.textAlign = 'left';
-    const nameFont2 = fitFont((opponentName||'').toUpperCase(), 330, 24, 14, s=>`700 ${s}px 'Libre Caslon Text', sans-serif`);
-    ctx.font = `700 ${nameFont2}px 'Libre Caslon Text', sans-serif`;
+    const nameFont2 = fitFont((opponentName||'').toUpperCase(), 330, 20, 12, s=>`700 ${s}px Inter, Arial`);
+    ctx.font = `700 ${nameFont2}px Inter, Arial`;
     ctx.fillStyle = INK_SOFT;
-    ctx.fillText((opponentName||'').toUpperCase(), CARD_W/2 + scoreW/2 + 18, midY);
+    ctx.fillText((opponentName||'').toUpperCase(), CARD_W/2 + scoreW/2 + 20, midY);
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(199,154,61,0.14)';
-    roundRect(CARD_W/2 - scoreW/2, stripY+11, scoreW, stripH-22, (stripH-22)/2);
+    ctx.fillStyle = 'rgba(216,178,92,0.14)';
+    roundRect(CARD_W/2 - scoreW/2, stripY+12, scoreW, stripH-24, (stripH-24)/2);
     ctx.fill();
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 1.2;
-    roundRect(CARD_W/2 - scoreW/2, stripY+11, scoreW, stripH-22, (stripH-22)/2);
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 1.4;
+    roundRect(CARD_W/2 - scoreW/2, stripY+12, scoreW, stripH-24, (stripH-24)/2);
     ctx.stroke();
-    ctx.fillStyle = GOLD_DEEP;
-    ctx.font = "700 28px 'Libre Caslon Text', sans-serif";
+    ctx.fillStyle = GOLD_HI;
+    ctx.font = "900 26px 'Anton', sans-serif";
     ctx.fillText(scoreText, CARD_W/2, midY);
 
     cursorY = stripY + stripH + 26;
@@ -15318,51 +15092,74 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     cursorY += 10;
   }
 
-  // ── Stat chips: Goals / Goal Difference (rating already lives on the photo badge) ──
+  // ── Stat bar: Goals / Goal Difference — ONE dark bar with a gold divider ──
+  // (rating already lives on the shield badge) instead of two separate
+  // white pill chips floating on their own.
   const gd = (goals||0) - (conceded||0);
   const gdStr = gd > 0 ? `+${gd}` : `${gd}`;
-  const chipY = cursorY, chipH = 84, chipGap = 24;
-  const chipW = (panelW - chipGap) / 2;
-  const chipX1 = panelX, chipX2 = panelX + chipW + chipGap;
-
-  function drawStatChip(x, icon, value, label) {
-    ctx.fillStyle = PAPER_SOFT;
-    roundRect(x, chipY, chipW, chipH, 16);
-    ctx.fill();
-    ctx.strokeStyle = GOLD_SOFT; ctx.lineWidth = 1.4;
-    roundRect(x, chipY, chipW, chipH, 16);
-    ctx.stroke();
-    ctx.textAlign = 'center';
-    ctx.font = "700 38px 'Libre Caslon Text', sans-serif";
-    ctx.fillStyle = GOLD_DEEP;
-    ctx.fillText(`${icon} ${value}`, x + chipW/2, chipY + 44);
-    ctx.font = "600 16px 'Libre Caslon Text', sans-serif";
-    ctx.fillStyle = INK_SOFT;
-    ctx.fillText(label, x + chipW/2, chipY + 68);
-  }
-  drawStatChip(chipX1, '⚽', goals||0, `GOAL${(goals||0)===1?'':'S'}`);
-  drawStatChip(chipX2, '🎯', gdStr, 'GOAL DIFFERENCE');
-  const chipBottom = chipY + chipH;
-
-  // ── MVP ribbon badge ──
-  const pillH = 52;
-  const pillCenterY = chipBottom + 46 + pillH/2;
-  ctx.font = "700 24px 'Libre Caslon Text', sans-serif";
-  const pillText = '👑  MVP OF THE MATCHDAY';
-  const pillW = ctx.measureText(pillText).width + 70;
-  ctx.fillStyle = 'rgba(199,154,61,0.12)';
-  roundRect(CARD_W/2 - pillW/2, pillCenterY - pillH/2, pillW, pillH, pillH/2);
+  const barY = cursorY, barH = 116, barW = panelW, barX = panelX;
+  ctx.fillStyle = PANEL_BG;
+  roundRect(barX, barY, barW, barH, 18);
   ctx.fill();
-  ctx.strokeStyle = GOLD; ctx.lineWidth = 1.8;
-  roundRect(CARD_W/2 - pillW/2, pillCenterY - pillH/2, pillW, pillH, pillH/2);
+  ctx.strokeStyle = LINE_COL;
+  ctx.lineWidth = 1.4;
+  roundRect(barX, barY, barW, barH, 18);
   ctx.stroke();
-  ctx.fillStyle = GOLD_DEEP;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(pillText, CARD_W/2, pillCenterY+2);
-  ctx.textBaseline = 'alphabetic';
 
-  // ── Footer: TYP brand (anchored to the bottom edge — never collides with content above) ──
+  function drawStat(cx, icon, value, label) {
+    ctx.textAlign = 'center';
+    ctx.font = "900 42px 'Anton', sans-serif";
+    ctx.fillStyle = GOLD_HI;
+    ctx.fillText(`${value}`, cx, barY + 54);
+    ctx.font = "700 13px Inter, Arial";
+    ctx.fillStyle = INK_SOFT;
+    ctx.save(); ctx.letterSpacing = '1.5px';
+    ctx.fillText(`${icon}  ${label}`, cx, barY + 84);
+    ctx.restore();
+  }
+  drawStat(barX + barW*0.28, '⚽', goals||0, `GOAL${(goals||0)===1?'':'S'}`);
+  drawStat(barX + barW*0.72, '🎯', gdStr, 'GOAL DIFFERENCE');
+
+  ctx.strokeStyle = LINE_COL;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(barX + barW/2, barY+22); ctx.lineTo(barX + barW/2, barY+barH-22); ctx.stroke();
+
+  cursorY = barY + barH + 34;
+
+  // ── MVP ribbon banner (pointed ends, not a coupon-style pill) ──
+  {
+    const bannerH = 54;
+    ctx.font = "700 20px Inter, Arial";
+    const pillText = '★  MVP OF THE MATCHDAY  ★';
+    const textW = ctx.measureText(pillText).width;
+    const bw = textW + 90;
+    const bx = CARD_W/2 - bw/2, by = cursorY, notch = 14;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(bx+bw, by);
+    ctx.lineTo(bx+bw-notch, by+bannerH/2);
+    ctx.lineTo(bx+bw, by+bannerH);
+    ctx.lineTo(bx, by+bannerH);
+    ctx.lineTo(bx+notch, by+bannerH/2);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(216,178,92,0.12)';
+    ctx.fill();
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = GOLD_HI;
+    ctx.save(); ctx.letterSpacing = '2px';
+    ctx.fillText(pillText, CARD_W/2, by + bannerH/2 + 2);
+    ctx.restore();
+    ctx.textBaseline = 'alphabetic';
+
+    cursorY = by + bannerH + 40;
+  }
+
+  // ── Footer: TYP brand (anchored to the bottom edge) ──
   const typLogoImg = await new Promise(resolve => {
     if (!window.TYP_LOGO_DATA) { resolve(null); return; }
     const img = new Image();
@@ -15379,7 +15176,7 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     const lw = 32, lh = 32;
     ctx.drawImage(typLogoImg, CARD_W/2 - 96, footerY - lh/2, lw, lh);
   }
-  ctx.font = "700 19px 'Libre Caslon Text', sans-serif";
+  ctx.font = "700 18px Inter, Arial";
   ctx.fillStyle = INK_SOFT;
   ctx.textAlign = typLogoImg ? 'left' : 'center';
   ctx.fillText('TYP CHAMPIONSHIP', typLogoImg ? CARD_W/2 - 54 : CARD_W/2, footerY + 6);
@@ -15390,6 +15187,7 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
+
 
 // Bout result-er profile stat contribution (matches/wins/draws/losses/goalsFor).
 // sign = +1 result add korte, -1 ager result ferot (reverse) nite. Correction-e
@@ -17200,8 +16998,26 @@ window.downloadMatchdayResultCard = async function() {
   await _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix: dayVal, overrideMvpName });
 };
 
+// Attaches p1AvatarUrl/p2AvatarUrl (from player1uid/player2uid) onto each bout so
+// _renderResultCard can draw real player photos in the result card's photo frames.
+async function _attachAvatarsToMatches(matches) {
+  try {
+    const allUsers = (window._allUsersCache && window._allUsersCache.length) ? window._allUsersCache : await getAllUsers();
+    window._allUsersCache = allUsers;
+    const byUid = {}; allUsers.forEach(u => { byUid[u.uid] = u; });
+    return matches.map(m => ({
+      ...m,
+      p1AvatarUrl: m.p1AvatarUrl || (byUid[m.player1uid] || {}).avatarUrl || '',
+      p2AvatarUrl: m.p2AvatarUrl || (byUid[m.player2uid] || {}).avatarUrl || ''
+    }));
+  } catch (e) {
+    return matches;
+  }
+}
+
 // Shared canvas-drawing routine used by both full-matchday and per-matchup exports
 async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuffix, overrideMvpName }) {
+  matches = await _attachAvatarsToMatches(matches);
 
   // Tally matchday winner
   let homeWins = 0, awayWins = 0, draws = 0;
@@ -17259,10 +17075,10 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   // Parse matchday label for display
   const dayLabel = dayVal.replace('—', '•');
 
-  // ── CANVAS SETUP (light "TYP AUCTION TOURNAMENT" theme — matches the reference scorecard) ──
+  // ── CANVAS SETUP (light "TYP AUCTION TOURNAMENT" theme, with player photo frames) ──
   const CARD_W = 900;
-  const ROW_H = 58;
-  const HEADER_H = 250;
+  const ROW_H = 78;
+  const HEADER_H = 258;
   const TABLE_HEAD_H = 42;
   const FOOTER_H = 56;
   const CARD_H = HEADER_H + TABLE_HEAD_H + matches.length * ROW_H + FOOTER_H;
@@ -17280,6 +17096,14 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     img.onerror = () => resolve(null);
     img.src = window.TYP_LOGO_DATA;
   });
+
+  // ── PRELOAD PLAYER PHOTOS (tall frame instead of a plain silhouette icon) ──
+  const avatarImgMap = {};
+  if (window.bdLoadImage) {
+    const urls = new Set();
+    matches.forEach(m => { if (m.p1AvatarUrl) urls.add(m.p1AvatarUrl); if (m.p2AvatarUrl) urls.add(m.p2AvatarUrl); });
+    await Promise.all([...urls].map(async u => { avatarImgMap[u] = await window.bdLoadImage(u).catch(() => null); }));
+  }
 
   // ── PALETTE (light theme) ──
   const BLUE      = '#1f5fd8';
@@ -17311,6 +17135,45 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
     ctx.closePath();
   }
+  // circular player photo frame (cover-fit crop, silhouette fallback)
+  function drawPhotoFrame(cx, cy, size, img, accent) {
+    const r = size / 2;
+    ctx.save();
+    if (accent) { ctx.shadowColor = 'rgba(201,162,48,0.5)'; ctx.shadowBlur = 10; }
+    else { ctx.shadowColor = 'rgba(31,95,216,0.20)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 1; }
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.clip();
+    if (img) {
+      const scale = Math.max(size / img.width, size / img.height);
+      const iw = img.width * scale, ih = img.height * scale;
+      ctx.drawImage(img, cx - iw/2, cy - ih/2, iw, ih);
+    } else {
+      ctx.fillStyle = BLUE_TINT;
+      ctx.fillRect(cx - r, cy - r, size, size);
+      ctx.font = `${Math.floor(size*0.42)}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(31,95,216,0.55)';
+      ctx.fillText('👤', cx, cy + 1);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.restore();
+
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.strokeStyle = accent ? GOLD : 'rgba(31,95,216,0.5)';
+    ctx.lineWidth = accent ? 2.8 : 2;
+    ctx.stroke();
+
+    // thin outer halo ring for a premium "player card" feel
+    ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, Math.PI*2);
+    ctx.strokeStyle = accent ? 'rgba(201,162,48,0.35)' : 'rgba(31,95,216,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
 
   // ── OUTER CARD (white, rounded) ──
   ctx.save();
@@ -17320,7 +17183,34 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  // decorative diagonal blue ribbons (top-right & bottom-left corners, echoes the reference art)
+  // ── HEADER BANNER (soft blue gradient panel so the top never reads as empty) ──
+  const headerGrad = ctx.createLinearGradient(0, 0, 0, HEADER_H);
+  headerGrad.addColorStop(0, '#eef5fe');
+  headerGrad.addColorStop(1, '#ffffff');
+  ctx.fillStyle = headerGrad;
+  ctx.fillRect(0, 0, CARD_W, HEADER_H);
+
+  // large faint crest watermark filling the dead space behind the score badge
+  if (typLogoImg) {
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    const wmH = 190;
+    const wmW = typLogoImg.width * (wmH / typLogoImg.height);
+    ctx.drawImage(typLogoImg, CARD_W/2 - wmW/2, HEADER_H/2 - wmH/2 + 6, wmW, wmH);
+    ctx.restore();
+  }
+
+  // fine dot-grid texture across the whole header (fills the empty corners/edges)
+  ctx.fillStyle = 'rgba(31,95,216,0.09)';
+  for (let x = 14; x < CARD_W - 14; x += 22) {
+    for (let y = 14; y < HEADER_H - 14; y += 22) {
+      const distFromCenter = Math.abs(x - CARD_W/2);
+      if (distFromCenter < 210 && y > 70 && y < 200) continue; // keep the score area clean
+      ctx.beginPath(); ctx.arc(x, y, 1.1, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // decorative diagonal blue ribbons (bottom-left corner)
   const drawRibbon = (cx, cy, rot, len, w, alpha) => {
     ctx.save();
     ctx.translate(cx, cy);
@@ -17330,19 +17220,87 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.fillRect(-len/2, -w/2, len, w);
     ctx.restore();
   };
-  drawRibbon(CARD_W - 40, 55, -0.62, 260, 30, 0.10);
-  drawRibbon(CARD_W - 5,  110, -0.62, 200, 20, 0.16);
   drawRibbon(40, CARD_H - 45, -0.62, 260, 30, 0.10);
   drawRibbon(5,  CARD_H - 100, -0.62, 200, 20, 0.16);
 
-  // faint dot-grid accents in the header corners
-  ctx.fillStyle = 'rgba(31,95,216,0.10)';
-  for (let x = CARD_W - 170; x < CARD_W - 10; x += 16) {
-    for (let y = 12; y < 60; y += 16) { ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI*2); ctx.fill(); }
-  }
-  for (let x = 10; x < 170; x += 16) {
-    for (let y = CARD_H - 60; y < CARD_H - 12; y += 16) { ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI*2); ctx.fill(); }
-  }
+  // ── PREMIUM CORNER FLAGS (top-left & top-right) — solid brand-blue corner
+  // wedges tucked into the rounded card corners so the header never reads
+  // as empty/flat, matching flag-to-flag for visual balance ──
+  const drawCornerFlag = (side) => {
+    const flagSize = 92;
+    ctx.save();
+    ctx.beginPath();
+    if (side === 'left') {
+      ctx.moveTo(0, 0);
+      ctx.lineTo(flagSize, 0);
+      ctx.lineTo(0, flagSize);
+    } else {
+      ctx.moveTo(CARD_W, 0);
+      ctx.lineTo(CARD_W - flagSize, 0);
+      ctx.lineTo(CARD_W, flagSize);
+    }
+    ctx.closePath();
+    ctx.clip();
+    const g = ctx.createLinearGradient(
+      side === 'left' ? 0 : CARD_W, 0,
+      side === 'left' ? flagSize : CARD_W - flagSize, flagSize
+    );
+    g.addColorStop(0, BLUE);
+    g.addColorStop(1, BLUE_DARK);
+    ctx.fillStyle = g;
+    ctx.globalAlpha = 0.075;
+    ctx.fillRect(0, 0, CARD_W, HEADER_H);
+    ctx.restore();
+
+    // thin gold hairline along the flag's diagonal edge
+    ctx.save();
+    ctx.beginPath();
+    if (side === 'left') { ctx.moveTo(flagSize - 6, 0); ctx.lineTo(0, flagSize - 6); }
+    else { ctx.moveTo(CARD_W - flagSize + 6, 0); ctx.lineTo(CARD_W, flagSize - 6); }
+    ctx.strokeStyle = 'rgba(201,162,48,0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+  };
+  drawCornerFlag('left');
+  drawCornerFlag('right');
+
+  // small gold star accents anchoring each top corner
+  const drawStar = (cx, cy, s, alpha) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = GOLD;
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      ctx.lineTo(Math.cos((18 + i*72) * Math.PI/180) * s, -Math.sin((18 + i*72) * Math.PI/180) * s);
+      ctx.lineTo(Math.cos((54 + i*72) * Math.PI/180) * s * 0.42, -Math.sin((54 + i*72) * Math.PI/180) * s * 0.42);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  };
+  drawStar(CARD_W - 16, 16, 6, 0.6);
+
+  // "TYP CHAMPIONSHIP" micro-badge in the top-right corner, mirroring the
+  // logo's visual weight on the top-left so the header feels balanced
+  ctx.save();
+  ctx.textAlign = 'right';
+  ctx.fillStyle = BLUE_DARK;
+  ctx.font = '800 11px Inter, Arial';
+  ctx.letterSpacing = '0.08em';
+  ctx.fillText('TYP', CARD_W - 20, 32);
+  ctx.font = '600 9px Inter, Arial';
+  ctx.fillStyle = 'rgba(20,66,143,0.65)';
+  ctx.letterSpacing = '0.13em';
+  ctx.fillText('CHAMPIONSHIP', CARD_W - 20, 45);
+  ctx.letterSpacing = '0';
+  ctx.restore();
+
+  // header/table separator line
+  ctx.strokeStyle = 'rgba(31,95,216,0.20)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, HEADER_H); ctx.lineTo(CARD_W, HEADER_H); ctx.stroke();
 
   // ── TYP LOGO (top-left, natural blue) ──
   if (typLogoImg) {
@@ -17522,13 +17480,14 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.fillStyle = BLUE;
   ctx.letterSpacing = '0.06em';
   const colHY = tableY + TABLE_HEAD_H/2 + 4;
-  ctx.textAlign = 'left';   ctx.fillText('HOME PLAYER', 62, colHY);
+  ctx.textAlign = 'left';   ctx.fillText('HOME PLAYER', 78, colHY);
   ctx.textAlign = 'center'; ctx.fillText('SCORE', CARD_W/2, colHY);
-  ctx.textAlign = 'right';  ctx.fillText('AWAY PLAYER', CARD_W - 62, colHY);
+  ctx.textAlign = 'right';  ctx.fillText('AWAY PLAYER', CARD_W - 78, colHY);
   ctx.letterSpacing = '0';
 
-  // ── BOUT ROWS ──
+  // ── BOUT ROWS (with circular player photo frames) ──
   const rowsTopY = tableY + TABLE_HEAD_H;
+  const frameSize = 52;
   matches.forEach((m, idx) => {
     const ry = rowsTopY + idx * ROW_H;
     const hs = parseInt(m.homeScore)||0;
@@ -17562,24 +17521,12 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, ry+ROW_H); ctx.lineTo(CARD_W, ry+ROW_H); ctx.stroke();
 
-    // avatar circles
-    const avR = 19;
-    const avCY = ry + ROW_H/2;
-    ctx.beginPath(); ctx.arc(34, avCY, avR, 0, Math.PI*2);
-    ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = isMVP && m.player1===mvpName ? GOLD : 'rgba(31,95,216,0.45)';
-    ctx.lineWidth = 1.6; ctx.stroke();
-    ctx.font = '13px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle = 'rgba(31,95,216,0.75)'; ctx.fillText('👤', 34, avCY+1);
-    ctx.textBaseline = 'alphabetic';
-
-    ctx.beginPath(); ctx.arc(CARD_W-34, avCY, avR, 0, Math.PI*2);
-    ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.strokeStyle = isMVP && m.player2===mvpName ? GOLD : 'rgba(31,95,216,0.45)';
-    ctx.lineWidth = 1.6; ctx.stroke();
-    ctx.font = '13px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle = 'rgba(31,95,216,0.75)'; ctx.fillText('👤', CARD_W-34, avCY+1);
-    ctx.textBaseline = 'alphabetic';
+    // ── circular player photo frames ──
+    const frameCY = ry + ROW_H/2;
+    const p1Img = m.p1AvatarUrl ? avatarImgMap[m.p1AvatarUrl] : null;
+    const p2Img = m.p2AvatarUrl ? avatarImgMap[m.p2AvatarUrl] : null;
+    drawPhotoFrame(40, frameCY, frameSize, p1Img, isMVP && m.player1===mvpName);
+    drawPhotoFrame(CARD_W-40, frameCY, frameSize, p2Img, isMVP && m.player2===mvpName);
 
     const textY = ry + ROW_H/2 + 5;
 
@@ -17592,7 +17539,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
       ctx.fillStyle = hs > as_ ? NAVY : 'rgba(19,42,82,0.5)';
       ctx.font = hs > as_ ? '800 14px Inter, Arial' : '500 14px Inter, Arial';
     }
-    ctx.fillText((m.player1||'—').toUpperCase(), 66, textY);
+    ctx.fillText((m.player1||'—').toUpperCase(), 84, textY);
 
     // away player name
     ctx.textAlign = 'right';
@@ -17603,7 +17550,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
       ctx.fillStyle = as_ > hs ? NAVY : 'rgba(19,42,82,0.5)';
       ctx.font = as_ > hs ? '800 14px Inter, Arial' : '500 14px Inter, Arial';
     }
-    ctx.fillText((m.player2||'—').toUpperCase(), CARD_W-66, textY);
+    ctx.fillText((m.player2||'—').toUpperCase(), CARD_W-84, textY);
 
     // score
     ctx.textAlign = 'center';
@@ -17668,9 +17615,13 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   ctx.restore(); // end rounded-corner clip
 
-  // outer border for a crisp card edge
+  // outer border for a crisp, premium card edge (subtle blue→gold→blue sheen)
   roundRectCanvas(ctx, 1, 1, CARD_W-2, CARD_H-2, 22);
-  ctx.strokeStyle = 'rgba(31,95,216,0.22)';
+  const borderGrad = ctx.createLinearGradient(0, 0, CARD_W, 0);
+  borderGrad.addColorStop(0,    'rgba(31,95,216,0.28)');
+  borderGrad.addColorStop(0.5,  'rgba(201,162,48,0.35)');
+  borderGrad.addColorStop(1,    'rgba(31,95,216,0.28)');
+  ctx.strokeStyle = borderGrad;
   ctx.lineWidth = 2;
   ctx.stroke();
 
