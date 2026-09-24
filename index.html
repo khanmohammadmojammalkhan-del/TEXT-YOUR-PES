@@ -13,58 +13,60 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TYP Championship">
-<link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Libre+Caslon+Text:wght@400;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #05050A;
-  --bg2:     #0A0A12;
-  --bg3:     #10101C;
-  --card:    #0C0C16;
-  --card2:   #13131F;
-  --border:  rgba(0,229,255,0.10);
+  --bg:      #07070B;
+  --bg2:     #0C0C13;
+  --bg3:     #121219;
+  --card:    #0F0F16;
+  --card2:   #16161F;
+  --border:  rgba(201,168,76,0.12);
   --gold:    #c9a84c;
   --gold2:   #a07830;
-  --cyan:    #00E5FF;
+  --cyan:    #3E8FB0;
   --green:   #34d399;
   --red:     #f87171;
   --yellow:  #fbbf24;
   --text:    #F8FAFC;
   --text2:   #94A3B8;
   --text3:   #64748B;
-  --primary: #00E5FF;
-  --primary-dark: #0099B3;
-  --secondary: #7C3AED;
-  --secondary-dark: #5B21B6;
-  --accent:  #00E5FF;
+  --primary: #3E8FB0;
+  --primary-dark: #2A6B85;
+  --secondary: #6B4FA0;
+  --secondary-dark: #4A3570;
+  --accent:  #3E8FB0;
 }
 
 [data-theme="light"] {
-  --bg:      #f5f4fb;
-  --bg2:     #ede9f8;
-  --bg3:     #e2dcf5;
+  --bg:      #f7f5ef;
+  --bg2:     #efe9db;
+  --bg3:     #e6ddc7;
   --card:    #ffffff;
-  --card2:   #f5f3fc;
+  --card2:   #faf7f0;
   --border:  rgba(0,0,0,0.08);
   --gold:    #c9a84c;
   --gold2:   #a07830;
-  --cyan:    #00E5FF;
+  --cyan:    #3E8FB0;
   --green:   #16a34a;
   --red:     #dc2626;
   --yellow:  #ca8a04;
   --text:    #0f0c1e;
   --text2:   #3d3468;
   --text3:   #8878b8;
-  --primary: #00E5FF;
-  --primary-dark: #0099B3;
-  --accent:  #00E5FF;
+  --primary: #3E8FB0;
+  --primary-dark: #2A6B85;
+  --accent:  #3E8FB0;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  background: var(--bg);
+  background: linear-gradient(160deg, var(--bg) 0%, var(--bg2) 55%, var(--bg3) 100%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: 'Libre Caslon Text', -apple-system, sans-serif;
   min-height: 100vh;
@@ -89,7 +91,7 @@ body {
 }
 @keyframes rankGlow {
   0%,100% { box-shadow: 0 0 0 0 transparent; }
-  50%      { box-shadow: 0 0 18px 3px rgba(124,58,237,0.25); }
+  50%      { box-shadow: 0 0 18px 3px rgba(107,79,160,0.25); }
 }
 @keyframes rankMoveUp {
   0%   { transform: translateY(18px); opacity: 0.3; }
@@ -164,8 +166,8 @@ body::before {
   z-index:0;
   pointer-events:none;
   background:
-    radial-gradient(ellipse 70% 50% at 15% 5%, rgba(0,229,255,0.13) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(124,58,237,0.07) 0%, transparent 55%);
+    radial-gradient(ellipse 70% 50% at 15% 5%, rgba(62,143,176,0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(107,79,160,0.07) 0%, transparent 55%);
 }
 
 /* ── FOOTBALL FIELD PATTERN (HOME PAGE ONLY) ── */
@@ -206,12 +208,12 @@ body::before {
 /* Scoreboard style stats bar */
 .stats-bar {
   background: linear-gradient(135deg, rgba(20,16,44,0.9), rgba(16,13,36,0.95));
-  border: 1px solid rgba(0,229,255,0.25);
-  box-shadow: 0 0 0 1px rgba(124,58,237,0.08), inset 0 1px 0 rgba(255,255,255,0.04);
+  border: 1px solid rgba(62,143,176,0.25);
+  box-shadow: 0 0 0 1px rgba(107,79,160,0.08), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 [data-theme="light"] .stats-bar {
-  background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(124,58,237,0.05));
+  background: linear-gradient(135deg, rgba(62,143,176,0.08), rgba(107,79,160,0.05));
 }
 
 /* Live match section – pitch feel */
@@ -314,8 +316,8 @@ nav {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(124,58,237,0.1);
-  border: 1px solid rgba(124,58,237,0.25);
+  background: rgba(107,79,160,0.1);
+  border: 1px solid rgba(107,79,160,0.25);
   color: var(--accent);
   padding: 5px 14px;
   border-radius: 20px;
@@ -327,13 +329,13 @@ nav {
 }
 
 [data-theme="light"] .hero-badge {
-  background: rgba(0,229,255,0.08);
-  border-color: rgba(0,229,255,0.2);
+  background: rgba(62,143,176,0.08);
+  border-color: rgba(62,143,176,0.2);
   color: var(--primary);
 }
 
 .hero h1 {
-  font-family: 'Metal Mania', cursive;
+  font-family: 'Playfair Display', serif;
   font-size: clamp(2rem, 6vw, 4rem);
   font-weight: 400;
   line-height: 1.4;
@@ -387,7 +389,7 @@ nav {
 /* ── BALLON D'OR FAN VOTING PAGE ── */
 .bd-header { text-align:center; padding:26px 16px 10px; }
 .bd-header img { height:64px; width:auto; display:block; margin:0 auto 10px; }
-.bd-header h1 { font-family:'Metal Mania',cursive; font-size:1.3rem; color:var(--gold,#f5a623); letter-spacing:0.03em; margin-bottom:6px; }
+.bd-header h1 { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--gold,#f5a623); letter-spacing:0.03em; margin-bottom:6px; }
 .bd-header p { color:var(--text3); font-size:12.5px; max-width:480px; margin:0 auto; line-height:1.6; }
 .bd-back-btn { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--text3); background:var(--card); border:1px solid var(--border); padding:6px 12px; border-radius:20px; cursor:pointer; margin:14px 0 0 16px; }
 .bd-rules-card { max-width:560px; margin:14px auto; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
@@ -435,7 +437,7 @@ nav {
 /* ── TYP ADMINS GALLERY ── */
 .typ-admins-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:12px; max-width:900px; margin:0 auto; padding:0 16px; }
 .typ-admin-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 12px; text-align:center; transition:all .15s; }
-.typ-admin-card:hover { border-color:rgba(0,229,255,0.5); transform:translateY(-2px); }
+.typ-admin-card:hover { border-color:rgba(62,143,176,0.5); transform:translateY(-2px); }
 .typ-admin-avatar { width:64px; height:64px; border-radius:50%; background:var(--bg2); border:2px solid var(--border); margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:24px; overflow:hidden; }
 .typ-admin-name { font-weight:700; font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .typ-admin-role { font-size:10.5px; color:var(--text3); margin:2px 0 12px; }
@@ -480,12 +482,12 @@ nav {
 .btn-gold {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 0 0 0 rgba(0,229,255,0.4);
+  box-shadow: 0 0 0 0 rgba(62,143,176,0.4);
 }
 
 .btn-gold:hover {
   background: var(--primary-dark);
-  box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+  box-shadow: 0 4px 20px rgba(62,143,176,0.3);
   transform: translateY(-1px);
 }
 
@@ -499,11 +501,11 @@ nav {
 
 .btn-outline-gold {
   background: transparent;
-  border: 1px solid rgba(0,229,255,0.3);
+  border: 1px solid rgba(62,143,176,0.3);
   color: var(--accent);
 }
 
-.btn-outline-gold:hover { background: rgba(0,229,255,0.08); }
+.btn-outline-gold:hover { background: rgba(62,143,176,0.08); }
 
 .btn-full { width:100%; padding:13px; font-size:14px; }
 
@@ -732,8 +734,8 @@ nav {
 }
 
 .card:hover {
-  border-color: rgba(0,229,255,0.2);
-  box-shadow: 0 4px 24px rgba(0,229,255,0.08);
+  border-color: rgba(62,143,176,0.2);
+  box-shadow: 0 4px 24px rgba(62,143,176,0.08);
 }
 
 /* ── FORMS ── */
@@ -764,7 +766,7 @@ nav {
 
 .form-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0,229,255,0.12);
+  box-shadow: 0 0 0 3px rgba(62,143,176,0.12);
 }
 
 .form-input::placeholder { color: var(--text3); }
@@ -805,7 +807,7 @@ select.form-input option { background: var(--card); color: var(--text); }
   box-shadow: 0 24px 64px rgba(0,0,0,0.4) !important;
 }
 
-.modal-title { font-family:'Metal Mania',cursive; font-size:18px; color:var(--text); margin-bottom:20px; line-height:1.7; }
+.modal-title { font-family:'Playfair Display',serif; font-size:18px; color:var(--text); margin-bottom:20px; line-height:1.7; }
 
 /* ── AUTH ── */
 .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -821,7 +823,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 }
 
 .auth-logo { text-align:center; margin-bottom:28px; }
-.auth-logo h2 { font-family:'Metal Mania',cursive; font-size:20px; color:var(--text); line-height:1.7; }
+.auth-logo h2 { font-family:'Playfair Display',serif; font-size:20px; color:var(--text); line-height:1.7; }
 .auth-logo p { color:var(--text3); font-size:13px; margin-top:4px; }
 
 /* ── ALERTS ── */
@@ -841,7 +843,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 .profile-avatar img { width:100%; height:100%; object-fit:cover; }
 .profile-info { flex:1; }
 .profile-rank { font-size:11px; color:var(--text3); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px; }
-.profile-name { font-family:'Metal Mania',cursive; font-size:24px; font-weight:400; line-height:1.7; margin-bottom:8px; }
+.profile-name { font-family:'Playfair Display',serif; font-size:24px; font-weight:400; line-height:1.7; margin-bottom:8px; }
 .profile-meta { display:flex; gap:16px; flex-wrap:wrap; color:var(--text3); font-size:13px; }
 .profile-meta span { display:flex; align-items:center; gap:5px; }
 .form-badge { display:flex; gap:6px; margin-top:12px; flex-wrap:wrap; }
@@ -855,7 +857,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 .stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-bottom:24px; }
 
 .stat-card { background:var(--card); border:1px solid var(--border); border-radius:11px; padding:14px 12px; text-align:center; transition:border-color 0.15s; }
-.stat-card:hover { border-color:rgba(0,229,255,0.25); }
+.stat-card:hover { border-color:rgba(62,143,176,0.25); }
 .stat-card-num { font-size:22px; font-weight:700; color:var(--text); line-height:1; letter-spacing:-0.02em; }
 .stat-card-label { font-size:10px; color:var(--text3); margin-top:5px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; }
 
@@ -884,7 +886,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 /* ── ADMIN ── */
 .admin-wrap { max-width:1100px; margin:0 auto; padding:32px 24px; }
 .admin-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
-.admin-title { font-family:'Metal Mania',cursive; font-size:24px; color:var(--text); letter-spacing:0.01em; line-height:1.7; }
+.admin-title { font-family:'Playfair Display',serif; font-size:24px; color:var(--text); letter-spacing:0.01em; line-height:1.7; }
 .admin-badge { background:rgba(248,113,113,0.12); border:1px solid rgba(248,113,113,0.25); color:var(--red); padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.05em; }
 .admin-tabs { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
 .admin-tab { padding:8px 18px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text3); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; letter-spacing:0.02em; }
@@ -994,7 +996,7 @@ select.form-input option { background: var(--card); color: var(--text); }
     transform:translateY(-16px);
     background:linear-gradient(145deg, var(--primary), var(--gold2));
     color:#fff;
-    box-shadow:0 6px 16px rgba(0,229,255,0.5), 0 0 0 5px var(--card);
+    box-shadow:0 6px 16px rgba(62,143,176,0.5), 0 0 0 5px var(--card);
   }
   .bnav-btn.active .bnav-label { transform:translateY(-4px); font-weight:700; }
 }
@@ -1019,7 +1021,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 .trn-type-card { position:relative; background:linear-gradient(135deg,var(--card),var(--bg2)); border:1.5px solid var(--border); border-radius:16px; padding:22px 20px; cursor:pointer; transition:all 0.2s ease; overflow:hidden; text-align:left; }
 .trn-type-card:hover { transform:translateY(-3px); border-color:var(--gold); box-shadow:0 10px 28px rgba(245,166,35,0.15); }
 .trn-type-card .ttc-icon { font-size:28px; margin-bottom:8px; display:block; }
-.trn-type-card .ttc-title { font-family:'Metal Mania',cursive; font-size:19px; color:var(--gold); letter-spacing:0.03em; margin-bottom:4px; }
+.trn-type-card .ttc-title { font-family:'Playfair Display',serif; font-size:19px; color:var(--gold); letter-spacing:0.03em; margin-bottom:4px; }
 .trn-type-card .ttc-desc { font-size:12.5px; color:var(--text3); font-family:'Libre Caslon Text',sans-serif; line-height:1.5; }
 .trn-type-card .ttc-arrow { position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:20px; color:var(--text3); opacity:0.5; transition:all 0.2s; }
 .trn-type-card:hover .ttc-arrow { opacity:1; transform:translateY(-50%) translateX(4px); color:var(--gold); }
@@ -1043,7 +1045,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 .team-players-list { display:flex; flex-direction:column; gap:6px; }
 .team-player-row { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); }
 .team-player-row:last-child { border-bottom:none; }
-.team-player-num { width:26px; height:26px; border-radius:6px; background:rgba(0,229,255,0.2); color:var(--cyan); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Libre Caslon Text',monospace; }
+.team-player-num { width:26px; height:26px; border-radius:6px; background:rgba(62,143,176,0.2); color:var(--cyan); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Libre Caslon Text',monospace; }
 .team-player-avatar { width:36px; height:36px; border-radius:50%; overflow:hidden; flex-shrink:0; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:16px; border:1.5px solid var(--border); }
 .team-player-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
 
@@ -1090,15 +1092,15 @@ select.form-input option { background: var(--card); color: var(--text); }
   <div id="introContent" style="position:relative;text-align:center;z-index:2;width:100%;max-width:400px;padding:0 16px;box-sizing:border-box">
     <div class="intro-ring-burst"></div>
     <div id="introBolt" style="font-size:clamp(40px,12vw,72px);opacity:0;transform:scale(0) rotate(-20deg);transition:all 0.6s cubic-bezier(0.34,1.56,0.64,1);position:relative;z-index:2">⚡</div>
-    <div id="introTitle" style="font-family:'Metal Mania',cursive;font-size:clamp(1.8rem,8vw,4rem);color:#fff;letter-spacing:0.05em;margin-top:8px;line-height:1.2;word-break:break-word;position:relative;z-index:2">
-      <span class="intro-word" data-delay="0"><span style="color:#00E5FF">TEXT</span></span> <span class="intro-word" data-delay="1">YOUR</span> <span class="intro-word" data-delay="2"><span style="color:#00E5FF">PES</span></span>
+    <div id="introTitle" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,8vw,4rem);color:#fff;letter-spacing:0.05em;margin-top:8px;line-height:1.2;word-break:break-word;position:relative;z-index:2">
+      <span class="intro-word" data-delay="0"><span style="color:#3E8FB0">TEXT</span></span> <span class="intro-word" data-delay="1">YOUR</span> <span class="intro-word" data-delay="2"><span style="color:#3E8FB0">PES</span></span>
     </div>
     <div id="introSub" style="font-family:'Libre Caslon Text',sans-serif;font-size:clamp(9px,2.5vw,12px);letter-spacing:0.25em;color:rgba(255,255,255,0.5);margin-top:14px;text-transform:uppercase;word-break:break-word;min-height:1.4em;position:relative;z-index:2"></div>
     <div id="introProgressWrap" style="margin:28px auto 0;width:min(220px,72vw);opacity:0;transition:opacity 0.4s ease;position:relative;z-index:2">
       <div id="introBar" style="position:relative;width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden">
-        <div id="introBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,#00E5FF,#7C3AED);border-radius:99px;transition:width 1.6s cubic-bezier(0.65,0,0.35,1)"></div>
+        <div id="introBarFill" style="height:100%;width:0%;background:linear-gradient(90deg,#3E8FB0,#6B4FA0);border-radius:99px;transition:width 1.6s cubic-bezier(0.65,0,0.35,1)"></div>
       </div>
-      <div id="introPercent" style="margin-top:8px;font-family:'Libre Caslon Text',sans-serif;font-size:11px;letter-spacing:0.15em;color:rgba(0,229,255,0.75);font-weight:600">0%</div>
+      <div id="introPercent" style="margin-top:8px;font-family:'Libre Caslon Text',sans-serif;font-size:11px;letter-spacing:0.15em;color:rgba(62,143,176,0.75);font-weight:600">0%</div>
     </div>
   </div>
   <!-- door panels (hidden until exit) -->
@@ -1121,17 +1123,17 @@ select.form-input option { background: var(--card); color: var(--text); }
   background:linear-gradient(135deg,#05050A,#0b0b16);
   display:none; align-items:center; z-index:10; overflow:hidden;
 }
-.intro-door-left { left:0; justify-content:flex-end; box-shadow: inset -1px 0 0 rgba(0,229,255,0.25); }
-.intro-door-right { right:0; justify-content:flex-start; box-shadow: inset 1px 0 0 rgba(0,229,255,0.25); }
+.intro-door-left { left:0; justify-content:flex-end; box-shadow: inset -1px 0 0 rgba(62,143,176,0.25); }
+.intro-door-right { right:0; justify-content:flex-start; box-shadow: inset 1px 0 0 rgba(62,143,176,0.25); }
 .intro-door-left::after, .intro-door-right::after {
   content:''; position:absolute; top:0; bottom:0; width:3px;
-  background:linear-gradient(to bottom, transparent, rgba(0,229,255,0.7), transparent);
+  background:linear-gradient(to bottom, transparent, rgba(62,143,176,0.7), transparent);
 }
 .intro-door-left::after { right:0; }
 .intro-door-right::after { left:0; }
 .intro-door-mark {
-  font-size:22px; opacity:0.5; color:#00E5FF; padding:0 18px;
-  text-shadow:0 0 12px rgba(0,229,255,0.6);
+  font-size:22px; opacity:0.5; color:#3E8FB0; padding:0 18px;
+  text-shadow:0 0 12px rgba(62,143,176,0.6);
 }
 #introScreen.doors-active .intro-door { display:flex; }
 #introScreen.doors-open .intro-door-left { animation: introDoorOpenLeft 0.85s cubic-bezier(0.65,0,0.35,1) forwards; }
@@ -1143,7 +1145,7 @@ select.form-input option { background: var(--card); color: var(--text); }
   content:'';
   position:absolute; top:50%; left:50%; width:340px; height:340px; max-width:80vw; max-height:80vw;
   transform:translate(-50%,-50%);
-  background: radial-gradient(circle, rgba(0,229,255,0.18) 0%, rgba(124,58,237,0.09) 42%, transparent 70%);
+  background: radial-gradient(circle, rgba(62,143,176,0.18) 0%, rgba(107,79,160,0.09) 42%, transparent 70%);
   z-index:0; pointer-events:none;
   animation: introGlowPulse 2.4s ease-in-out infinite;
 }
@@ -1155,8 +1157,8 @@ select.form-input option { background: var(--card); color: var(--text); }
 .intro-grid-floor {
   position:absolute; inset:0; z-index:1; pointer-events:none;
   background-image:
-    linear-gradient(rgba(0,229,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,0.06) 1px, transparent 1px);
+    linear-gradient(rgba(62,143,176,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(62,143,176,0.06) 1px, transparent 1px);
   background-size: 40px 40px;
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 0%, transparent 75%);
   mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 0%, transparent 75%);
@@ -1169,7 +1171,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 
 .intro-scanline {
   position:absolute; left:0; right:0; height:2px; z-index:1; pointer-events:none;
-  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(62,143,176,0.55), transparent);
 }
 .intro-scanline { animation: introScan 3.4s ease-in-out infinite; }
 @keyframes introScan {
@@ -1182,14 +1184,14 @@ select.form-input option { background: var(--card); color: var(--text); }
 
 .intro-ring-burst {
   position:absolute; top:50%; left:50%; width:10px; height:10px;
-  border:2px solid #00E5FF; border-radius:50%;
+  border:2px solid #3E8FB0; border-radius:50%;
   transform:translate(-50%,-50%) scale(0);
   opacity:0; z-index:1; pointer-events:none;
 }
 .intro-ring-burst.go { animation: introRingBurst 0.9s cubic-bezier(0.16,1,0.3,1) forwards; }
 @keyframes introRingBurst {
-  0%   { transform:translate(-50%,-50%) scale(0);  opacity:0.9; border-color:#00E5FF; }
-  60%  { border-color:#7C3AED; }
+  0%   { transform:translate(-50%,-50%) scale(0);  opacity:0.9; border-color:#3E8FB0; }
+  60%  { border-color:#6B4FA0; }
   100% { transform:translate(-50%,-50%) scale(18); opacity:0; }
 }
 
@@ -1213,7 +1215,7 @@ select.form-input option { background: var(--card); color: var(--text); }
   overflow:hidden;
   transition:border-color .2s,box-shadow .2s;
 }
-.rules-section:hover{ border-color:rgba(0,229,255,0.3); }
+.rules-section:hover{ border-color:rgba(62,143,176,0.3); }
 
 .rules-header{
   display:flex;
@@ -1293,7 +1295,7 @@ select.form-input option { background: var(--card); color: var(--text); }
 
 .rh{
   display:inline-block;
-  background:rgba(0,229,255,0.14);
+  background:rgba(62,143,176,0.14);
   color:var(--primary);
   padding:2px 8px;
   border-radius:6px;
@@ -1373,7 +1375,7 @@ if (document.readyState === 'loading') {
         const dx = p.x - q.x, dy = p.y - q.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < LINK_DIST) {
-          ctx.strokeStyle = `rgba(0,229,255,${0.14 * (1 - dist / LINK_DIST)})`;
+          ctx.strokeStyle = `rgba(62,143,176,${0.14 * (1 - dist / LINK_DIST)})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
@@ -1539,7 +1541,7 @@ if (document.readyState === 'loading') {
     </div>
 
     <!-- NOTICE BAR -->
-    <div id="homeNoticeBar" style="margin:18px auto 0;max-width:520px;background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(48,28,160,0.12));border:1.5px solid rgba(124,58,237,0.35);border-radius:10px;overflow:hidden;display:none">
+    <div id="homeNoticeBar" style="margin:18px auto 0;max-width:520px;background:linear-gradient(135deg,rgba(107,79,160,0.18),rgba(48,28,160,0.12));border:1.5px solid rgba(107,79,160,0.35);border-radius:10px;overflow:hidden;display:none">
       <div style="display:flex;align-items:center">
         <div style="background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:9px 14px;letter-spacing:0.08em;white-space:nowrap;font-family:'Libre Caslon Text',sans-serif">📢 NOTICE</div>
         <div style="overflow:hidden;flex:1;padding:0 10px">
@@ -1626,7 +1628,7 @@ if (document.readyState === 'loading') {
 .pp-tier-bronze { --tier-a:#8a5a34; --tier-b:#d69a5c; --tier-glow:rgba(154,106,60,.38); --tier-name:"BRONZE CARD"; }
 .pp-tier-silver { --tier-a:#8497ab; --tier-b:#e3ecf5; --tier-glow:rgba(159,179,200,.4);  --tier-name:"SILVER CARD"; }
 .pp-tier-gold   { --tier-a:#a07830; --tier-b:#f0d488; --tier-glow:rgba(201,168,76,.45);  --tier-name:"GOLD CARD"; }
-.pp-tier-elite  { --tier-a:#7C3AED; --tier-b:#00E5FF; --tier-glow:rgba(0,229,255,.5);  --tier-name:"ELITE CARD"; }
+.pp-tier-elite  { --tier-a:#6B4FA0; --tier-b:#3E8FB0; --tier-glow:rgba(62,143,176,.5);  --tier-name:"ELITE CARD"; }
 #page-player:not([class*="pp-tier-"]) { --tier-a:#a07830; --tier-b:#f0d488; --tier-glow:rgba(201,168,76,.45); }
 
 /* Turf backdrop — replaces the generic hex-grid look */
@@ -1779,13 +1781,13 @@ if (document.readyState === 'loading') {
 }
 .pp-ms-locked { background:var(--bg2);color:var(--text3);opacity:0.5; }
 .pp-ms-claim {
-  background:rgba(0,229,255,0.12);border:1px dashed var(--cyan);color:var(--cyan);
+  background:rgba(62,143,176,0.12);border:1px dashed var(--cyan);color:var(--cyan);
   cursor:pointer;animation:ppMsPulse 1.6s ease-in-out infinite;
 }
 .pp-ms-claim:active { transform:scale(0.96); }
 @keyframes ppMsPulse {
-  0%,100% { box-shadow:0 0 0 0 rgba(0,229,255,0.35); }
-  50%     { box-shadow:0 0 0 6px rgba(0,229,255,0); }
+  0%,100% { box-shadow:0 0 0 0 rgba(62,143,176,0.35); }
+  50%     { box-shadow:0 0 0 6px rgba(62,143,176,0); }
 }
 
 /* Body */
@@ -1999,7 +2001,7 @@ if (document.readyState === 'loading') {
           <div class="pp-sl">🏅 MVP</div>
         </div>
         <div class="pp-sec-card">
-          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,229,255,0.12) 0%,transparent 70%)"></div>
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(62,143,176,0.12) 0%,transparent 70%)"></div>
           <div id="ppScore" class="pp-sv pp-num" style="color:var(--primary)">—</div>
           <div class="pp-sl">⭐ Score</div>
         </div>
@@ -2277,8 +2279,8 @@ if (document.readyState === 'loading') {
       <!-- Player Avatar Header -->
       <div class="cmp-players-header">
         <div class="cmp-player-col">
-          <div class="cmp-avatar" id="cmpAvatar1" style="border-color:#00E5FF">🎮</div>
-          <div class="cmp-pname" id="cmpName1" style="color:#00E5FF">—</div>
+          <div class="cmp-avatar" id="cmpAvatar1" style="border-color:#3E8FB0">🎮</div>
+          <div class="cmp-pname" id="cmpName1" style="color:#3E8FB0">—</div>
         </div>
         <div class="cmp-vs-badge">VS</div>
         <div class="cmp-player-col">
@@ -2292,7 +2294,7 @@ if (document.readyState === 'loading') {
         <div class="cmp-h2h-label">⚡ Head to Head · Friendly</div>
         <div class="cmp-h2h-scores">
           <div class="cmp-h2h-side">
-            <div class="cmp-h2h-num" id="h2hP1Score" style="color:#00E5FF">0</div>
+            <div class="cmp-h2h-num" id="h2hP1Score" style="color:#3E8FB0">0</div>
             <div class="cmp-h2h-tag">WINS</div>
           </div>
           <div class="cmp-h2h-divider"></div>
@@ -2307,7 +2309,7 @@ if (document.readyState === 'loading') {
       <!-- Stat Legend -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 2px">
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600" id="cmpLegend1">
-          <div style="width:10px;height:10px;border-radius:2px;background:#00E5FF"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:#3E8FB0"></div>
           <span id="cmpLegendName1" style="color:var(--text2)">Player 1</span>
         </div>
         <div style="font-size:10px;color:var(--text3);letter-spacing:1px">STATS</div>
@@ -2481,7 +2483,7 @@ if (document.readyState === 'loading') {
         <button class="nav-btn" id="fixFilterPending" onclick="filterFixtures('pending',this)">Upcoming</button>
         <button class="nav-btn" id="fixFilterDone" onclick="filterFixtures('done',this)">Completed</button>
       </div>
-      <button onclick="downloadFixturePDF()" style="display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'Libre Caslon Text',sans-serif;background:linear-gradient(135deg,#7C3AED,#5B21B6);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,0.35);transition:all 0.2s;letter-spacing:0.01em" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(124,58,237,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(124,58,237,0.35)'">
+      <button onclick="downloadFixturePDF()" style="display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'Libre Caslon Text',sans-serif;background:linear-gradient(135deg,#6B4FA0,#4A3570);color:#fff;box-shadow:0 4px 16px rgba(107,79,160,0.35);transition:all 0.2s;letter-spacing:0.01em" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 24px rgba(107,79,160,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(107,79,160,0.35)'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Download Fixture
       </button>
@@ -2618,7 +2620,7 @@ if (document.readyState === 'loading') {
     <!-- Header -->
     <div style="text-align:center;padding:40px 20px 32px;border-bottom:1px solid var(--border);margin-bottom:28px">
       <div style="display:inline-block;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-family:'Libre Caslon Text',sans-serif;font-size:11px;letter-spacing:0.2em;padding:4px 14px;border-radius:20px;margin-bottom:16px;font-weight:600">OFFICIAL DOCUMENT</div>
-      <h1 style="font-family:'Metal Mania',cursive;font-size:clamp(1.6rem,5vw,2.8rem);color:var(--primary);line-height:1.6;margin-bottom:10px">TYP AUCTION<br>TOURNAMENT</h1>
+      <h1 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,5vw,2.8rem);color:var(--primary);line-height:1.6;margin-bottom:10px">TYP AUCTION<br>TOURNAMENT</h1>
       <p style="font-family:'Libre Caslon Text',sans-serif;font-size:13px;letter-spacing:0.3em;color:var(--text3);font-weight:600">RULES &amp; REGULATIONS</p>
     </div>
 
@@ -2668,7 +2670,7 @@ if (document.readyState === 'loading') {
         <div class="rule-row" style="margin-bottom:6px">প্রত্যেক Match Day-এ খেলোয়াড়দের উপস্থিতি, Substitution এবং Swap নির্ধারিত <span class="rh">Main Deadline</span>-এর পূর্বে সম্পন্ন করতে হবে।</div>
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Substitution &amp; Swap Deadline</strong></div>
         <div class="rule-row">Main Deadline-এর <span class="rh">১০ মিনিট আগে</span> Substitution ও Swap-এর Deadline শেষ হবে।</div>
-        <div class="rule-row" style="background:rgba(0,229,255,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:10px 14px">
+        <div class="rule-row" style="background:rgba(62,143,176,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:10px 14px">
           <strong style="color:var(--primary)">📝 উদাহরণ:</strong> Main Deadline: <span class="rh">12:00 AM</span> হলে Sub/Swap Deadline: <span class="rh">11:49:59 PM</span>।
         </div>
         <div class="rule-row"><span class="rl rl-red">⛔</span> নির্ধারিত Substitution/Swap Deadline অতিক্রম করার পর কোনো Substitution বা Swap গ্রহণযোগ্য হবে না। সকল Manager এবং Captain-কে নির্ধারিত সময়সীমা মেনে চলতে হবে।</div>
@@ -2869,7 +2871,7 @@ if (document.readyState === 'loading') {
       <div class="rules-body">
         <div class="rule-row" style="padding-bottom:4px"><strong style="color:var(--primary)">📍 Priority Time Rule</strong></div>
         <div class="rule-row">Priority Time Main Deadline-এর <span class="rh">১০ মিনিট আগে</span> থেকে শুরু হবে।</div>
-        <div class="rule-row" style="background:rgba(0,229,255,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:10px 14px">
+        <div class="rule-row" style="background:rgba(62,143,176,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:10px 14px">
           <strong style="color:var(--primary)">📝 উদাহরণ:</strong> Main Deadline: <span class="rh">12:00 AM</span> হলে Priority Time শুরু: <span class="rh">11:50 PM</span>।
         </div>
         <div class="rule-row">Priority Time-এর মধ্যে Opponent-এর Response না পেলে, Main Deadline শেষ হওয়ার পর Active Player <span class="rh">Auto Win</span> পাবে।</div>
@@ -2949,7 +2951,7 @@ if (document.readyState === 'loading') {
     <!-- Footer -->
     <div style="text-align:center;padding:30px 20px;border-top:1px solid var(--border);margin-top:10px">
       <img src="" data-typ-logo style="height:80px;width:auto;display:block;margin:0 auto 10px">
-      <div style="font-family:'Metal Mania',cursive;font-size:1.2rem;letter-spacing:0.2em;color:var(--text3)">
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;letter-spacing:0.2em;color:var(--text3)">
         <span style="color:var(--primary)">CHAMPIONSHIP</span> — PRESENT
       </div>
     </div>
@@ -3261,7 +3263,7 @@ if (document.readyState === 'loading') {
           <button onclick="ssmSaveSeason()" style="background:linear-gradient(135deg,#00e676,#00b248);border:none;color:#000;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:1px">
             💾 SEASON SAVE করো
           </button>
-          <button onclick="ssmApplyToCurrent()" style="background:linear-gradient(135deg,#7c3aed,#4f1dad);border:none;color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:1px">
+          <button onclick="ssmApplyToCurrent()" style="background:linear-gradient(135deg,#6b4fa0,#4f1dad);border:none;color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:1px">
             ⚡ Current Season-এ Apply করো
           </button>
         </div>
@@ -3455,7 +3457,7 @@ if (document.readyState === 'loading') {
         </div>
 
         <!-- STEP B: Appeal Details -->
-        <div class="card" id="uidStep2Card" style="border-color:rgba(0,229,255,0.35);display:none">
+        <div class="card" id="uidStep2Card" style="border-color:rgba(62,143,176,0.35);display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <div style="font-size:15px;font-weight:700;color:var(--cyan)">📝 STEP 2 — Appeal Details দাও</div>
             <span style="font-size:12px;color:var(--text3);cursor:pointer" onclick="clearUidChangeSelection()">← Back</span>
@@ -3777,7 +3779,7 @@ if (document.readyState === 'loading') {
     <div id="trnMvpBlockWrap"></div>
     <div style="margin-top:12px;display:none" id="trnSaveMatchBtnWrap">
       <button class="btn btn-gold" onclick="saveTrnMatchResults()" style="padding:10px 24px">💾 Save Results</button>
-      <button class="btn btn-outline" id="trnExportThisMatchupBtn" onclick="downloadCurrentMatchupCard()" style="padding:10px 20px;margin-left:8px;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--secondary);color:var(--secondary)">📸 Export এই Matchup-এর Card</button>
+      <button class="btn btn-outline" id="trnExportThisMatchupBtn" onclick="downloadCurrentMatchupCard()" style="padding:10px 20px;margin-left:8px;background:linear-gradient(135deg,rgba(107,79,160,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--secondary);color:var(--secondary)">📸 Export এই Matchup-এর Card</button>
       <button class="btn btn-outline" id="trnMvpCardBtn" onclick="trnDownloadMVPCard()" style="padding:10px 20px;margin-left:8px;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">🎴 Download MVP Card</button>
       <span id="trnMatchSaveStatus" style="margin-left:12px;font-size:13px;color:var(--green)"></span>
     </div>
@@ -4955,10 +4957,10 @@ function renderRankingCards(data) {
     const score = (w||0)*9 + (mvp||0)*5 + (d||0)*3 + (goals||0)*1;
     const gd = goals - (p.goalsAgainst||0);
     const rating = (Math.min(99, Math.max(40, Math.round(50 + w*3 - l*2 + d*0.5 + wp*0.3))) / 10).toFixed(1);
-    const ratingColor = rating>=8.5?'#f5c842':rating>=7.0?'#7ed321':rating>=5.5?'#7C3AED':'#aaa';
+    const ratingColor = rating>=8.5?'#f5c842':rating>=7.0?'#7ed321':rating>=5.5?'#6B4FA0':'#aaa';
     // Always dark card bg so white text is visible in both light/dark mode
     const cardBg = rank===1?'linear-gradient(135deg,#1a0a2e,#2d1458)':rank===2?'linear-gradient(135deg,#0d1f3c,#1a2d4a)':rank===3?'linear-gradient(135deg,#2a0a0a,#3a1010)':'linear-gradient(135deg,#1a1035,#12092a)';
-    const borderCol = rank===1?'#f5c842':rank===2?'#aaa':rank===3?'#cd7f32':'rgba(124,58,237,0.4)';
+    const borderCol = rank===1?'#f5c842':rank===2?'#aaa':rank===3?'#cd7f32':'rgba(107,79,160,0.4)';
     const avatar = p.avatarUrl
       ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`
       : `<span style="font-size:40px">🎮</span>`;
@@ -7169,7 +7171,7 @@ window.loadUidChangeAppeals = async function() {
         ${r.oldDevice || r.newDevice ? `<div style="font-size:12px;color:var(--text2)">📱 Device: <span style="color:var(--text3)">${r.oldDevice||'—'}</span> ➜ <span style="color:var(--cyan);font-weight:600">${r.newDevice||'—'}</span>${r.deviceChangeReason ? `<br><span style="color:var(--text3)">কারণ: ${r.deviceChangeReason}</span>` : ''}</div>` : ''}
         <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%">
           <input type="text" class="form-input" id="uidAdminNote_${r.id}" placeholder="Admin note (optional)" value="${r.adminNote||''}" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px">
-          <button class="btn-admin-edit" id="uidDownloadBtn_${r.id}" style="background:rgba(0,229,255,0.12);border-color:var(--primary);color:var(--primary)" onclick="downloadUidChangeCard('${r.id}')">⬇ Card</button>
+          <button class="btn-admin-edit" id="uidDownloadBtn_${r.id}" style="background:rgba(62,143,176,0.12);border-color:var(--primary);color:var(--primary)" onclick="downloadUidChangeCard('${r.id}')">⬇ Card</button>
           ${r.status === 'pending' ? `
           <button class="btn-admin-edit" style="background:rgba(0,230,118,0.1);border-color:var(--green);color:var(--green)" onclick="updateUidChangeStatus('${r.id}','approved')">✅ Approve</button>
           <button class="btn-admin-del" onclick="updateUidChangeStatus('${r.id}','rejected')">❌ Reject</button>
@@ -7233,7 +7235,7 @@ window.downloadUidChangeCard = async function(id) {
 
   // Top accent bar
   const topBar = ctx.createLinearGradient(0, 0, W, 0);
-  topBar.addColorStop(0, '#fbbf24'); topBar.addColorStop(1, '#00E5FF');
+  topBar.addColorStop(0, '#fbbf24'); topBar.addColorStop(1, '#3E8FB0');
   ctx.fillStyle = topBar; ctx.fillRect(0, 0, W, 8);
 
   // Logo + Title
@@ -7267,7 +7269,7 @@ window.downloadUidChangeCard = async function(id) {
     ctx.drawImage(avatarImg, avX + (avSize - iW*scale)/2, avY + (avSize - iH*scale)/2, iW*scale, iH*scale);
   } else {
     ctx.fillStyle = '#13131F'; ctx.fillRect(avX, avY, avSize, avSize);
-    ctx.fillStyle = '#00E5FF'; ctx.font = '48px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#3E8FB0'; ctx.font = '48px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('🎮', avX + avSize/2, avY + avSize/2 + 4);
   }
   ctx.restore();
@@ -7281,7 +7283,7 @@ window.downloadUidChangeCard = async function(id) {
   ctx.fillText(`🏟️ ${r.playerClub || '—'}`, avX + avSize + 22, avY + 56);
   const _dt = new Date(r.createdAt||Date.now());
   if (r.teamName) {
-    ctx.fillStyle = '#00E5FF'; ctx.font = 'bold 17px Arial, sans-serif';
+    ctx.fillStyle = '#3E8FB0'; ctx.font = 'bold 17px Arial, sans-serif';
     ctx.fillText(`🛡️ Team: ${r.teamName}`, avX + avSize + 22, avY + 82);
     ctx.fillStyle = '#94A3B8'; ctx.font = '16px Arial, sans-serif';
     ctx.fillText(`📅 ${_dt.toLocaleDateString()}  🕐 ${_dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`, avX + avSize + 22, avY + 108);
@@ -7323,7 +7325,7 @@ window.downloadUidChangeCard = async function(id) {
     ]);
   }
   if (r.oldDevice || r.newDevice) {
-    sectionBox('📱 DEVICE CHANGE', '#00E5FF', [
+    sectionBox('📱 DEVICE CHANGE', '#3E8FB0', [
       { label: 'Old Device:', value: r.oldDevice || '—', color: '#f87171' },
       { label: 'New Device:', value: r.newDevice || '—', color: '#34d399' },
       { label: 'Reason:', value: wrapPlain(r.deviceChangeReason || '—'), color: '#F8FAFC' }
@@ -8867,7 +8869,7 @@ async function loadHomePlayerCarousel() {
       const w = p.wins||0, d = p.draws||0, l = p.losses||0, goals = p.goalsFor||0, mvp = p.mvp||0;
       const score = w*9 + mvp*5 + d*3 + goals*1;
       const cardBg = rank===1?'linear-gradient(160deg,#241436,#0f0a1c)':rank===2?'linear-gradient(160deg,#16232f,#0c1218)':rank===3?'linear-gradient(160deg,#2a1512,#150a09)':'linear-gradient(160deg,#191228,#0d0916)';
-      const borderCol = rank===1?'rgba(245,200,66,0.55)':rank===2?'rgba(200,205,215,0.5)':rank===3?'rgba(205,127,50,0.5)':'rgba(0,229,255,0.3)';
+      const borderCol = rank===1?'rgba(245,200,66,0.55)':rank===2?'rgba(200,205,215,0.5)':rank===3?'rgba(205,127,50,0.5)':'rgba(62,143,176,0.3)';
       const badgeTextCol = rank===1?'#f5c842':rank===2?'#dfe3ea':rank===3?'#e0a15c':'#c9c3f5';
       const photo = p.avatarUrl
         ? `<img src="${p.avatarUrl}" alt="${(p.name||'').replace(/"/g,'')}">`
@@ -9420,7 +9422,7 @@ window.openPublicProfile = async function(uid) {
 
       graphContainer.innerHTML = `<canvas id="perfChartCanvas" height="120"></canvas>`;
       const cEl = document.getElementById('perfChartCanvas');
-      const tierChartColors = { elite:'#7C3AED', gold:'#d9b64e', silver:'#a9bccd', bronze:'#c98f52' };
+      const tierChartColors = { elite:'#6B4FA0', gold:'#d9b64e', silver:'#a9bccd', bronze:'#c98f52' };
       const tierLine = tierChartColors[tier] || '#c9a84c';
       if (cEl && window.Chart) {
         new window.Chart(cEl, {
@@ -9482,7 +9484,7 @@ window.openPublicProfile = async function(uid) {
         if (points.length >= 2) {
           graphContainer.innerHTML = `<div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-align:center">Match-by-match history নেই — season-wise win rate দেখানো হচ্ছে</div><canvas id="perfChartCanvas" height="120"></canvas>`;
           const cEl = document.getElementById('perfChartCanvas');
-          const tierChartColors = { elite:'#7C3AED', gold:'#d9b64e', silver:'#a9bccd', bronze:'#c98f52' };
+          const tierChartColors = { elite:'#6B4FA0', gold:'#d9b64e', silver:'#a9bccd', bronze:'#c98f52' };
           const tierLine = tierChartColors[tier] || '#c9a84c';
           if (cEl && window.Chart) {
             new window.Chart(cEl, {
@@ -9858,7 +9860,7 @@ window.selectCmpPlayer = async function(uid2) {
   } catch(e) {}
 
   // ── Update Player Headers ──
-  const C1 = '#00E5FF'; // purple — player 1
+  const C1 = '#3E8FB0'; // purple — player 1
   const C2 = '#f5c842'; // gold — player 2
 
   // Avatar 1
@@ -9921,7 +9923,7 @@ window.selectCmpPlayer = async function(uid2) {
         <span class="cmp-stat-val ${winner===2?'winner':''}" style="color:${winner===2?C2:'var(--text2)'}">${displayV2}</span>
       </div>
       <div class="cmp-bar-wrap">
-        <div class="cmp-bar-left" style="width:${pct1}%;background:${winner===1?C1:'rgba(0,229,255,0.35)'}"></div>
+        <div class="cmp-bar-left" style="width:${pct1}%;background:${winner===1?C1:'rgba(62,143,176,0.35)'}"></div>
         <div class="cmp-bar-center"></div>
         <div class="cmp-bar-right" style="width:${pct2}%;background:${winner===2?C2:'rgba(245,200,66,0.35)'}"></div>
       </div>
@@ -10738,7 +10740,7 @@ function renderF4mSqPlayerPickList(users) {
   if (!list) return;
   list.innerHTML = users.map(u => {
     const sel = _f4mSqPlayerPickSelected.includes(u.uid);
-    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;${sel ? 'background:rgba(0,229,255,0.12)' : ''}" onclick="toggleF4mSquadPlayerPick('${u.uid}',this)">
+    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;${sel ? 'background:rgba(62,143,176,0.12)' : ''}" onclick="toggleF4mSquadPlayerPick('${u.uid}',this)">
       <input type="checkbox" ${sel ? 'checked' : ''} onclick="event.stopPropagation()">
       <div style="width:26px;height:26px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">
         ${u.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮'}
@@ -12780,7 +12782,7 @@ window.loadSoloKnockoutPublic = async function() {
   soloKnockoutCache.forEach(m => { (byRound[m.round || 'Round'] = byRound[m.round || 'Round'] || []).push(m); });
   wrap.innerHTML = Object.entries(byRound).map(([round, ms]) => `
     <div style="margin-bottom:22px">
-      <div style="font-size:14px;font-weight:800;color:var(--gold);margin-bottom:10px;font-family:'Metal Mania',cursive;letter-spacing:0.03em">⚡ ${round}</div>
+      <div style="font-size:14px;font-weight:800;color:var(--gold);margin-bottom:10px;font-family:'Playfair Display',serif;letter-spacing:0.03em">⚡ ${round}</div>
       ${ms.map(m => `
         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px">
           <span style="flex:1;font-size:14px;font-weight:700;color:${m.status === 'completed' && m.player1Score > m.player2Score ? 'var(--green)' : 'var(--text)'}">${soloPlayerName(m.player1Uid)}</span>
@@ -14549,7 +14551,7 @@ function renderFixtureBlock(key, bouts, allowSide) {
     <button class="btn btn-gold" onclick="mdcSaveBoutResults('${key}')" style="margin-top:10px;padding:8px 14px;font-size:12px;width:100%">✅ Save Match Result</button>
     <div id="mdc-save-status-${key}" style="font-size:11px;color:var(--green);margin-top:6px;text-align:center"></div>
     <div style="font-size:10px;color:var(--text3);margin-top:2px;text-align:center">${doneCount}/${bouts.length} bouts completed</div>
-    <button class="btn btn-outline" onclick="mdcDownloadMatchupCard('${key}')" style="margin-top:8px;padding:7px 14px;font-size:11px;width:100%;background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--secondary);color:var(--secondary)">📸 Download Match Card</button>
+    <button class="btn btn-outline" onclick="mdcDownloadMatchupCard('${key}')" style="margin-top:8px;padding:7px 14px;font-size:11px;width:100%;background:linear-gradient(135deg,rgba(107,79,160,0.12),rgba(48,28,160,0.12));border:1.5px solid var(--secondary);color:var(--secondary)">📸 Download Match Card</button>
     <button class="btn btn-outline" onclick="mdcDownloadMVPCard('${key}')" style="margin-top:8px;padding:7px 14px;font-size:11px;width:100%;background:linear-gradient(135deg,rgba(212,175,55,0.14),rgba(11,24,48,0.14));border:1.5px solid var(--gold);color:var(--gold)">🎴 Download MVP Card</button>
   ` : '';
   const undoDrawBtn = isAdminView ? `
@@ -14775,23 +14777,30 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   canvas.width = CARD_W; canvas.height = CARD_H;
   const ctx = canvas.getContext('2d');
 
-  // ── PALETTE — one unified deep-navy card with gold-foil accents ──
-  const BG_TOP    = '#0c1729';
-  const BG_BOT    = '#050810';
-  const INK       = '#f1f4f9';
-  const INK_SOFT  = 'rgba(241,244,249,0.55)';
-  const GOLD      = '#d8b25c';
-  const GOLD_HI   = '#f5e2ac';
-  const GOLD_DEEP = '#9c772c';
-  const LINE_COL  = 'rgba(216,178,92,0.22)';
-  const PANEL_BG  = 'rgba(255,255,255,0.045)';
+  // ── PALETTE — pulled straight from the site's own CSS tokens (--bg/--card/
+  // --gold/--text) so the card reads as part of TYP Championship, not a
+  // separate one-off theme ──
+  const BG_TOP    = '#0F0F16'; // site --card
+  const BG_BOT    = '#07070B'; // site --bg
+  const INK       = '#F8FAFC'; // site --text
+  const INK_SOFT  = 'rgba(248,250,252,0.55)'; // site --text2 tint
+  const GOLD      = '#c9a84c'; // site --gold
+  const GOLD_HI   = '#e6cd8a';
+  const GOLD_DEEP = '#a07830'; // site --gold2
+  const LINE_COL  = 'rgba(201,168,76,0.38)';
+  const PANEL_BG  = 'rgba(255,255,255,0.09)';
 
   const ratingVal = Math.max(0, Math.min(10, parseFloat(rating) || 6.0));
   const ratingStr = ratingVal.toFixed(1);
 
   try {
-    await document.fonts.load("900 84px 'Anton'");
-    await document.fonts.load("700 44px 'Inter'");
+    await Promise.all([
+      document.fonts.load("900 84px 'Anton'"),
+      document.fonts.load("700 44px 'Inter'"),
+      document.fonts.load("800 34px 'Inter'"),
+      document.fonts.load("600 20px 'Inter'"),
+      document.fonts.load("500 16px 'Inter'"),
+    ]);
     await document.fonts.ready;
   } catch (e) { /* fonts may already be cached — ignore */ }
 
@@ -14826,21 +14835,21 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
   const glow = ctx.createRadialGradient(CARD_W/2, 200, 40, CARD_W/2, 200, 560);
-  glow.addColorStop(0, 'rgba(216,178,92,0.16)');
+  glow.addColorStop(0, 'rgba(216,178,92,0.24)');
   glow.addColorStop(1, 'rgba(216,178,92,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  ctx.fillStyle = 'rgba(255,255,255,0.035)';
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
   for (let x = 16; x < CARD_W - 16; x += 28) {
     for (let y = 16; y < CARD_H - 16; y += 28) {
       ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI*2); ctx.fill();
     }
   }
 
-  // outer hairline frame
+  // outer hairline frame — thicker so the card edge reads clearly at a glance
   ctx.strokeStyle = LINE_COL;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2.5;
   roundRect(24, 24, CARD_W-48, CARD_H-48, 26);
   ctx.stroke();
 
@@ -14960,7 +14969,7 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   // gold viewfinder corner brackets
   function drawBracket(x, y, dx, dy, len) {
     ctx.strokeStyle = GOLD;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4.5;
     ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(x, y + dy*len);
@@ -15011,7 +15020,7 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.fillStyle = shieldGrad;
     ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 2.4; ctx.stroke();
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 3.4; ctx.stroke();
 
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = GOLD_HI;
@@ -15077,10 +15086,10 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.fillText((opponentName||'').toUpperCase(), CARD_W/2 + scoreW/2 + 20, midY);
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(216,178,92,0.14)';
+    ctx.fillStyle = 'rgba(216,178,92,0.22)';
     roundRect(CARD_W/2 - scoreW/2, stripY+12, scoreW, stripH-24, (stripH-24)/2);
     ctx.fill();
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 1.4;
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 2;
     roundRect(CARD_W/2 - scoreW/2, stripY+12, scoreW, stripH-24, (stripH-24)/2);
     ctx.stroke();
     ctx.fillStyle = GOLD_HI;
@@ -15143,9 +15152,9 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.lineTo(bx, by+bannerH);
     ctx.lineTo(bx+notch, by+bannerH/2);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(216,178,92,0.12)';
+    ctx.fillStyle = 'rgba(216,178,92,0.20)';
     ctx.fill();
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 1.6;
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 2.2;
     ctx.stroke();
     ctx.restore();
 
@@ -15167,19 +15176,26 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     img.onerror = () => resolve(null);
     img.src = window.TYP_LOGO_DATA;
   });
-  const footerY = CARD_H - 60;
+  const footerY = CARD_H - 68;
   ctx.strokeStyle = LINE_COL;
   ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(90, footerY-30); ctx.lineTo(CARD_W-90, footerY-30); ctx.stroke();
-  ctx.textAlign = 'center';
-  if (typLogoImg) {
-    const lw = 32, lh = 32;
-    ctx.drawImage(typLogoImg, CARD_W/2 - 96, footerY - lh/2, lw, lh);
-  }
-  ctx.font = "700 18px Inter, Arial";
+  ctx.beginPath(); ctx.moveTo(90, footerY-38); ctx.lineTo(CARD_W-90, footerY-38); ctx.stroke();
+  ctx.font = "700 20px Inter, Arial";
   ctx.fillStyle = INK_SOFT;
-  ctx.textAlign = typLogoImg ? 'left' : 'center';
-  ctx.fillText('TYP CHAMPIONSHIP', typLogoImg ? CARD_W/2 - 54 : CARD_W/2, footerY + 6);
+  if (typLogoImg) {
+    const lh = 64, lw = typLogoImg.width * (lh / typLogoImg.height);
+    const brandGap = 14;
+    const brandText = 'TYP CHAMPIONSHIP';
+    const brandTextW = ctx.measureText(brandText).width;
+    const groupW = lw + brandGap + brandTextW;
+    const groupX = CARD_W/2 - groupW/2;
+    ctx.drawImage(typLogoImg, groupX, footerY - lh/2 + 6, lw, lh);
+    ctx.textAlign = 'left';
+    ctx.fillText(brandText, groupX + lw + brandGap, footerY + 8);
+  } else {
+    ctx.textAlign = 'center';
+    ctx.fillText('TYP CHAMPIONSHIP', CARD_W/2, footerY + 8);
+  }
 
   // ── Export ──
   const link = document.createElement('a');
@@ -16818,7 +16834,7 @@ window.downloadFixturePDF = async function() {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:520px;background:#0A0A12;font-family:Inter,sans-serif;padding:0;z-index:-1';
   wrap.innerHTML = `
-    <div style="background:linear-gradient(135deg,#00E5FF,#4a3fb0);padding:28px 24px 20px;text-align:center">
+    <div style="background:linear-gradient(135deg,#3E8FB0,#4a3fb0);padding:28px 24px 20px;text-align:center">
       <div style="font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:3px;font-weight:700;margin-bottom:6px">TYP CHAMPIONSHIP</div>
       <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:4px">OFFICIAL FIXTURE</div>
       <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:18px">Round Robin • Season 2026 • ${today}</div>
@@ -16840,7 +16856,7 @@ window.downloadFixturePDF = async function() {
     <div style="padding:16px 16px 20px">
       ${Object.entries(days).map(([dayLabel, matchMap]) => `
         <div style="margin-bottom:14px">
-          <div style="font-size:9px;font-weight:800;color:#00E5FF;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.07)">${dayLabel}</div>
+          <div style="font-size:9px;font-weight:800;color:#3E8FB0;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.07)">${dayLabel}</div>
           ${Object.values(matchMap).map(match => {
             const ht = teamMap[match.homeTeam] || { name: match.homeTeam, emoji: '🏟️' };
             const at = teamMap[match.awayTeam] || { name: match.awayTeam, emoji: '🏟️' };
@@ -16852,9 +16868,9 @@ window.downloadFixturePDF = async function() {
             const statusColor = allDone ? '#34d399' : doneBouts.length > 0 ? '#fbbf24' : 'rgba(255,255,255,0.3)';
             const statusText = allDone ? '✅' : doneBouts.length > 0 ? `⏳${doneBouts.length}/${match.bouts.length}` : '🎮';
             return `<div style="background:#0C0C16;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:8px">
-              <div style="flex:1;min-width:0;font-size:13px;font-weight:700;color:${allDone&&hw>aw?'#00E5FF':'rgba(255,255,255,0.85)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ht.emoji} ${ht.name}</div>
+              <div style="flex:1;min-width:0;font-size:13px;font-weight:700;color:${allDone&&hw>aw?'#3E8FB0':'rgba(255,255,255,0.85)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ht.emoji} ${ht.name}</div>
               <div style="font-size:13px;font-weight:800;color:#F8FAFC;font-family:monospace;background:#0A0A12;padding:4px 10px;border-radius:7px;flex-shrink:0">${scoreText}</div>
-              <div style="flex:1;min-width:0;font-size:13px;font-weight:700;color:${allDone&&aw>hw?'#00E5FF':'rgba(255,255,255,0.85)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right">${at.name} ${at.emoji}</div>
+              <div style="flex:1;min-width:0;font-size:13px;font-weight:700;color:${allDone&&aw>hw?'#3E8FB0':'rgba(255,255,255,0.85)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right">${at.name} ${at.emoji}</div>
               <div style="font-size:11px;color:${statusColor};flex-shrink:0;margin-left:4px">${statusText}</div>
             </div>`;
           }).join('')}
@@ -17117,18 +17133,24 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     await Promise.all([...urls].map(async u => { avatarImgMap[u] = await window.bdLoadImage(u).catch(() => null); }));
   }
 
-  // ── PALETTE (light theme) ──
-  const BLUE      = '#1f5fd8';
-  const BLUE_DARK = '#14428f';
-  const NAVY      = '#132a52';
-  const BLUE_TINT = '#eaf2fd';
-  const BLUE_TINT2= '#f5f9fe';
-  const BLUE_SOFT = 'rgba(31,95,216,0.18)';
-  const GOLD      = '#c9a230';
-  const GOLD_BG   = '#f9edc9';
-  const GOLD_BG2  = '#f5e3ab';
-  const ROW_ALT   = '#f6f9fd';
-  const BORDER    = 'rgba(31,95,216,0.14)';
+  // ── PALETTE — pulled straight from the site's own CSS tokens (--bg/--card/
+  // --gold/--text) so the Match Card and MVP card share the exact same brand
+  // colors as the rest of TYP Championship, not a separate one-off theme.
+  const BG_TOP    = '#0F0F16'; // site --card
+  const BG_BOT    = '#07070B'; // site --bg
+  const BLUE      = '#c9a84c'; // site --gold
+  const BLUE_DARK = '#a07830'; // site --gold2
+  const NAVY      = '#F8FAFC'; // site --text
+  const BLUE_TINT = 'rgba(255,255,255,0.045)';
+  const BLUE_TINT2= 'rgba(255,255,255,0.02)';
+  const BLUE_SOFT = 'rgba(201,168,76,0.18)';
+  const GOLD      = '#c9a84c'; // site --gold
+  const GOLD_HI   = '#e6cd8a';
+  const GOLD_BG   = 'rgba(201,168,76,0.16)';
+  const GOLD_BG2  = 'rgba(201,168,76,0.26)';
+  const ROW_ALT   = 'rgba(255,255,255,0.045)';
+  const BORDER    = 'rgba(201,168,76,0.22)';
+  const INK_SOFT  = 'rgba(248,250,252,0.55)'; // site --text2 tint
 
   // ── rounded-rect helpers (top-only / bottom-only) ──
   function roundRectTop(ctx,x,y,w,h,r){
@@ -17151,10 +17173,10 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   function drawPhotoFrame(cx, cy, size, img, accent) {
     const r = size / 2;
     ctx.save();
-    if (accent) { ctx.shadowColor = 'rgba(201,162,48,0.5)'; ctx.shadowBlur = 10; }
-    else { ctx.shadowColor = 'rgba(31,95,216,0.20)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 1; }
+    if (accent) { ctx.shadowColor = 'rgba(216,178,92,0.5)'; ctx.shadowBlur = 10; }
+    else { ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 1; }
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.fillStyle = BG_TOP; ctx.fill();
     ctx.restore();
 
     ctx.save();
@@ -17169,20 +17191,20 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
       ctx.fillRect(cx - r, cy - r, size, size);
       ctx.font = `${Math.floor(size*0.42)}px serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgba(31,95,216,0.55)';
+      ctx.fillStyle = 'rgba(216,178,92,0.55)';
       ctx.fillText('👤', cx, cy + 1);
       ctx.textBaseline = 'alphabetic';
     }
     ctx.restore();
 
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.strokeStyle = accent ? GOLD : 'rgba(31,95,216,0.5)';
+    ctx.strokeStyle = accent ? GOLD : 'rgba(216,178,92,0.45)';
     ctx.lineWidth = accent ? 2.8 : 2;
     ctx.stroke();
 
     // thin outer halo ring for a premium "player card" feel
     ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, Math.PI*2);
-    ctx.strokeStyle = accent ? 'rgba(201,162,48,0.35)' : 'rgba(31,95,216,0.15)';
+    ctx.strokeStyle = accent ? 'rgba(216,178,92,0.35)' : 'rgba(216,178,92,0.15)';
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -17192,13 +17214,23 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   roundRectCanvas(ctx, 0, 0, CARD_W, CARD_H, 22);
   ctx.clip();
 
-  ctx.fillStyle = '#ffffff';
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, CARD_H);
+  bgGrad.addColorStop(0, BG_TOP);
+  bgGrad.addColorStop(1, BG_BOT);
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  // ── HEADER BANNER (soft blue gradient panel so the top never reads as empty) ──
+  // soft gold glow behind the header, matching the MVP card's headline glow
+  const headGlow = ctx.createRadialGradient(CARD_W/2, 90, 20, CARD_W/2, 90, 420);
+  headGlow.addColorStop(0, 'rgba(216,178,92,0.14)');
+  headGlow.addColorStop(1, 'rgba(216,178,92,0)');
+  ctx.fillStyle = headGlow;
+  ctx.fillRect(0, 0, CARD_W, HEADER_H);
+
+  // ── HEADER BANNER (dark navy gradient panel, same family as the MVP card) ──
   const headerGrad = ctx.createLinearGradient(0, 0, 0, HEADER_H);
-  headerGrad.addColorStop(0, '#eef5fe');
-  headerGrad.addColorStop(1, '#ffffff');
+  headerGrad.addColorStop(0, 'rgba(255,255,255,0.03)');
+  headerGrad.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = headerGrad;
   ctx.fillRect(0, 0, CARD_W, HEADER_H);
 
@@ -17206,14 +17238,14 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   if (typLogoImg) {
     ctx.save();
     ctx.globalAlpha = 0.05;
-    const wmH = 190;
+    const wmH = 230;
     const wmW = typLogoImg.width * (wmH / typLogoImg.height);
     ctx.drawImage(typLogoImg, CARD_W/2 - wmW/2, HEADER_H/2 - wmH/2 + 6, wmW, wmH);
     ctx.restore();
   }
 
   // fine dot-grid texture across the whole header (fills the empty corners/edges)
-  ctx.fillStyle = 'rgba(31,95,216,0.09)';
+  ctx.fillStyle = 'rgba(255,255,255,0.045)';
   for (let x = 14; x < CARD_W - 14; x += 22) {
     for (let y = 14; y < HEADER_H - 14; y += 22) {
       const distFromCenter = Math.abs(x - CARD_W/2);
@@ -17303,24 +17335,24 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.letterSpacing = '0.08em';
   ctx.fillText('TYP', CARD_W - 20, 32);
   ctx.font = '600 9px Inter, Arial';
-  ctx.fillStyle = 'rgba(20,66,143,0.65)';
+  ctx.fillStyle = 'rgba(241,244,249,0.65)';
   ctx.letterSpacing = '0.13em';
   ctx.fillText('CHAMPIONSHIP', CARD_W - 20, 45);
   ctx.letterSpacing = '0';
   ctx.restore();
 
   // header/table separator line
-  ctx.strokeStyle = 'rgba(31,95,216,0.20)';
+  ctx.strokeStyle = 'rgba(216,178,92,0.22)';
   ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(0, HEADER_H); ctx.lineTo(CARD_W, HEADER_H); ctx.stroke();
 
   // ── TYP LOGO (top-left, natural blue) ──
   if (typLogoImg) {
-    const lh = 46;
+    const lh = 68;
     const lw = typLogoImg.width * (lh / typLogoImg.height);
     ctx.save();
     ctx.globalAlpha = 0.95;
-    ctx.drawImage(typLogoImg, 20, 16, lw, lh);
+    ctx.drawImage(typLogoImg, 18, 12, lw, lh);
     ctx.restore();
   }
 
@@ -17338,9 +17370,9 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const pillTw = ctx.measureText(pillLabel).width;
   const pillW = pillTw + 40, pillH = 28, pillX = CARD_W/2 - pillW/2, pillY = 56;
   roundRectCanvas(ctx, pillX, pillY, pillW, pillH, 14);
-  ctx.fillStyle = BLUE_TINT; ctx.fill();
-  ctx.strokeStyle = 'rgba(31,95,216,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = BLUE_DARK;
+  ctx.fillStyle = 'rgba(4,8,16,0.45)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(216,178,92,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = NAVY;
   ctx.fillText(pillLabel, CARD_W/2, pillY + pillH/2 + 4);
 
   // ── TEAM LOGOS ──
@@ -17351,17 +17383,17 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     if (isWinner) {
       ctx.beginPath();
       ctx.arc(cx, cy, logoSize/2 + 9, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba(31,95,216,0.30)';
+      ctx.strokeStyle = 'rgba(216,178,92,0.35)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
     ctx.save();
-    ctx.shadowColor = 'rgba(31,95,216,0.18)';
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
     ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, logoSize/2, 0, Math.PI*2);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = BG_TOP;
     ctx.fill();
     ctx.restore();
     ctx.beginPath();
@@ -17445,13 +17477,13 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     ctx.letterSpacing = '0';
   }
 
-  // ── SCORE BADGE (white box, blue border, blue "POINTS" bar) ──
+  // ── SCORE BADGE (dark panel, gold border, gold "POINTS" bar) ──
   ctx.save();
-  ctx.shadowColor = 'rgba(31,95,216,0.18)';
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
   ctx.shadowBlur = 14;
   ctx.shadowOffsetY = 4;
   roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 14);
-  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.fillStyle = BG_TOP; ctx.fill();
   ctx.restore();
 
   roundRectCanvas(ctx, sbX, sbY, sbW, sbH, 14);
@@ -17465,14 +17497,14 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.fillText(awayStr, CARD_W/2 + numGap, sbY + sbTopH/2 + 12);
 
   // vertical divider between the two numbers
-  ctx.strokeStyle = 'rgba(31,95,216,0.22)';
+  ctx.strokeStyle = 'rgba(216,178,92,0.30)';
   ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(CARD_W/2, sbY + 12); ctx.lineTo(CARD_W/2, sbY + sbTopH - 8); ctx.stroke();
 
-  // blue "POINTS" bar (rounded bottom corners only)
+  // gold "POINTS" bar (rounded bottom corners only)
   roundRectBottom(ctx, sbX, sbY + sbTopH, sbW, sbBotH, 14);
   ctx.fillStyle = BLUE; ctx.fill();
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = BG_BOT;
   ctx.font = '700 10px Inter, Arial';
   ctx.textAlign = 'center';
   ctx.letterSpacing = '0.18em';
@@ -17481,9 +17513,9 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // ── TABLE HEADER ROW ──
   const tableY = HEADER_H;
-  ctx.fillStyle = BLUE_TINT;
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
   ctx.fillRect(0, tableY, CARD_W, TABLE_HEAD_H);
-  ctx.strokeStyle = 'rgba(31,95,216,0.28)';
+  ctx.strokeStyle = 'rgba(216,178,92,0.30)';
   ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(0, tableY + TABLE_HEAD_H); ctx.lineTo(CARD_W, tableY + TABLE_HEAD_H); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(0, tableY); ctx.lineTo(CARD_W, tableY); ctx.stroke();
@@ -17514,12 +17546,12 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
       mvpGrad.addColorStop(1,   GOLD_BG2);
       ctx.fillStyle = mvpGrad;
     } else {
-      ctx.fillStyle = idx % 2 === 0 ? '#ffffff' : ROW_ALT;
+      ctx.fillStyle = idx % 2 === 0 ? 'rgba(255,255,255,0.015)' : ROW_ALT;
     }
     ctx.fillRect(0, ry, CARD_W, ROW_H);
 
     if (isMVP) {
-      ctx.strokeStyle = 'rgba(201,162,48,0.55)';
+      ctx.strokeStyle = 'rgba(216,178,92,0.55)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(0, ry+0.5); ctx.lineTo(CARD_W, ry+0.5); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, ry+ROW_H-0.5); ctx.lineTo(CARD_W, ry+ROW_H-0.5); ctx.stroke();
@@ -17548,7 +17580,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
       ctx.fillStyle = NAVY;
       ctx.font = '800 14px Inter, Arial';
     } else {
-      ctx.fillStyle = hs > as_ ? NAVY : 'rgba(19,42,82,0.5)';
+      ctx.fillStyle = hs > as_ ? NAVY : 'rgba(241,244,249,0.45)';
       ctx.font = hs > as_ ? '800 14px Inter, Arial' : '500 14px Inter, Arial';
     }
     ctx.fillText((m.player1||'—').toUpperCase(), 84, textY);
@@ -17559,7 +17591,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
       ctx.fillStyle = NAVY;
       ctx.font = '800 14px Inter, Arial';
     } else {
-      ctx.fillStyle = as_ > hs ? NAVY : 'rgba(19,42,82,0.5)';
+      ctx.fillStyle = as_ > hs ? NAVY : 'rgba(241,244,249,0.45)';
       ctx.font = as_ > hs ? '800 14px Inter, Arial' : '500 14px Inter, Arial';
     }
     ctx.fillText((m.player2||'—').toUpperCase(), CARD_W-84, textY);
@@ -17567,11 +17599,11 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
     // score
     ctx.textAlign = 'center';
     ctx.font = '800 17px Inter, Arial';
-    ctx.fillStyle = hs > as_ ? BLUE : 'rgba(19,42,82,0.55)';
+    ctx.fillStyle = hs > as_ ? BLUE : 'rgba(241,244,249,0.5)';
     ctx.fillText(String(hs), CARD_W/2 - 22, textY);
-    ctx.fillStyle = 'rgba(31,95,216,0.25)';
+    ctx.fillStyle = 'rgba(216,178,92,0.25)';
     ctx.fillText('|', CARD_W/2, textY);
-    ctx.fillStyle = as_ > hs ? BLUE : 'rgba(19,42,82,0.55)';
+    ctx.fillStyle = as_ > hs ? BLUE : 'rgba(241,244,249,0.5)';
     ctx.fillText(String(as_), CARD_W/2 + 22, textY);
 
     // MVP badge
@@ -17596,7 +17628,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // ── FOOTER ──
   const footerY = CARD_H - FOOTER_H;
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = 'rgba(4,8,16,0.35)';
   ctx.fillRect(0, footerY, CARD_W, FOOTER_H);
   ctx.strokeStyle = BORDER;
   ctx.lineWidth = 1;
@@ -17604,7 +17636,7 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   // dotted flanking lines
   ctx.save();
-  ctx.strokeStyle = 'rgba(31,95,216,0.35)';
+  ctx.strokeStyle = 'rgba(216,178,92,0.35)';
   ctx.lineWidth = 1.5;
   ctx.setLineDash([2, 4]);
   const footerMidY = footerY + FOOTER_H/2;
@@ -17617,8 +17649,8 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const footTw = ctx.measureText('TYP CHAMPIONSHIP').width;
   const footPillW = footTw + 36, footPillH = 26;
   roundRectCanvas(ctx, CARD_W/2 - footPillW/2, footerMidY - footPillH/2, footPillW, footPillH, 13);
-  ctx.fillStyle = '#ffffff'; ctx.fill();
-  ctx.strokeStyle = 'rgba(31,95,216,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = 'rgba(4,8,16,0.55)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(216,178,92,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
   ctx.fillStyle = BLUE;
   ctx.textAlign = 'center';
   ctx.letterSpacing = '0.08em';
@@ -17627,12 +17659,12 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
 
   ctx.restore(); // end rounded-corner clip
 
-  // outer border for a crisp, premium card edge (subtle blue→gold→blue sheen)
+  // outer border for a crisp, premium card edge — same gold-foil sheen as the MVP card
   roundRectCanvas(ctx, 1, 1, CARD_W-2, CARD_H-2, 22);
   const borderGrad = ctx.createLinearGradient(0, 0, CARD_W, 0);
-  borderGrad.addColorStop(0,    'rgba(31,95,216,0.28)');
-  borderGrad.addColorStop(0.5,  'rgba(201,162,48,0.35)');
-  borderGrad.addColorStop(1,    'rgba(31,95,216,0.28)');
+  borderGrad.addColorStop(0,    'rgba(216,178,92,0.22)');
+  borderGrad.addColorStop(0.5,  'rgba(245,226,172,0.55)');
+  borderGrad.addColorStop(1,    'rgba(216,178,92,0.22)');
   ctx.strokeStyle = borderGrad;
   ctx.lineWidth = 2;
   ctx.stroke();
@@ -19333,7 +19365,7 @@ window.aiqaUseAsFaq = aiqaUseAsFaq;
   left: 22px;
   bottom: 22px;
   z-index: 9998;
-  background: var(--primary, #00E5FF);
+  background: var(--primary, #3E8FB0);
   color: #05050A;
   border: none;
   border-radius: 24px;
