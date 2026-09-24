@@ -14765,11 +14765,15 @@ window.mdcDownloadMVPCard = async function(key) {
 
 // ══════════════════════════════════════════
 // 🎴 CANVAS — standalone "Man of the Match" premium player card
-// One unified dark "trading-card" theme (was a white-paper + navy-plaque
-// mashup with lots of separate pill/chip boxes) — full-bleed photo, gold
-// foil headline sitting straight on the background, a shield-shaped rating
-// badge, viewfinder-style corner brackets instead of a boxed frame, and a
-// single dark stat bar instead of stacked white chips.
+// Same dark full-bleed "trading-card" base as before, now built on top of
+// the site's own bronze/silver/gold/elite tier system (see Player Profile's
+// pp-tier-* palette): the card's rating shield, viewfinder brackets, panel
+// ring, tier chip and team crest all pick up that performance's tier color,
+// so a 9-rated MVP card visibly reads differently from a 5-rated one instead
+// of every card looking identical in plain gold. Also adds a team-crest
+// chip, a Goals/Result/Goal-Diff three-up stat bar (was Goals/GD only), a
+// small procedural laurel either side of the MVP ribbon, a double hairline
+// frame, and a faint diagonal brand watermark for extra print-card texture.
 // ══════════════════════════════════════════
 async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goals, conceded, dayLabel, fileSuffix, opponentName, myScore, oppScore, rating }) {
   const CARD_W = 1080, CARD_H = 1680;
@@ -14787,17 +14791,31 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   const GOLD      = '#c9a84c'; // site --gold
   const GOLD_HI   = '#e6cd8a';
   const GOLD_DEEP = '#a07830'; // site --gold2
-  const LINE_COL  = 'rgba(201,168,76,0.38)';
+  const LINE_COL  = 'rgba(201,168,76,0.30)';
   const PANEL_BG  = 'rgba(255,255,255,0.09)';
 
   const ratingVal = Math.max(0, Math.min(10, parseFloat(rating) || 6.0));
   const ratingStr = ratingVal.toFixed(1);
+
+  // ── Tier — mirrors the Player Profile page's own bronze/silver/gold/elite
+  // card system (see .pp-tier-* in the stylesheet), driven here by this
+  // matchday's rating rather than career rank, so the palette actually says
+  // something about how good this particular MVP performance was.
+  const TIERS = {
+    bronze: { a: '#8a5a34', b: '#d69a5c', glow: 'rgba(154,106,60,0.42)',  label: 'BRONZE PERFORMANCE' },
+    silver: { a: '#8497ab', b: '#e3ecf5', glow: 'rgba(159,179,200,0.42)', label: 'SILVER PERFORMANCE' },
+    gold:   { a: '#a07830', b: '#f0d488', glow: 'rgba(201,168,76,0.46)',  label: 'GOLD PERFORMANCE' },
+    elite:  { a: '#6B4FA0', b: '#3E8FB0', glow: 'rgba(62,143,176,0.50)',  label: 'ELITE PERFORMANCE' },
+  };
+  const tierKey = ratingVal >= 8.5 ? 'elite' : ratingVal >= 7 ? 'gold' : ratingVal >= 5.5 ? 'silver' : 'bronze';
+  const T = TIERS[tierKey];
 
   try {
     await Promise.all([
       document.fonts.load("900 84px 'Anton'"),
       document.fonts.load("700 44px 'Inter'"),
       document.fonts.load("800 34px 'Inter'"),
+      document.fonts.load("700 20px 'Inter'"),
       document.fonts.load("600 20px 'Inter'"),
       document.fonts.load("500 16px 'Inter'"),
     ]);
@@ -14825,17 +14843,43 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     return size;
   }
 
-  // ── Background: deep navy vertical gradient + a soft gold glow behind the ──
-  // headline + a whisper of dot texture, so the whole card reads as ONE piece
-  // instead of a white card with a dark box glued on top of it.
+  // A single procedural laurel leaf, used in small mirrored rows either
+  // side of the MVP ribbon — a print-card flourish, drawn (not an image).
+  function drawLeaf(cx, cy, angle, len, color) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(len * 0.35, -len * 0.32, len, 0);
+    ctx.quadraticCurveTo(len * 0.35, len * 0.32, 0, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  function drawLaurel(cx, cy, mirrored) {
+    const dir = mirrored ? -1 : 1;
+    for (let i = 0; i < 5; i++) {
+      const t = i / 4;
+      const along = i * 15;
+      const leafAngle = dir > 0 ? (-0.35 - t * 0.5) : Math.PI + (0.35 + t * 0.5);
+      drawLeaf(cx + dir * along, cy + i * 3, leafAngle, 20 - t * 6, T.b);
+    }
+  }
+
+  // ── Background: deep navy vertical gradient + a tier-tinted glow behind ──
+  // the headline + a whisper of dot texture + a faint diagonal brand
+  // watermark, so the whole card reads as ONE piece instead of a white card
+  // with a dark box glued on top of it.
   const bgGrad = ctx.createLinearGradient(0, 0, 0, CARD_H);
   bgGrad.addColorStop(0, BG_TOP);
   bgGrad.addColorStop(1, BG_BOT);
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  const glow = ctx.createRadialGradient(CARD_W/2, 200, 40, CARD_W/2, 200, 560);
-  glow.addColorStop(0, 'rgba(216,178,92,0.24)');
+  const glow = ctx.createRadialGradient(CARD_W/2, 200, 40, CARD_W/2, 200, 600);
+  glow.addColorStop(0, T.glow);
   glow.addColorStop(1, 'rgba(216,178,92,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
@@ -14847,11 +14891,32 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     }
   }
 
-  // outer hairline frame — thicker so the card edge reads clearly at a glance
+  // faint diagonal "TYP CHAMPIONSHIP" watermark strip, repeated — a small
+  // authenticity touch borrowed from real trading-card design
+  ctx.save();
+  ctx.translate(CARD_W/2, CARD_H/2);
+  ctx.rotate(-0.38);
+  ctx.font = "800 26px Inter, Arial";
+  ctx.fillStyle = 'rgba(255,255,255,0.028)';
+  ctx.textAlign = 'center';
+  for (let ly = -CARD_H; ly < CARD_H; ly += 64) {
+    ctx.fillText('TYP CHAMPIONSHIP  •  TYP CHAMPIONSHIP  •  TYP CHAMPIONSHIP', 0, ly);
+  }
+  ctx.restore();
+
+  // outer double hairline frame — a thin tier-colored inner line under the
+  // usual gold hairline, so the card's tier reads at a glance
   ctx.strokeStyle = LINE_COL;
   ctx.lineWidth = 2.5;
   roundRect(24, 24, CARD_W-48, CARD_H-48, 26);
   ctx.stroke();
+  ctx.save();
+  ctx.strokeStyle = T.b;
+  ctx.globalAlpha = 0.55;
+  ctx.lineWidth = 1.4;
+  roundRect(33, 33, CARD_W-66, CARD_H-66, 20);
+  ctx.stroke();
+  ctx.restore();
 
   // ── Eyebrow ──
   ctx.textAlign = 'center';
@@ -14859,14 +14924,32 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   ctx.fillStyle = INK_SOFT;
   ctx.save();
   ctx.letterSpacing = '7px';
-  ctx.fillText('TYP CHAMPIONSHIP PRESENTS', CARD_W/2, 86);
+  ctx.fillText('TYP CHAMPIONSHIP PRESENTS', CARD_W/2, 70);
   ctx.restore();
+
+  // ── Tier chip — small gradient pill naming this performance's tier ──
+  {
+    ctx.font = "800 14px Inter, Arial";
+    const chipText = `★ ${T.label}`;
+    const chipPad = 14;
+    const chipW = ctx.measureText(chipText).width + chipPad*2;
+    const chipH = 30, chipX = CARD_W/2 - chipW/2, chipY = 90;
+    const chipGrad = ctx.createLinearGradient(chipX, chipY, chipX+chipW, chipY);
+    chipGrad.addColorStop(0, T.a); chipGrad.addColorStop(1, T.b);
+    ctx.fillStyle = chipGrad;
+    roundRect(chipX, chipY, chipW, chipH, chipH/2);
+    ctx.fill();
+    ctx.fillStyle = '#0a0a10';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(chipText, CARD_W/2, chipY + chipH/2 + 1);
+    ctx.textBaseline = 'alphabetic';
+  }
 
   // ── Headline: gold-foil "MAN [OF/THE] MATCH" sitting directly on the ──
   // background (no separate boxed plaque fighting the photo panel below it)
   {
-    const baseY = 194;
-    const bigSize = 96, theSize = 40, ofSize = 22;
+    const baseY = 224;
+    const bigSize = 92, theSize = 38, ofSize = 21;
     const gap = 24;
 
     ctx.font = `900 ${bigSize}px 'Anton', sans-serif`;
@@ -14907,20 +14990,26 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.restore();
   }
 
-  // thin gold rule under the headline
+  // thin gold rule under the headline, broken by a small tier-colored diamond
   ctx.strokeStyle = LINE_COL;
   ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(CARD_W/2 - 160, 224); ctx.lineTo(CARD_W/2 + 160, 224); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CARD_W/2 - 160, 254); ctx.lineTo(CARD_W/2 - 10, 254); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CARD_W/2 + 10, 254); ctx.lineTo(CARD_W/2 + 160, 254); ctx.stroke();
+  ctx.save();
+  ctx.translate(CARD_W/2, 254); ctx.rotate(Math.PI/4);
+  ctx.fillStyle = T.b;
+  ctx.fillRect(-5, -5, 10, 10);
+  ctx.restore();
 
-  let cursorY = 262;
+  let cursorY = 288;
 
   // ══════════════════════════════════════════
-  // ── Full-bleed photo panel — gold viewfinder corner brackets instead of ──
-  // a full stroked box, so it feels like one continuous card rather than a
-  // frame glued onto a frame.
+  // ── Full-bleed photo panel — gold viewfinder corner brackets (tipped in ──
+  // the tier color) plus a thin tier-colored ring around the whole panel,
+  // instead of a full stroked box, so it feels like one continuous card.
   // ══════════════════════════════════════════
   const panelX = 56, panelW = CARD_W - 112;
-  const panelY = cursorY, panelH = 900;
+  const panelY = cursorY, panelH = 860;
   const panelBottom = panelY + panelH;
 
   ctx.save();
@@ -14957,16 +15046,25 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   ctx.fillRect(panelX, panelY, panelW, 150);
 
   // bottom scrim so the name/team stay legible over any photo
-  const scrimH = 300;
+  const scrimH = 320;
   const scrim = ctx.createLinearGradient(0, panelBottom - scrimH, 0, panelBottom);
   scrim.addColorStop(0, 'rgba(4,8,16,0)');
-  scrim.addColorStop(1, 'rgba(4,8,16,0.92)');
+  scrim.addColorStop(1, 'rgba(4,8,16,0.94)');
   ctx.fillStyle = scrim;
   ctx.fillRect(panelX, panelBottom - scrimH, panelW, scrimH);
 
   ctx.restore(); // end panel clip
 
-  // gold viewfinder corner brackets
+  // thin tier-colored ring around the whole photo panel
+  ctx.save();
+  ctx.strokeStyle = T.b;
+  ctx.globalAlpha = 0.7;
+  ctx.lineWidth = 2;
+  roundRect(panelX, panelY, panelW, panelH, 18);
+  ctx.stroke();
+  ctx.restore();
+
+  // gold viewfinder corner brackets, each tipped with a small tier-colored dot
   function drawBracket(x, y, dx, dy, len) {
     ctx.strokeStyle = GOLD;
     ctx.lineWidth = 4.5;
@@ -14976,6 +15074,8 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.lineTo(x, y);
     ctx.lineTo(x + dx*len, y);
     ctx.stroke();
+    ctx.fillStyle = T.b;
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI*2); ctx.fill();
   }
   drawBracket(panelX+3, panelY+3, 1, 1, 46);
   drawBracket(panelX+panelW-3, panelY+3, -1, 1, 46);
@@ -15000,9 +15100,10 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.textBaseline = 'alphabetic';
   }
 
-  // ── Match-rating badge — gold shield overlapping the top-right corner ──
+  // ── Match-rating badge — tier-gradient shield overlapping the top-right ──
+  // corner, with the tier name printed under RATING
   {
-    const bw = 106, bh = 116, bx = panelX + panelW - bw - 22, by = panelY + 16;
+    const bw = 108, bh = 118, bx = panelX + panelW - bw - 22, by = panelY + 16;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.5)';
     ctx.shadowBlur = 18;
@@ -15020,44 +15121,69 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.fillStyle = shieldGrad;
     ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = GOLD; ctx.lineWidth = 3.4; ctx.stroke();
+    const ringGrad = ctx.createLinearGradient(bx, by, bx, by+bh);
+    ringGrad.addColorStop(0, T.b); ringGrad.addColorStop(1, T.a);
+    ctx.strokeStyle = ringGrad; ctx.lineWidth = 3.6; ctx.stroke();
 
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = GOLD_HI;
+    ctx.fillStyle = T.b;
     ctx.font = "900 34px 'Anton', sans-serif";
-    ctx.fillText(ratingStr, bx + bw/2, by + bh*0.42);
+    ctx.fillText(ratingStr, bx + bw/2, by + bh*0.40);
     ctx.font = "700 11px Inter, Arial";
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
     ctx.save(); ctx.letterSpacing = '2px';
-    ctx.fillText('RATING', bx + bw/2, by + bh*0.42 + 26);
+    ctx.fillText('RATING', bx + bw/2, by + bh*0.40 + 24);
+    ctx.restore();
+    ctx.font = "800 9px Inter, Arial";
+    ctx.fillStyle = T.b;
+    ctx.save(); ctx.letterSpacing = '1.5px';
+    ctx.fillText(tierKey.toUpperCase(), bx + bw/2, by + bh*0.40 + 40);
     ctx.restore();
     ctx.textBaseline = 'alphabetic';
   }
 
-  // ── Player name + team, overlaid on the scrim at the bottom of the photo ──
+  // ── Player name + team-crest chip, overlaid on the scrim at the bottom ──
+  // of the photo (a small circular crest now sits in front of the team name
+  // instead of a bare emoji character)
   {
     const nameMaxW = panelW - 60;
     const nameText = (playerName || '—').toUpperCase();
-    const nameSize = fitFont(nameText, nameMaxW, 68, 30, s=>`900 ${s}px 'Anton', sans-serif`);
+    const nameSize = fitFont(nameText, nameMaxW, 66, 30, s=>`900 ${s}px 'Anton', sans-serif`);
     ctx.textAlign = 'left';
     ctx.fillStyle = INK;
-    const nameY = panelBottom - 82;
+    const nameY = panelBottom - 96;
     ctx.font = `900 ${nameSize}px 'Anton', sans-serif`;
     ctx.fillText(nameText, panelX + 30, nameY);
 
     if (teamName) {
-      const teamLine = `${teamEmoji||'🛡️'}  ${teamName.toUpperCase()}`;
-      const teamSize = fitFont(teamLine, nameMaxW, 22, 14, s=>`700 ${s}px Inter, Arial`);
+      const crestR = 15, crestCX = panelX + 30 + crestR, crestCY = nameY + 26;
+      const crestGrad = ctx.createLinearGradient(crestCX-crestR, crestCY-crestR, crestCX+crestR, crestCY+crestR);
+      crestGrad.addColorStop(0, T.b); crestGrad.addColorStop(1, T.a);
+      ctx.beginPath(); ctx.arc(crestCX, crestCY, crestR, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(4,8,16,0.65)'; ctx.fill();
+      ctx.lineWidth = 1.6; ctx.strokeStyle = crestGrad; ctx.stroke();
+      ctx.font = "15px sans-serif";
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(teamEmoji || '🛡️', crestCX, crestCY + 1);
+      ctx.textBaseline = 'alphabetic';
+
+      const teamLine = teamName.toUpperCase();
+      const teamMaxW = nameMaxW - crestR*2 - 14;
+      const teamSize = fitFont(teamLine, teamMaxW, 22, 14, s=>`700 ${s}px Inter, Arial`);
       ctx.font = `700 ${teamSize}px Inter, Arial`;
       ctx.fillStyle = GOLD;
-      ctx.fillText(teamLine, panelX + 30, nameY + 34);
+      ctx.textAlign = 'left';
+      ctx.fillText(teamLine, crestCX + crestR + 14, crestCY + 5);
     }
   }
 
-  cursorY = panelBottom + 30;
+  cursorY = panelBottom + 28;
 
   // ── 1v1 bout strip: exactly who this MVP played against (dark, unified) ──
   const hasBoutInfo = !!opponentName;
+  const resultTag = (myScore != null && oppScore != null)
+    ? (myScore > oppScore ? 'W' : myScore < oppScore ? 'L' : 'D')
+    : null;
   if (hasBoutInfo) {
     const stripY = cursorY, stripH = 76, stripW = panelW, stripX = panelX;
     ctx.fillStyle = PANEL_BG;
@@ -15096,17 +15222,18 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.font = "900 26px 'Anton', sans-serif";
     ctx.fillText(scoreText, CARD_W/2, midY);
 
-    cursorY = stripY + stripH + 26;
+    cursorY = stripY + stripH + 24;
   } else {
     cursorY += 10;
   }
 
-  // ── Stat bar: Goals / Goal Difference — ONE dark bar with a gold divider ──
-  // (rating already lives on the shield badge) instead of two separate
-  // white pill chips floating on their own.
+  // ── Stat bar: Goals / Result / Goal Difference — ONE dark bar with two ──
+  // gold dividers (rating already lives on the shield badge). Result was
+  // previously implied only by the score strip above; it now gets its own
+  // color-coded W/D/L column here.
   const gd = (goals||0) - (conceded||0);
   const gdStr = gd > 0 ? `+${gd}` : `${gd}`;
-  const barY = cursorY, barH = 116, barW = panelW, barX = panelX;
+  const barY = cursorY, barH = 118, barW = panelW, barX = panelX;
   ctx.fillStyle = PANEL_BG;
   roundRect(barX, barY, barW, barH, 18);
   ctx.fill();
@@ -15115,27 +15242,31 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
   roundRect(barX, barY, barW, barH, 18);
   ctx.stroke();
 
-  function drawStat(cx, icon, value, label) {
+  function drawStat(cx, icon, value, label, valueColor) {
     ctx.textAlign = 'center';
-    ctx.font = "900 42px 'Anton', sans-serif";
-    ctx.fillStyle = GOLD_HI;
+    ctx.font = "900 40px 'Anton', sans-serif";
+    ctx.fillStyle = valueColor || GOLD_HI;
     ctx.fillText(`${value}`, cx, barY + 54);
-    ctx.font = "700 13px Inter, Arial";
+    ctx.font = "700 12px Inter, Arial";
     ctx.fillStyle = INK_SOFT;
-    ctx.save(); ctx.letterSpacing = '1.5px';
+    ctx.save(); ctx.letterSpacing = '1.3px';
     ctx.fillText(`${icon}  ${label}`, cx, barY + 84);
     ctx.restore();
   }
-  drawStat(barX + barW*0.28, '⚽', goals||0, `GOAL${(goals||0)===1?'':'S'}`);
-  drawStat(barX + barW*0.72, '🎯', gdStr, 'GOAL DIFFERENCE');
+  const resultColor = resultTag === 'W' ? '#4ade80' : resultTag === 'L' ? '#f87171' : '#facc15';
+  drawStat(barX + barW*0.2, '⚽', goals||0, `GOAL${(goals||0)===1?'':'S'}`);
+  drawStat(barX + barW*0.5, '🏁', resultTag || '—', 'RESULT', resultTag ? resultColor : GOLD_HI);
+  drawStat(barX + barW*0.8, '🎯', gdStr, 'GOAL DIFF');
 
   ctx.strokeStyle = LINE_COL;
   ctx.lineWidth = 1.2;
-  ctx.beginPath(); ctx.moveTo(barX + barW/2, barY+22); ctx.lineTo(barX + barW/2, barY+barH-22); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(barX + barW*0.36, barY+22); ctx.lineTo(barX + barW*0.36, barY+barH-22); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(barX + barW*0.64, barY+22); ctx.lineTo(barX + barW*0.64, barY+barH-22); ctx.stroke();
 
-  cursorY = barY + barH + 34;
+  cursorY = barY + barH + 40;
 
-  // ── MVP ribbon banner (pointed ends, not a coupon-style pill) ──
+  // ── MVP ribbon banner (pointed ends, not a coupon-style pill), flanked ──
+  // by a small procedural laurel sprig on each side
   {
     const bannerH = 54;
     ctx.font = "700 20px Inter, Arial";
@@ -15152,7 +15283,11 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.lineTo(bx, by+bannerH);
     ctx.lineTo(bx+notch, by+bannerH/2);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(216,178,92,0.20)';
+    const bannerGrad = ctx.createLinearGradient(bx, by, bx+bw, by);
+    bannerGrad.addColorStop(0, 'rgba(216,178,92,0.16)');
+    bannerGrad.addColorStop(0.5, 'rgba(216,178,92,0.24)');
+    bannerGrad.addColorStop(1, 'rgba(216,178,92,0.16)');
+    ctx.fillStyle = bannerGrad;
     ctx.fill();
     ctx.strokeStyle = GOLD; ctx.lineWidth = 2.2;
     ctx.stroke();
@@ -15164,6 +15299,9 @@ async function _renderMVPCard({ playerName, teamName, teamEmoji, avatarUrl, goal
     ctx.fillText(pillText, CARD_W/2, by + bannerH/2 + 2);
     ctx.restore();
     ctx.textBaseline = 'alphabetic';
+
+    drawLaurel(bx - 26, by + bannerH/2, false);
+    drawLaurel(bx + bw + 26, by + bannerH/2, true);
 
     cursorY = by + bannerH + 40;
   }
@@ -17220,6 +17358,20 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
+  // faint diagonal "TYP CHAMPIONSHIP" watermark strip, repeated across the
+  // whole card — same print-card texture the MVP card uses, so the two
+  // exports read as one family instead of two different templates
+  ctx.save();
+  ctx.translate(CARD_W/2, CARD_H/2);
+  ctx.rotate(-0.38);
+  ctx.font = "800 22px Inter, Arial";
+  ctx.fillStyle = 'rgba(255,255,255,0.028)';
+  ctx.textAlign = 'center';
+  for (let ly = -CARD_H; ly < CARD_H; ly += 56) {
+    ctx.fillText('TYP CHAMPIONSHIP  •  TYP CHAMPIONSHIP  •  TYP CHAMPIONSHIP', 0, ly);
+  }
+  ctx.restore();
+
   // soft gold glow behind the header, matching the MVP card's headline glow
   const headGlow = ctx.createRadialGradient(CARD_W/2, 90, 20, CARD_W/2, 90, 420);
   headGlow.addColorStop(0, 'rgba(216,178,92,0.14)');
@@ -17462,17 +17614,59 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   const awayStartY = logoCY - 3 - (awayFit.lines.length - 1) * awayLineH/2;
   awayFit.lines.forEach((ln, i) => ctx.fillText(ln, awayNameStartX, awayStartY + i*awayLineH));
 
-  // "🏆 WINNER" tag under the winning team's name
+  // a tiny procedural laurel leaf, reused to flank the "🏆 WINNER" tag —
+  // same motif the MVP card uses, so the two card designs read as a set
+  function drawLeafRC(cx, cy, angle, len, color) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(len * 0.35, -len * 0.3, len, 0);
+    ctx.quadraticCurveTo(len * 0.35, len * 0.3, 0, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  function drawLaurelRC(cx, cy, mirrored) {
+    const dir = mirrored ? -1 : 1;
+    for (let i = 0; i < 3; i++) {
+      const t = i / 2;
+      const leafAngle = dir > 0 ? (-0.35 - t * 0.5) : Math.PI + (0.35 + t * 0.5);
+      drawLeafRC(cx + dir * i * 10, cy + i * 2, leafAngle, 12 - t * 3, 'rgba(216,178,92,0.7)');
+    }
+  }
+
+  // bout record (W-D-L) under each team name — always shown, not just for
+  // the winner, so every card also reads as a quick per-team scoreline
+  ctx.font = '700 11px Inter, Arial';
+  ctx.fillStyle = INK_SOFT;
+  ctx.letterSpacing = '0.04em';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${homeWins}W · ${draws}D · ${awayWins}L`, homeNameStartX, homeStartY + homeFit.lines.length*homeLineH + 8);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${awayWins}W · ${draws}D · ${homeWins}L`, awayNameStartX, awayStartY + awayFit.lines.length*awayLineH + 8);
+  ctx.letterSpacing = '0';
+
+  // "🏆 WINNER" tag (with a small laurel either side) under the winning team's name
   if (homePoints !== awayPoints) {
     ctx.font = '700 11px Inter, Arial';
     ctx.fillStyle = GOLD;
     ctx.letterSpacing = '0.06em';
+    const winnerTagY = (homePoints > awayPoints ? homeStartY + homeFit.lines.length*homeLineH : awayStartY + awayFit.lines.length*awayLineH) + 26;
     if (homePoints > awayPoints) {
       ctx.textAlign = 'left';
-      ctx.fillText('🏆 WINNER', homeNameStartX, homeStartY + homeFit.lines.length*homeLineH + 8);
+      ctx.fillText('🏆 WINNER', homeNameStartX, winnerTagY);
+      const tagW = ctx.measureText('🏆 WINNER').width;
+      drawLaurelRC(homeNameStartX - 18, winnerTagY - 4, true);
+      drawLaurelRC(homeNameStartX + tagW + 18, winnerTagY - 4, false);
     } else {
       ctx.textAlign = 'right';
-      ctx.fillText('🏆 WINNER', awayNameStartX, awayStartY + awayFit.lines.length*awayLineH + 8);
+      ctx.fillText('🏆 WINNER', awayNameStartX, winnerTagY);
+      const tagW = ctx.measureText('🏆 WINNER').width;
+      drawLaurelRC(awayNameStartX + 18, winnerTagY - 4, false);
+      drawLaurelRC(awayNameStartX - tagW - 18, winnerTagY - 4, true);
     }
     ctx.letterSpacing = '0';
   }
@@ -17667,6 +17861,13 @@ async function _renderResultCard({ matches, homeTeam, awayTeam, dayVal, fileSuff
   borderGrad.addColorStop(1,    'rgba(216,178,92,0.22)');
   ctx.strokeStyle = borderGrad;
   ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // thin inner hairline, a touch inset — the same double-frame treatment as
+  // the MVP card, so both exports share one consistent "premium card" look
+  roundRectCanvas(ctx, 8, 8, CARD_W-16, CARD_H-16, 18);
+  ctx.strokeStyle = 'rgba(216,178,92,0.20)';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
   // ── DOWNLOAD ──
