@@ -1910,6 +1910,27 @@ if (document.readyState === 'loading') {
   white-space:nowrap;transition:transform 0.15s,border-color 0.15s;
 }
 #ppCompareBtn:hover { border-color:var(--tier-b) !important;transform:translateY(-2px); }
+
+/* ── Recent Form grid — last-50 opponent circles (COBEG-style) ── */
+.pp-fg-circle {
+  flex-shrink:0;width:46px;text-align:center;cursor:default;
+}
+.pp-fg-avatar {
+  width:40px;height:40px;border-radius:50%;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  background:var(--bg3);border:2.5px solid var(--border);
+}
+.pp-fg-avatar img { width:100%;height:100%;object-fit:cover; }
+.pp-fg-avatar.pp-fg-w { border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,0.25); }
+.pp-fg-avatar.pp-fg-l { border-color:#dc2626;box-shadow:0 0 0 2px rgba(220,38,38,0.25); }
+.pp-fg-avatar.pp-fg-d { border-color:#6b7280;box-shadow:0 0 0 2px rgba(107,114,128,0.2); }
+.pp-fg-score {
+  margin-top:4px;font-size:10px;font-weight:800;font-family:'Libre Caslon Text',sans-serif;
+  border-radius:5px;padding:1px 0;color:#fff;
+}
+.pp-fg-score.pp-fg-w { background:#16a34a; }
+.pp-fg-score.pp-fg-l { background:#dc2626; }
+.pp-fg-score.pp-fg-d { background:#6b7280; }
 </style>
 
 <div class="page pp-tier-gold" id="page-player">
@@ -1938,6 +1959,7 @@ if (document.readyState === 'loading') {
         <div class="pp-rank-row">
           <span id="ppRank"></span>
           <span id="ppTierChip" class="pp-tier-chip"></span>
+          <span id="ppPositionChip" class="pp-tier-chip" style="display:none"></span>
         </div>
         <div id="ppName"></div>
         <div class="pp-meta">
@@ -2025,10 +2047,41 @@ if (document.readyState === 'loading') {
       </div>
     </div>
 
+    <!-- Recent Form — last 50 matches, opponent photo + scoreline circles -->
+    <div class="pp-section">
+      <div class="pp-section-title" style="justify-content:space-between;border-bottom:none;padding-bottom:0;margin-bottom:6px">
+        <span>🎯 Recent Form</span>
+        <span id="ppFormStreak" style="font-size:9px;color:var(--tier-b);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;letter-spacing:0.04em;text-transform:none"></span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">সর্বশেষ ৫০টা ম্যাচ · বাম থেকে ডানে, সবচেয়ে নতুনটা ডানে</div>
+      <div id="ppFormGrid50" style="display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scroll-behavior:smooth"></div>
+    </div>
+
+    <!-- Match Ratings -->
+    <div class="pp-section">
+      <div class="pp-section-title">📊 Match Ratings</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">সাম্প্রতিক ম্যাচগুলোর official rating</div>
+      <div id="ppRatingsChart"><canvas id="ppRatingsCanvas" height="130"></canvas></div>
+    </div>
+
     <!-- Performance Trend -->
     <div class="pp-section">
       <div class="pp-section-title">📈 Performance Trend</div>
       <div id="ppPerfGraph"></div>
+    </div>
+
+    <!-- Goal Flow -->
+    <div class="pp-section">
+      <div class="pp-section-title">⚽ Goal Flow</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">প্রতি ম্যাচে গোল করা (GF) বনাম গোল খাওয়া (GA)</div>
+      <div id="ppGoalFlowChart"><canvas id="ppGoalFlowCanvas" height="150"></canvas></div>
+    </div>
+
+    <!-- Career Progression -->
+    <div class="pp-section">
+      <div class="pp-section-title">🚀 Career Progression</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">সময়ের সাথে সাথে ম্যাচ, জয় ও গোলের সঞ্চিত (cumulative) গ্রাফ</div>
+      <div id="ppProgressionChart"><canvas id="ppProgressionCanvas" height="150"></canvas></div>
     </div>
 
     <!-- Tournament/Competitive Match History -->
@@ -4362,6 +4415,16 @@ if (document.readyState === 'loading') {
         </select>
       </div>
     </div>
+    <div class="form-group">
+      <label class="form-label">Position / Role (optional)</label>
+      <select class="form-input" id="adminEditPosition">
+        <option value="">Select না করলে profile-এ দেখানো হবে না</option>
+        <option value="GK">GK — গোলরক্ষক</option>
+        <option value="DF">DF — রক্ষণভাগ</option>
+        <option value="MF">MF — মধ্যমাঠ</option>
+        <option value="FW">FW — আক্রমণভাগ</option>
+      </select>
+    </div>
 
     <div class="alert alert-error" id="adminEditError"></div>
     <div class="alert alert-success" id="adminEditSuccess"></div>
@@ -4427,6 +4490,16 @@ if (document.readyState === 'loading') {
           <option>Rajbari</option>
         </select>
       </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Position / Role (optional)</label>
+      <select class="form-input" id="addPlayerPosition">
+        <option value="">Select না করলে profile-এ দেখানো হবে না</option>
+        <option value="GK">GK — গোলরক্ষক</option>
+        <option value="DF">DF — রক্ষণভাগ</option>
+        <option value="MF">MF — মধ্যমাঠ</option>
+        <option value="FW">FW — আক্রমণভাগ</option>
+      </select>
     </div>
 
     <div class="alert alert-error" id="addPlayerError"></div>
@@ -4670,6 +4743,46 @@ window.computeMainRankingData = async function() {
   return arr;
 };
 
+// ══════════════════════════════════════════
+// RANK HISTORY SNAPSHOT WRITER (Step 3 — foundation for future trend charts)
+// রোজ Main Ranking load হওয়ার সময় active player দের rank/stats
+// rankHistory/{uid}/{date} তে snapshot করে রাখে। এই snapshot শুরু হওয়ার
+// পর থেকেই data জমবে — আগের কোনো data backfill করা সম্ভব না।
+// প্রতি browser-এ দিনে একবারই write হয় (localStorage flag দিয়ে থ্রটল করা),
+// কিন্তু write নিজেই idempotent (same date key overwrite করে), তাই
+// একাধিক ব্যবহারকারী একই দিনে ranking দেখলেও ডেটা corrupt হয় না।
+window._writeRankSnapshots = async function(rankedArr) {
+  try {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const lastWritten = localStorage.getItem('typRankSnapshotDate');
+    if (lastWritten === today) return; // এই browser থেকে আজকে already লেখা হয়ে গেছে
+
+    const activePlayers = (rankedArr || []).filter(u => (u.matches||0) > 0);
+    if (!activePlayers.length) return;
+
+    const updates = {};
+    activePlayers.forEach((u, idx) => {
+      if (!u.uid) return;
+      updates[`rankHistory/${u.uid}/${today}`] = {
+        rank: idx + 1,
+        matches: u.matches||0, wins: u.wins||0, draws: u.draws||0, losses: u.losses||0,
+        goalsFor: u.goalsFor||0, goalsAgainst: u.goalsAgainst||0, mvp: u.mvp||0,
+        ts: Date.now()
+      };
+    });
+
+    await fetch(`${RANKING_DB}/.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    localStorage.setItem('typRankSnapshotDate', today);
+  } catch(e) {
+    // Best-effort — snapshot writing should never block or break the ranking page
+    console.error('Rank snapshot write failed:', e);
+  }
+};
+
 // Main Ranking = cumulative all-time stats across current + every archived season, summed by uid
 window.loadMainRanking = async function() {
   const container = document.getElementById('rankingTable');
@@ -4752,6 +4865,9 @@ window.loadMainRanking = async function() {
     window._currentViewedSeasonName = null;
     renderRanking(rankingData);
     if (document.getElementById('statPlayers')) document.getElementById('statPlayers').textContent = rankingData.length;
+    // Fire-and-forget rank snapshot for future trend charts (Step 3) — never awaited,
+    // so it can't slow down or break the ranking page render.
+    window._writeRankSnapshots(rankingData);
   } catch(e) {
     console.error('Main ranking error:', e);
     container.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--red)">❌ Data load হয়নি। Error: ${e.message}</div>`;
@@ -6101,6 +6217,7 @@ window.openAdminEditProfile = function(uid) {
   document.getElementById('adminEditUsername').value = p.username || '';
   document.getElementById('adminEditClub').value = p.club || '';
   document.getElementById('adminEditDistrict').value = p.district || '';
+  document.getElementById('adminEditPosition').value = p.position || '';
   const prev = document.getElementById('adminEditAvatarPreview');
   prev.innerHTML = p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮';
   window._adminEditAvatarUrl = p.avatarUrl || null;
@@ -6120,6 +6237,7 @@ window.saveAdminEditProfile = async function() {
   const username = document.getElementById('adminEditUsername').value.trim();
   const club = document.getElementById('adminEditClub').value.trim();
   const district = document.getElementById('adminEditDistrict').value;
+  const position = document.getElementById('adminEditPosition').value;
   const errEl = document.getElementById('adminEditError');
   const sucEl = document.getElementById('adminEditSuccess');
   errEl.classList.remove('show'); sucEl.classList.remove('show');
@@ -6137,6 +6255,7 @@ window.saveAdminEditProfile = async function() {
     username,
     club,
     district,
+    position: position || null,
     avatarUrl: window._adminEditAvatarUrl || p.avatarUrl || ''
   };
 
@@ -6161,6 +6280,7 @@ window.openAddPlayerModal = function() {
   document.getElementById('addPlayerUsername').value = '';
   document.getElementById('addPlayerClub').value = '';
   document.getElementById('addPlayerDistrict').value = '';
+  document.getElementById('addPlayerPosition').value = '';
   document.getElementById('addPlayerAvatarPreview').innerHTML = '🎮';
   window._addPlayerAvatarUrl = null;
   document.getElementById('addPlayerError').classList.remove('show');
@@ -6200,6 +6320,7 @@ window.saveNewPlayer = async function() {
   const username = document.getElementById('addPlayerUsername').value.trim().toLowerCase();
   const club = document.getElementById('addPlayerClub').value.trim();
   const district = document.getElementById('addPlayerDistrict').value;
+  const position = document.getElementById('addPlayerPosition').value;
   const errEl = document.getElementById('addPlayerError');
   const sucEl = document.getElementById('addPlayerSuccess');
   errEl.classList.remove('show'); sucEl.classList.remove('show');
@@ -6217,6 +6338,7 @@ window.saveNewPlayer = async function() {
   const uid = 'player_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
   const playerData = {
     uid, name, username, club, district,
+    position: position || null,
     avatarUrl: window._addPlayerAvatarUrl || '',
     matches: 0, wins: 0, draws: 0, losses: 0,
     goalsFor: 0, goalsAgainst: 0, cleanSheets: 0,
@@ -9298,7 +9420,12 @@ window.openPublicProfile = async function(uid) {
       .filter(mx => (mx.home_team === pName || mx.away_team === pName) && mx.status === 'completed')
       .sort((a,b) => (a.addedAt||a.date||'').localeCompare(b.addedAt||b.date||''));
 
-    if (!playedMatches.length) return { rating: '6.0', form: [] };
+    if (!playedMatches.length) {
+      if (allMatches.length) {
+        console.log('[TYP profile] 0 matches matched player name', JSON.stringify(pName), 'out of', allMatches.length, 'fetched docs — check sample home_team/away_team values logged above for a mismatch (extra space, username vs full name, team name instead of player name, or status !== "completed").');
+      }
+      return { rating: '6.0', form: [] };
+    }
 
     const perMatchRatings = playedMatches.map(mx => {
       const isHome = mx.home_team === pName;
@@ -9318,32 +9445,112 @@ window.openPublicProfile = async function(uid) {
     return { rating: avgRating.toFixed(1), form };
   }
 
-  // Load matches for rating + graph — merge LIVE matches with matches from
-  // archived seasons, so a player whose games happened in a past season
-  // still gets an accurate recent-form rating and trend instead of
-  // "No recent matches" (career totals are all-time, form data should be too).
+  // Load matches for rating + graph.
+  //
+  // ── ROOT-CAUSE FIX (confirmed via live Firebase inspection with Faisal) ──
+  // Top-level matches/{id} is NOT reliably linked to individual players: manual
+  // "Add Match Result" / Friendly entries DO store home_team/away_team as player
+  // names, but Auction Tournament + 4-Man Tournament fixtures mirror TEAM/COUNTRY
+  // names there instead (e.g. "Italy" vs "Iran", "[TRC] TRC-LAGENCY" vs "[NEXUS]
+  // NOOB-XI") — so a player who only played via those two tournament formats had
+  // zero name-matching records, even though their career totals (which are
+  // updated directly on users/{uid} when a bout is saved, not derived from this
+  // list) were correct all along. That's why goals/MVP/win% showed real numbers
+  // while every match-list section (form grid, ratings, goal flow, history) was
+  // empty.
+  //
+  // The REAL player-linked bout data lives in two other places:
+  //   • tournament/matches/{id}      — Auction Tournament, player1uid/player2uid
+  //   • typ4man/matchdays/{id}.bouts — 4-Man Tournament, playerAUid/playerBUid per bout
+  // Both are fetched here too and normalized into the same {home_team, away_team,
+  // home_score, away_score, status, date} shape (this player's own current name
+  // as home_team, so it merges seamlessly with the manual/friendly entries).
+  //
+  // NOTE: typsolo/* (a third, older "Solo" tournament format found in the code)
+  // is NOT included here yet — flag to Faisal if that format is still active and
+  // needs folding in too.
   let allMatchesForProfile = [];
   try {
     const RANKING_DB = 'https://typ-championship-default-rtdb.firebaseio.com';
-    const [mRes, seasonsRes] = await Promise.all([
+    const [mRes, seasonsRes, trnRes, f4mRes] = await Promise.all([
       fetch(`${RANKING_DB}/matches.json`),
-      fetch(`${RANKING_DB}/seasons.json?shallow=true`)
+      fetch(`${RANKING_DB}/seasons.json?shallow=true`),
+      fetch(`${RANKING_DB}/tournament/matches.json`),
+      fetch(`${RANKING_DB}/typ4man/matchdays.json`)
     ]);
     const mData = await mRes.json();
-    const liveMatches = mData ? Object.entries(mData).map(([id, v]) => ({ id, ...v })) : [];
+    if (mData && mData.error) console.error('[TYP profile] matches.json permission error:', mData.error);
+    const liveMatches = (mData && !mData.error) ? Object.entries(mData).map(([id, v]) => ({ id, ...v })) : [];
 
     const seasonsObj = await seasonsRes.json();
-    const seasonKeys = seasonsObj ? Object.keys(seasonsObj) : [];
+    const seasonKeys = (seasonsObj && !seasonsObj.error) ? Object.keys(seasonsObj) : [];
     const archivedMatchLists = await Promise.all(seasonKeys.map(async k => {
       try {
         const r = await fetch(`${RANKING_DB}/seasons/${k}/matches.json`);
         const d = await r.json();
+        if (d && d.error) { console.error(`[TYP profile] seasons/${k}/matches.json permission error:`, d.error); return []; }
         return d ? Object.entries(d).map(([id, v]) => ({ id: `${k}_${id}`, ...v })) : [];
       } catch(e) { return []; }
     }));
 
-    allMatchesForProfile = [...liveMatches, ...archivedMatchLists.flat()];
-  } catch(e) {}
+    // ── Auction Tournament bouts (player1uid / player2uid) ──
+    const trnData = await trnRes.json();
+    const nameOfUid = (uidX) => (users.find(u => u.uid === uidX) || {}).name || null;
+    const trnBoutsForPlayer = [];
+    if (trnData && !trnData.error) {
+      Object.values(trnData).forEach(b => {
+        if (b.status !== 'completed' || b.homeScore == null || b.awayScore == null) return;
+        const isP1 = b.player1uid === uid, isP2 = b.player2uid === uid;
+        if (!isP1 && !isP2) return;
+        const myScore = isP1 ? b.homeScore : b.awayScore;
+        const oppScore = isP1 ? b.awayScore : b.homeScore;
+        const oppUid = isP1 ? b.player2uid : b.player1uid;
+        trnBoutsForPlayer.push({
+          id: 'trn_' + (b.id || Math.random()),
+          home_team: p.name,
+          away_team: nameOfUid(oppUid) || b[isP1 ? 'player2Name' : 'player1Name'] || b[isP1 ? 'player2' : 'player1'] || '—',
+          home_score: myScore, away_score: oppScore,
+          status: 'completed',
+          addedAt: b.updatedAt || b.createdAt || '',
+          tournament: 'Auction Tournament'
+        });
+      });
+    } else if (trnData && trnData.error) {
+      console.error('[TYP profile] tournament/matches.json permission error:', trnData.error);
+    }
+
+    // ── 4-Man Tournament bouts (playerAUid / playerBUid, nested inside each matchday) ──
+    const f4mData = await f4mRes.json();
+    const f4mBoutsForPlayer = [];
+    if (f4mData && !f4mData.error) {
+      Object.entries(f4mData).forEach(([mdId, md]) => {
+        Object.entries(md.bouts || {}).forEach(([boutKey, b]) => {
+          if (!b.done || b.scoreA == null || b.scoreB == null) return;
+          const isA = b.playerAUid === uid, isB = b.playerBUid === uid;
+          if (!isA && !isB) return;
+          const myScore = isA ? b.scoreA : b.scoreB;
+          const oppScore = isA ? b.scoreB : b.scoreA;
+          const oppUid = isA ? b.playerBUid : b.playerAUid;
+          f4mBoutsForPlayer.push({
+            id: `f4m_${mdId}_${boutKey}`,
+            home_team: p.name,
+            away_team: nameOfUid(oppUid) || '—',
+            home_score: myScore, away_score: oppScore,
+            status: 'completed',
+            addedAt: md.updatedAt || md.createdAt || md.scheduledDate || '',
+            tournament: '4-Man Tournament'
+          });
+        });
+      });
+    } else if (f4mData && f4mData.error) {
+      console.error('[TYP profile] typ4man/matchdays.json permission error:', f4mData.error);
+    }
+
+    allMatchesForProfile = [...liveMatches, ...archivedMatchLists.flat(), ...trnBoutsForPlayer, ...f4mBoutsForPlayer];
+    console.log('[TYP profile]', p.name, '— matches merged: legacy/friendly', liveMatches.length + archivedMatchLists.flat().length, '| Auction bouts', trnBoutsForPlayer.length, '| 4-Man bouts', f4mBoutsForPlayer.length, '| total', allMatchesForProfile.length);
+  } catch(e) {
+    console.error('[TYP profile] match fetch threw an error:', e);
+  }
 
   const { rating, form } = calcRating(p, allMatchesForProfile);
 
@@ -9540,6 +9747,15 @@ window.openPublicProfile = async function(uid) {
     ppRenderMatchHistory();
   }
 
+  // ── RECENT FORM GRID (last 50) + MATCH RATINGS CHART ──
+  // Reuses allMatchesForProfile / calcMatchRating10 already computed above —
+  // no extra Firebase reads needed.
+  ppRenderFormGrid50AndRatings(p.name, allMatchesForProfile, users, calcMatchRating10);
+
+  // ── GOAL FLOW + CAREER PROGRESSION (full match history) ──
+  // Reuses allMatchesForProfile already fetched above — no extra Firebase reads.
+  ppRenderGoalFlowAndProgression(p.name, allMatchesForProfile);
+
   window._ppCurrentPlayer = p;
   window._ppCurrentStats = { m, w, d, l, goals, mvp, score, wp, ga: p.goalsAgainst||0 };
 
@@ -9547,6 +9763,17 @@ window.openPublicProfile = async function(uid) {
   document.getElementById('ppName').textContent = p.name || '—';
   document.getElementById('ppClub').textContent = p.club || '—';
   document.getElementById('ppDistrict').textContent = p.district || '—';
+  // ── POSITION / ROLE chip (Step 3 field — only shows if admin has set it) ──
+  {
+    const posChip = document.getElementById('ppPositionChip');
+    const posMap = { GK: '🧤 গোলরক্ষক', DF: '🛡️ রক্ষণভাগ', MF: '⚙️ মধ্যমাঠ', FW: '⚡ আক্রমণভাগ' };
+    if (p.position && posMap[p.position]) {
+      posChip.textContent = posMap[p.position];
+      posChip.style.display = '';
+    } else {
+      posChip.style.display = 'none';
+    }
+  }
   // ── GAME UID / DEVICE NAME — filled in only after admin approves a
   // manager-submitted UID/Device (see playerUidDeviceSubmissions). ──
   {
@@ -9701,6 +9928,212 @@ window.claimMilestoneBadge = async function(uid, badgeId) {
     alert('❌ Badge claim করতে সমস্যা হয়েছে, আবার চেষ্টা করো।');
   }
 };
+
+// ══════════════════════════════════════════
+// RECENT FORM GRID (last 50) + MATCH RATINGS CHART
+// (STEP 1 of the player-profile redesign — see TYP-player-profile-redesign-PROMPT.md)
+// ══════════════════════════════════════════
+function ppRenderFormGrid50AndRatings(pName, allMatches, usersList, calcMatchRating10) {
+  const played = allMatches
+    .filter(mx => (mx.home_team === pName || mx.away_team === pName) && mx.status === 'completed')
+    .sort((a,b) => (a.addedAt||a.date||'').localeCompare(b.addedAt||b.date||''));
+
+  const rows = played.map(mx => {
+    const isHome = mx.home_team === pName;
+    const myS = parseInt(isHome ? mx.home_score : mx.away_score) || 0;
+    const oppS = parseInt(isHome ? mx.away_score : mx.home_score) || 0;
+    const oppN = isHome ? mx.away_team : mx.home_team;
+    const res = myS > oppS ? 'W' : myS < oppS ? 'L' : 'D';
+    const oppUser = usersList.find(u => u.name === oppN);
+    return { oppN, myS, oppS, res, oppAvatar: oppUser?.avatarUrl || '', date: mx.date || mx.addedAt || '' };
+  });
+
+  // ── Form grid (last 50) ──
+  const gridEl = document.getElementById('ppFormGrid50');
+  if (gridEl) {
+    const last50 = rows.slice(-50);
+    if (!last50.length) {
+      gridEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">এখনো কোনো ম্যাচ রেকর্ড নেই</div>';
+    } else {
+      gridEl.innerHTML = last50.map(r => {
+        const cls = r.res === 'W' ? 'pp-fg-w' : r.res === 'L' ? 'pp-fg-l' : 'pp-fg-d';
+        const avatarInner = r.oppAvatar ? `<img src="${r.oppAvatar}" alt="">` : (r.oppN ? r.oppN.charAt(0).toUpperCase() : '?');
+        return `<div class="pp-fg-circle" title="${r.oppN || ''} · ${r.myS}-${r.oppS}">
+          <div class="pp-fg-avatar ${cls}">${avatarInner}</div>
+          <div class="pp-fg-score ${cls}">${r.myS}-${r.oppS}</div>
+        </div>`;
+      }).join('');
+      // scroll to the right so the newest match is in view first, like COBEG
+      requestAnimationFrame(() => { gridEl.scrollLeft = gridEl.scrollWidth; });
+    }
+  }
+
+  // ── Unbeaten/streak chip ──
+  const streakEl = document.getElementById('ppFormStreak');
+  if (streakEl) {
+    let streak = 0;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i].res === 'L') break;
+      streak++;
+    }
+    streakEl.textContent = rows.length ? (streak > 0 ? `Unbeaten ${streak}` : 'Current: Loss') : '';
+  }
+
+  // ── Match Ratings bar chart (last 20) ──
+  const canvasEl = document.getElementById('ppRatingsCanvas');
+  if (canvasEl && window.Chart) {
+    const last20 = rows.slice(-20);
+    if (last20.length < 2) {
+      document.getElementById('ppRatingsChart').innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px">এখনো যথেষ্ট ম্যাচ নেই</div>';
+    } else {
+      const ratings = last20.map(r => Math.round(calcMatchRating10(r.myS, r.oppS) * 10) / 10);
+      const barColors = ratings.map(v => v >= 8 ? '#16a34a' : v >= 6 ? '#ca8a04' : '#dc2626');
+      const labels = last20.map(r => {
+        if (!r.date) return '';
+        const d = new Date(r.date);
+        return isNaN(d) ? '' : `${d.getDate()}/${d.getMonth()+1}`;
+      });
+      new window.Chart(canvasEl, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Rating',
+            data: ratings,
+            backgroundColor: barColors,
+            borderRadius: 5,
+            maxBarThickness: 26
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: {
+              label: (ctx) => `Rating: ${ctx.raw}/10 (${last20[ctx.dataIndex].myS}-${last20[ctx.dataIndex].oppS} vs ${last20[ctx.dataIndex].oppN || '?'})`
+            }}
+          },
+          scales: {
+            y: { min: 0, max: 10, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 } } }
+          }
+        }
+      });
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+// GOAL FLOW + CAREER PROGRESSION (profile page)
+// ══════════════════════════════════════════
+function ppRenderGoalFlowAndProgression(pName, allMatches) {
+  const played = allMatches
+    .filter(mx => (mx.home_team === pName || mx.away_team === pName) && mx.status === 'completed')
+    .sort((a,b) => (a.addedAt||a.date||'').localeCompare(b.addedAt||b.date||''));
+
+  const rows = played.map(mx => {
+    const isHome = mx.home_team === pName;
+    const gf = parseInt(isHome ? mx.home_score : mx.away_score) || 0;
+    const ga = parseInt(isHome ? mx.away_score : mx.home_score) || 0;
+    const res = gf > ga ? 'W' : gf < ga ? 'L' : 'D';
+    return { gf, ga, res, date: mx.date || mx.addedAt || '' };
+  });
+
+  const labels = rows.map((r, i) => {
+    if (!r.date) return `#${i+1}`;
+    const d = new Date(r.date);
+    return isNaN(d) ? `#${i+1}` : `${d.getDate()}/${d.getMonth()+1}`;
+  });
+
+  // ── Goal Flow chart (GF vs GA per match, full history) ──
+  const gfCanvas = document.getElementById('ppGoalFlowCanvas');
+  if (gfCanvas && window.Chart) {
+    if (rows.length < 2) {
+      document.getElementById('ppGoalFlowChart').innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px">এখনো যথেষ্ট ম্যাচ নেই</div>';
+    } else {
+      if (window._ppGoalFlowChartInstance) { window._ppGoalFlowChartInstance.destroy(); }
+      window._ppGoalFlowChartInstance = new window.Chart(gfCanvas, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'গোল করা (GF)',
+              data: rows.map(r => r.gf),
+              backgroundColor: 'rgba(52,211,153,0.75)',
+              borderRadius: 4,
+              maxBarThickness: 16
+            },
+            {
+              label: 'গোল খাওয়া (GA)',
+              data: rows.map(r => -r.ga),
+              backgroundColor: 'rgba(248,113,113,0.75)',
+              borderRadius: 4,
+              maxBarThickness: 16
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'bottom', labels: { color: '#888', font: { size: 10 }, boxWidth: 10 } },
+            tooltip: { callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${Math.abs(ctx.raw)}`
+            }}
+          },
+          scales: {
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 }, callback: v => Math.abs(v) } },
+            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 14 } }
+          }
+        }
+      });
+    }
+  }
+
+  // ── Career Progression (cumulative matches/wins/GF, full history) ──
+  const pgCanvas = document.getElementById('ppProgressionCanvas');
+  if (pgCanvas && window.Chart) {
+    if (rows.length < 2) {
+      document.getElementById('ppProgressionChart').innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px">এখনো যথেষ্ট ম্যাচ নেই</div>';
+    } else {
+      let cumM = 0, cumW = 0, cumGF = 0;
+      const cumMArr = [], cumWArr = [], cumGFArr = [];
+      rows.forEach(r => {
+        cumM++;
+        if (r.res === 'W') cumW++;
+        cumGF += r.gf;
+        cumMArr.push(cumM); cumWArr.push(cumW); cumGFArr.push(cumGF);
+      });
+      if (window._ppProgressionChartInstance) { window._ppProgressionChartInstance.destroy(); }
+      window._ppProgressionChartInstance = new window.Chart(pgCanvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'ম্যাচ (সঞ্চিত)', data: cumMArr, borderColor: '#3E8FB0', backgroundColor: 'rgba(62,143,176,0.12)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'জয় (সঞ্চিত)', data: cumWArr, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.12)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false },
+            { label: 'গোল করা (সঞ্চিত)', data: cumGFArr, borderColor: '#ca8a04', backgroundColor: 'rgba(202,138,4,0.12)', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: false }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, position: 'bottom', labels: { color: '#888', font: { size: 10 }, boxWidth: 10 } },
+            tooltip: { callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}`
+            }}
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888', font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 14 } }
+          }
+        }
+      });
+    }
+  }
+}
 
 // ══════════════════════════════════════════
 // MATCH-BY-MATCH HISTORY (profile page)
