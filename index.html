@@ -302,6 +302,27 @@ nav {
 
 /* ── PAGES ── */
 .page { display:none; min-height:100vh; position:relative; z-index:1; }
+.rank-pill { flex-shrink:0; padding:9px 18px; border-radius:999px; border:1px solid var(--border); background:var(--bg3); color:var(--text2, var(--text3)); font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all .15s; font-family:inherit; }
+.rank-pill:hover { border-color:var(--primary); }
+.rank-pill.active { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 4px 14px rgba(0,0,0,0.25); }
+.xi-modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.72); align-items:center; justify-content:center; padding:14px; backdrop-filter:blur(3px); }
+.xi-modal-box { background:var(--card); border:1px solid var(--border); border-radius:16px; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; padding:14px; box-shadow:0 24px 60px rgba(0,0,0,.5); }
+.xi-tabs { display:flex; gap:8px; overflow-x:auto; padding:2px 0 10px; }
+.xi-tab { padding:7px 14px; font-size:12px; }
+.xi-pitch { position:relative; display:flex; flex-direction:column; gap:16px; padding:22px 4px 16px; border-radius:16px; border:1px solid rgba(255,255,255,.18);
+  background:repeating-linear-gradient(180deg,#1f7a3f 0 46px,#1a6e37 46px 92px); overflow:hidden; }
+.xi-pitch::before { content:''; position:absolute; left:50%; bottom:-1px; width:56%; height:13%; transform:translateX(-50%); border:2px solid rgba(255,255,255,.28); border-bottom:0; border-radius:8px 8px 0 0; pointer-events:none; }
+.xi-pitch::after { content:''; position:absolute; left:0; right:0; top:33%; height:2px; background:rgba(255,255,255,.18); pointer-events:none; }
+.xi-row { position:relative; z-index:1; display:flex; justify-content:space-around; align-items:flex-start; }
+.xi-p { width:78px; text-align:center; cursor:pointer; }
+.xi-av { position:relative; width:56px; height:56px; margin:0 auto; border-radius:50%; background:#0f172a; border:3px solid #fff; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 12px rgba(0,0,0,.45); }
+.xi-av img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+.xi-empty { background:transparent; border:2px dashed rgba(255,255,255,.4); color:rgba(255,255,255,.55); box-shadow:none; }
+.xi-badge { position:absolute; top:-7px; right:-12px; min-width:26px; padding:2px 6px; border-radius:999px; font-size:11px; font-weight:800; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+.xi-g { background:#16a34a; } .xi-o { background:#f59e0b; } .xi-r { background:#ec4899; }
+.xi-stats { display:flex; justify-content:center; gap:4px; margin-top:6px; }
+.xi-stats span { background:rgba(15,23,42,.85); color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:999px; white-space:nowrap; }
+.xi-name { margin-top:5px; font-size:11px; font-weight:700; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .page.active { display:block; }
 
 /* ── HERO ── */
@@ -1534,7 +1555,7 @@ if (document.readyState === 'loading') {
         <div style="font-size:28px">🏆</div>
         <div style="flex:1;text-align:left">
           <div style="font-weight:800;font-size:14px;color:var(--gold);font-family:'Libre Caslon Text',sans-serif">TYP Records & Milestones</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">সর্বোচ্চ গোলদাতা, MVP, unbeaten streak, clean sheet — সব একসাথে</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">সর্বোচ্চ গোলদাতা, MVP, win rate, win streak, clean sheet — সব একসাথে</div>
         </div>
         <div style="font-size:20px;color:var(--gold)">→</div>
       </div>
@@ -2057,6 +2078,20 @@ if (document.readyState === 'loading') {
       <div id="ppFormGrid50" style="display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scroll-behavior:smooth"></div>
     </div>
 
+    <!-- Position / Role -->
+    <div class="pp-section">
+      <div class="pp-section-title">🧭 Position / Role</div>
+      <div id="ppPositionBox"></div>
+    </div>
+
+    <!-- This Week's Form (rank/stat movement vs 7 days ago) — hidden until a
+         7-day-old snapshot actually exists (see ppRenderWeeklyForm) -->
+    <div class="pp-section" id="ppWeeklyFormSection" style="display:none">
+      <div class="pp-section-title">📅 এই সপ্তাহের পরিবর্তন</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">গত ৭ দিনের snapshot-এর সাথে আজকের তুলনা</div>
+      <div id="ppWeeklyFormBox"></div>
+    </div>
+
     <!-- Match Ratings -->
     <div class="pp-section">
       <div class="pp-section-title">📊 Match Ratings</div>
@@ -2082,6 +2117,20 @@ if (document.readyState === 'loading') {
       <div class="pp-section-title">🚀 Career Progression</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px">সময়ের সাথে সাথে ম্যাচ, জয় ও গোলের সঞ্চিত (cumulative) গ্রাফ</div>
       <div id="ppProgressionChart"><canvas id="ppProgressionCanvas" height="150"></canvas></div>
+    </div>
+
+    <!-- Best Opponent / Nemesis -->
+    <div class="pp-section">
+      <div class="pp-section-title">🎯 Best Opponent &amp; Nemesis</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">কমপক্ষে ২ ম্যাচ খেলা হয়েছে এমন প্রতিপক্ষদের মধ্যে সবচেয়ে ভালো ও খারাপ record</div>
+      <div id="ppNemesisBox"></div>
+    </div>
+
+    <!-- Tournament-wise Breakdown -->
+    <div class="pp-section">
+      <div class="pp-section-title">🗂️ Tournament Breakdown</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">কোন tournament format-এ কেমন পারফরম্যান্স</div>
+      <div id="ppTrnBreakdown"></div>
     </div>
 
     <!-- Tournament/Competitive Match History -->
@@ -2344,7 +2393,7 @@ if (document.readyState === 'loading') {
 
       <!-- H2H Box -->
       <div class="cmp-h2h-box">
-        <div class="cmp-h2h-label">⚡ Head to Head · Friendly</div>
+        <div class="cmp-h2h-label">⚡ Head to Head · All Matches</div>
         <div class="cmp-h2h-scores">
           <div class="cmp-h2h-side">
             <div class="cmp-h2h-num" id="h2hP1Score" style="color:#3E8FB0">0</div>
@@ -2399,11 +2448,23 @@ if (document.readyState === 'loading') {
     <div class="section-title">🏆 Player Rankings</div>
     <div class="section-sub">// Firebase থেকে real-time data</div>
 
+    <div id="rankPeriodPills" style="display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;margin-bottom:4px;-webkit-overflow-scrolling:touch">
+      <button type="button" class="rank-pill" data-period="all" onclick="setRankPeriod('all')">All-Time</button>
+      <button type="button" class="rank-pill" data-period="season" onclick="setRankPeriod('season')">Current Season</button>
+      <button type="button" class="rank-pill" data-period="thisWeek" onclick="setRankPeriod('thisWeek')">This Week</button>
+      <button type="button" class="rank-pill" data-period="lastWeek" onclick="setRankPeriod('lastWeek')">Last Week</button>
+      <button type="button" class="rank-pill" data-period="thisMonth" onclick="setRankPeriod('thisMonth')">This Month</button>
+      <button type="button" class="rank-pill" data-period="lastMonth" onclick="setRankPeriod('lastMonth')">Last Month</button>
+    </div>
+
+    <div id="rankScoreLegend" style="font-size:11.5px;color:var(--text3);margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center">
+      <b style="color:var(--cyan)">⭐ SCORE পয়েন্ট:</b>
+      <span>🏆 জয় = <b>৯</b></span><span>🤝 ড্র = <b>৩</b></span><span>⚽ প্রতি গোল = <b>১</b></span><span>🏅 MVP = <b>৫</b></span><span>💔 হার = <b>০</b></span>
+    </div>
+
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <input type="text" class="form-input" id="rankSearch" placeholder="🔍 Search player..." oninput="filterRanking()" style="flex:1;min-width:200px">
-      <select class="form-input" id="rankSeasonFilter" onchange="onRankSeasonChange()" style="min-width:170px;max-width:240px;flex-shrink:0">
-        <option value="main">🏆 Main Ranking (All-Time)</option>
-      </select>
+      <button class="btn btn-gold" onclick="openXiPopup({tab:'all'})">⭐ Team XI</button>
       <button class="btn btn-outline" onclick="refreshRankingView()">🔄 Sync</button>
       <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px">
         <button id="rankViewTable" onclick="window._rankingView='table';renderRanking(rankingData);this.style.background='var(--primary)';this.style.color='#fff';document.getElementById('rankViewCards').style.background='';document.getElementById('rankViewCards').style.color=''" style="padding:5px 10px;border-radius:6px;border:none;cursor:pointer;font-size:13px;background:var(--primary);color:#fff;transition:all 0.2s">☰</button>
@@ -2570,6 +2631,7 @@ if (document.readyState === 'loading') {
       <select class="form-input" id="trnRankSeasonFilter" onchange="onTrnRankSeasonChange()" style="min-width:190px;max-width:260px;flex:1">
         <option value="current">🔴 Current Season</option>
       </select>
+      <button class="btn btn-gold" style="padding:7px 14px;font-size:12px" onclick="openXiPopup({tab:'auction',lockTab:true,period:'thisWeek'})">⭐ Auction Team XI</button>
       <button class="btn btn-outline" style="padding:7px 14px;font-size:12px" onclick="refreshTrnRankingView()">🔄 Sync</button>
     </div>
     <div id="trnRankSeasonBanner" style="display:none;margin-bottom:14px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:600"></div>
@@ -4665,6 +4727,7 @@ window.loadRanking = async function() {
     window.rankingData = rankingData;
     window._rankingMode = 'current';
     window._currentViewedSeasonName = null;
+    window._setRankPill && window._setRankPill('season');
     renderRanking(rankingData);
     if (document.getElementById('statPlayers')) document.getElementById('statPlayers').textContent = rankingData.length;
   } catch(e) {
@@ -4771,15 +4834,15 @@ window._writeRankSnapshots = async function(rankedArr) {
       };
     });
 
-    await fetch(`${RANKING_DB}/.json`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
-    });
+    // আগে unauthenticated REST PATCH ছিল — Firebase rules সেটা 401 দিয়ে ব্লক করত,
+    // আর res.ok চেক না থাকায় flag সেট হয়ে যেত (snapshot আসলে লেখাই হয়নি)।
+    // এখন logged-in SDK দিয়ে multi-path update; সফল হলেই তবে flag সেট হবে।
+    if (!window._db || !window._update || !window._ref) return;
+    await window._update(window._ref(window._db), updates);
     localStorage.setItem('typRankSnapshotDate', today);
   } catch(e) {
     // Best-effort — snapshot writing should never block or break the ranking page
-    console.error('Rank snapshot write failed:', e);
+    console.error('Rank snapshot write failed (rules-এ rankHistory write allow আছে কিনা দেখো / login আছে কিনা):', e);
   }
 };
 
@@ -4863,6 +4926,7 @@ window.loadMainRanking = async function() {
     window.rankingData = rankingData;
     window._rankingMode = 'main';
     window._currentViewedSeasonName = null;
+    window._setRankPill && window._setRankPill('all');
     renderRanking(rankingData);
     if (document.getElementById('statPlayers')) document.getElementById('statPlayers').textContent = rankingData.length;
     // Fire-and-forget rank snapshot for future trend charts (Step 3) — never awaited,
@@ -4872,6 +4936,404 @@ window.loadMainRanking = async function() {
     console.error('Main ranking error:', e);
     container.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--red)">❌ Data load হয়নি। Error: ${e.message}</div>`;
   }
+};
+
+// ══════════════════════════════════════════════════════════════════
+// PERIOD RANKING — This Week / Last Week / This Month / Last Month
+// Match-by-match হিসাব (তারিখ ধরে) — Legacy/Friendly (নাম ধরে) + Auction (uid) +
+// 4-Man (uid) তিন জায়গার ম্যাচ একসাথে মিলিয়ে। সব তারিখ Bangladesh time (UTC+6)।
+// ══════════════════════════════════════════════════════════════════
+const RANK_WEEK_START = 1; // 0=Sun, 1=Mon, 6=Sat — সপ্তাহ কোন দিন শুরু হবে
+const DHAKA_OFFSET_MS = 6 * 3600 * 1000;
+
+function _dhakaDateKey(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'string') {
+    const t = v.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;       // manual date input (already a date)
+    if (/^\d{12,}$/.test(t)) v = Number(t);
+  }
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return null;
+  return new Date(d.getTime() + DHAKA_OFFSET_MS).toISOString().slice(0, 10);
+}
+function _addDaysKey(key, n) {
+  const d = new Date(key + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function _fmtKey(key) {
+  const d = new Date(key + 'T00:00:00Z');
+  return d.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()];
+}
+function _periodRange(kind) {
+  const today = _dhakaDateKey(Date.now());
+  const t = new Date(today + 'T00:00:00Z');
+  const diff = (t.getUTCDay() - RANK_WEEK_START + 7) % 7;
+  const weekStart = _addDaysKey(today, -diff);
+  const y = t.getUTCFullYear(), mo = t.getUTCMonth();
+  const monthStart = new Date(Date.UTC(y, mo, 1)).toISOString().slice(0, 10);
+  const nextMonthStart = new Date(Date.UTC(y, mo + 1, 1)).toISOString().slice(0, 10);
+  const lastMonthStart = new Date(Date.UTC(y, mo - 1, 1)).toISOString().slice(0, 10);
+  if (kind === 'thisWeek')  return { start: weekStart, end: _addDaysKey(weekStart, 6), name: 'This Week' };
+  if (kind === 'lastWeek')  return { start: _addDaysKey(weekStart, -7), end: _addDaysKey(weekStart, -1), name: 'Last Week' };
+  if (kind === 'thisMonth') return { start: monthStart, end: _addDaysKey(nextMonthStart, -1), name: 'This Month' };
+  if (kind === 'lastMonth') return { start: lastMonthStart, end: _addDaysKey(monthStart, -1), name: 'Last Month' };
+  return null;
+}
+
+// Every completed match from all 3 sources, normalised to {aUid,bUid,aScore,bScore,date}.
+async function _loadAllDatedMatches() {
+  if (window._periodMatchCache && (Date.now() - window._periodMatchCache.ts) < 2 * 60 * 1000) {
+    return window._periodMatchCache.data;
+  }
+  const users = await getAllUsers();
+  const uidByName = {};
+  users.forEach(u => { if (u.name) uidByName[u.name.trim().toLowerCase()] = u.uid; });
+  const resolve = n => (n ? uidByName[String(n).trim().toLowerCase()] || null : null);
+
+  const [mRes, seasonsRes, trnRes, f4mRes, mdcRes, fmRes] = await Promise.all([
+    fetch(`${RANKING_DB}/matches.json`),
+    fetch(`${RANKING_DB}/seasons.json?shallow=true`),
+    fetch(`${RANKING_DB}/tournament/matches.json`),
+    fetch(`${RANKING_DB}/typ4man/matchdays.json`),
+    fetch(`${RANKING_DB}/tournament/matchdayControl.json`),
+    fetch(`${RANKING_DB}/friendlyMatches.json`)
+  ]);
+  const out = [];
+  const diag = { skipped: { legacy: 0, auction: 0, f4m: 0 }, friendlyErr: false };
+  const mvps = []; // {uid, date} — one entry per MVP award
+  // Legacy / Friendly — stored by player NAME (team-name fixtures don't resolve, so they're skipped)
+  const pushLegacy = (m, arch) => {
+    if (!m || m.status !== 'completed') return;
+    const aUid = resolve(m.home_team), bUid = resolve(m.away_team);
+    if (!aUid && !bUid) return;
+    const date = _dhakaDateKey(m.date) || _dhakaDateKey(m.addedAt);
+    if (!date) { diag.skipped.legacy++; return; }
+    out.push({ aUid, bUid, aScore: parseInt(m.home_score) || 0, bScore: parseInt(m.away_score) || 0, date, src: 'legacy', archived: !!arch });
+  };
+  const mData = await mRes.json();
+  if (mData && !mData.error) Object.values(mData).forEach(m => pushLegacy(m, false));
+
+  const fmData = await fmRes.json();
+  if (fmData && !fmData.error) {
+    const haveKeys = new Set(mData && !mData.error ? Object.keys(mData) : []);
+    Object.entries(fmData).forEach(([k, v]) => { if (!haveKeys.has(k)) pushLegacy(v, false); });
+  } else if (fmData && fmData.error) { diag.friendlyErr = true; }
+
+  const seasonsObj = await seasonsRes.json();
+  const seasonKeys = (seasonsObj && !seasonsObj.error) ? Object.keys(seasonsObj) : [];
+  const archived = await Promise.all(seasonKeys.map(async k => {
+    try { const r = await fetch(`${RANKING_DB}/seasons/${k}/matches.json`); const d = await r.json(); return (d && !d.error) ? Object.values(d) : []; }
+    catch (e) { return []; }
+  }));
+  archived.flat().forEach(m => pushLegacy(m, true));
+
+  // Auction Tournament — player1uid / player2uid
+  const trnData = await trnRes.json();
+  const matchupDate = {}; // `${day}_${homeTeam}_${awayTeam}` → latest bout date (= matchdayControl key)
+  if (trnData && !trnData.error) {
+    Object.values(trnData).forEach(b => {
+      if (!b || b.status !== 'completed' || b.homeScore == null || b.awayScore == null) return;
+      if (!b.player1uid && !b.player2uid) return;
+      const date = _dhakaDateKey(b.date) || _dhakaDateKey(b.scheduledDate) || _dhakaDateKey(b.updatedAt) || _dhakaDateKey(b.createdAt);
+      if (!date) { diag.skipped.auction++; return; }
+      const mk = `${b.day}_${b.homeTeam}_${b.awayTeam}`;
+      if (!matchupDate[mk] || date > matchupDate[mk]) matchupDate[mk] = date;
+      out.push({ aUid: b.player1uid || null, bUid: b.player2uid || null, aScore: parseInt(b.homeScore) || 0, bScore: parseInt(b.awayScore) || 0, date, src: 'auction' });
+    });
+  }
+
+  // Auction MVP — admin এর দেওয়া award (mvpAwarded + manualMvpUid), matchup এর তারিখে
+  const mdcData = await mdcRes.json();
+  let mvpNoDate = 0;
+  if (mdcData && !mdcData.error) {
+    Object.entries(mdcData).forEach(([k, c]) => {
+      if (!c || !c.mvpAwarded || !c.manualMvpUid) return;
+      const date = matchupDate[k];
+      if (date) mvps.push({ uid: c.manualMvpUid, date, src: 'auction' }); else mvpNoDate++;
+    });
+  }
+
+  // 4-Man Tournament — playerAUid / playerBUid inside each matchday
+  const f4mData = await f4mRes.json();
+  if (f4mData && !f4mData.error) {
+    Object.values(f4mData).forEach(md => {
+      const date = _dhakaDateKey(md.scheduledDate) || _dhakaDateKey(md.updatedAt) || _dhakaDateKey(md.createdAt);
+      if (!date) { diag.skipped.f4m++; return; }
+      if (md.mvpUid) mvps.push({ uid: md.mvpUid, date, src: 'f4m' }); // 4-Man MVP — matchday এর তারিখে
+      Object.values(md.bouts || {}).forEach(b => {
+        if (!b || !b.done || b.scoreA == null || b.scoreB == null) return;
+        if (!b.playerAUid && !b.playerBUid) return;
+        out.push({ aUid: b.playerAUid || null, bUid: b.playerBUid || null, aScore: parseInt(b.scoreA) || 0, bScore: parseInt(b.scoreB) || 0, date, src: 'f4m' });
+      });
+    });
+  }
+
+  if (mvpNoDate) console.warn('[TYP period ranking]', mvpNoDate, 'Auction MVP award এর matchup তারিখ পাওয়া যায়নি — period ranking এ ধরা হয়নি');
+  diag.total = out.length;
+  diag.byMonth = {};
+  out.forEach(m => { const k = m.date.slice(0, 7); diag.byMonth[k] = (diag.byMonth[k] || 0) + 1; });
+  const dates = out.map(m => m.date).sort();
+  diag.min = dates[0] || null; diag.max = dates[dates.length - 1] || null;
+  console.info('[TYP period ranking] ম্যাচ coverage:', diag);
+  const result = { matches: out, mvps, diag };
+  window._periodMatchCache = { ts: Date.now(), data: result };
+  return result;
+}
+
+// range=null → সব তারিখ | src=null → সব tournament | liveOnly → archived season বাদ (Current Season)
+function _buildTotals(loaded, byUid, range, src, liveOnly) {
+  const totals = {};
+  const ensure = uid => {
+    if (!uid || !byUid[uid]) return null;
+    if (!totals[uid]) {
+      const u = byUid[uid];
+      totals[uid] = { uid, name: u.name, club: u.club, district: u.district, avatarUrl: u.avatarUrl, position: u.position,
+        matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, mvp: 0 };
+    }
+    return totals[uid];
+  };
+  const inRange = d => !range || (d >= range.start && d <= range.end);
+  const add = (uid, gf, ga) => {
+    const t = ensure(uid);
+    if (!t) return;
+    t.matches++; t.goalsFor += gf; t.goalsAgainst += ga;
+    if (gf > ga) t.wins++; else if (gf === ga) t.draws++; else t.losses++;
+  };
+  loaded.matches.forEach(m => {
+    if (src && m.src !== src) return;
+    if (liveOnly && m.archived) return;
+    if (!inRange(m.date)) return;
+    add(m.aUid, m.aScore, m.bScore);
+    add(m.bUid, m.bScore, m.aScore);
+  });
+  loaded.mvps.forEach(v => {
+    if (src && v.src !== src) return;
+    if (!inRange(v.date)) return;
+    const t = ensure(v.uid);
+    if (t) t.mvp++;
+  });
+  return Object.values(totals);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ⭐ TEAM OF THE PERIOD (XI) — popup (বাটনে ক্লিক করলে খোলে)
+// XI = ranking এর top ১১ জন — SCORE (জয়৯ + ড্র৩ + গোল১ + MVP৫), সমান হলে জয় → গোল।
+// Position বা আলাদা গোল-নিয়ম নেই। ফর্মেশন ২-১-৩-৪-১: rank ১-২ সামনে … ১১ নম্বর সবার পেছনে।
+// ══════════════════════════════════════════════════════════════════
+const XI_TABS = [['all','সব Tournament'],['auction','🏆 Auction'],['f4m','4️⃣ 4-Man'],['legacy','🤝 Friendly / League']];
+const XI_TAB_NAME = { all: 'সব Tournament', auction: 'Auction Tournament', f4m: '4-Man Tournament', legacy: 'Friendly / League' };
+const XI_PERIODS = [['all','All-Time'],['season','Current Season'],['thisWeek','This Week'],['lastWeek','Last Week'],['thisMonth','This Month'],['lastMonth','Last Month']];
+window._xiState = { tab: 'all', period: 'all', lockTab: false };
+window._xiToken = 0;
+
+// ── All-Time / Current Season XI: টেবিলের মতোই জমা-করা stats থেকে (তারিখওয়ালা ম্যাচ থেকে নয়) ──
+// কারণ পুরনো season এর ইতিহাস ম্যাচ-রেকর্ড হিসেবে নেই, শুধু stats হিসেবে আছে।
+async function _loadArchivedPlayersCached() {
+  if (window._archPlayersCache && (Date.now() - window._archPlayersCache.ts) < 120000) return window._archPlayersCache.data;
+  const sr = await fetch(`${RANKING_DB}/seasons.json?shallow=true`);
+  const so = await sr.json();
+  const keys = (so && !so.error) ? Object.keys(so) : [];
+  const arrs = await Promise.all(keys.map(async k => {
+    try { const r = await fetch(`${RANKING_DB}/seasons/${k}/players.json`); const d = await r.json();
+      return (d && !d.error) ? Object.entries(d).map(([uid, v]) => ({ uid, ...(v || {}) })) : []; }
+    catch (e) { return []; }
+  }));
+  window._archPlayersCache = { ts: Date.now(), data: arrs };
+  return arrs;
+}
+function _xiNorm(p) {
+  const w = p.wins || 0, d = p.draws || 0, l = p.losses || 0;
+  return { uid: p.uid || null, name: p.name, club: p.club, district: p.district, avatarUrl: p.avatarUrl,
+    matches: Math.max(p.matches || 0, w + d + l), wins: w, draws: d, losses: l,
+    goalsFor: p.goalsFor || 0, goalsAgainst: p.goalsAgainst || 0, mvp: p.mvp || 0 };
+}
+async function _xiStatsList(tab, period) {
+  const users = await getAllUsers();
+  if (tab === 'f4m') {
+    return users.filter(u => u.stats4man && (u.stats4man.matches || 0) > 0)
+      .map(u => _xiNorm({ uid: u.uid, name: u.name, club: u.club, district: u.district, avatarUrl: u.avatarUrl, ...u.stats4man }));
+  }
+  if (tab === 'legacy') {                                   // Friendly stats
+    const r = await fetch(`${RANKING_DB}/friendlyStats.json`);
+    const d = await r.json();
+    if (!d || d.error) return [];
+    return Object.entries(d).map(([k, v]) => {
+      const id = k.replace(/^fs_/, '');
+      const u = users.find(x => x.uid === id) || users.find(x => (x.name || '').toLowerCase() === String(v.name || '').toLowerCase()) || {};
+      return _xiNorm({ uid: u.uid, name: u.name || v.name, club: u.club, district: u.district, avatarUrl: u.avatarUrl,
+        matches: v.m, wins: v.w, draws: v.d, losses: v.l, goalsFor: v.gf, goalsAgainst: v.ga });
+    });
+  }
+  const live = users.map(u => _xiNorm(u));
+  if (period === 'season') return live;                     // 'সব' ও 'Auction' — চলতি season এর live stats
+  if (tab === 'all') return (await computeMainRankingData()).map(_xiNorm);   // Main Ranking (All-Time) হুবহু
+  // Auction all-time = সব archived season + চলতি season (4-Man ছাড়া)
+  const arrs = await _loadArchivedPlayersCached();
+  const archivedUids = new Set(); arrs.forEach(a => a.forEach(p => { if (p.uid) archivedUids.add(p.uid); }));
+  const totals = {};
+  const addTo = p => {
+    if (!p.uid) return;
+    const t = totals[p.uid] || (totals[p.uid] = { uid: p.uid, matches: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, mvp: 0 });
+    ['name','club','district','avatarUrl'].forEach(k => { if (p[k]) t[k] = p[k]; });
+    t.matches += (p.matches || 0); t.wins += (p.wins || 0); t.draws += (p.draws || 0); t.losses += (p.losses || 0);
+    t.goalsFor += (p.goalsFor || 0); t.goalsAgainst += (p.goalsAgainst || 0); t.mvp += (p.mvp || 0);
+  };
+  arrs.forEach(a => a.forEach(addTo));
+  users.forEach(u => {
+    const has = (u.matches || 0) > 0 || (u.wins || 0) > 0 || (u.goalsFor || 0) > 0 || (u.mvp || 0) > 0;
+    if (has || !archivedUids.has(u.uid)) addTo(u);
+  });
+  return Object.values(totals).map(_xiNorm);
+}
+
+function _xiPick(list) {
+  const arr = list.filter(p => p.matches > 0);
+  sortRankingData(arr);                       // ranking এর হুবহু একই ক্রম
+  const top = arr.slice(0, 11);
+  const at = (a, b) => { const r = top.slice(a, b); while (r.length < b - a) r.push(null); return r; };
+  return [at(0, 2), at(2, 3), at(3, 6), at(6, 10), at(10, 11)];
+}
+
+function _xiNode(p) {
+  if (!p) return `<div class="xi-p"><div class="xi-av xi-empty">＋</div><div class="xi-name" style="opacity:.5">—</div></div>`;
+  const gpm = p.matches ? p.goalsFor / p.matches : 0;
+  const cls = gpm >= 4 ? 'xi-g' : gpm >= 2.5 ? 'xi-o' : 'xi-r';
+  const av = p.avatarUrl ? `<img src="${p.avatarUrl}" alt="">` : '🎮';
+  const nm = String(p.name || '—').replace(/</g, '&lt;');
+  return `<div class="xi-p" ${p.uid ? `onclick="closeXiPopup();openPublicProfile('${p.uid}')"` : ''} title="${nm} • ${p.wins}W ${p.draws}D ${p.losses}L • MVP ${p.mvp}">
+    <div class="xi-av">${av}<span class="xi-badge ${cls}">${gpm.toFixed(1)}</span></div>
+    <div class="xi-stats"><span>▦ ${p.matches}</span><span>⚽ ${p.goalsFor}</span></div>
+    <div class="xi-name">${nm}</div>
+  </div>`;
+}
+
+window.openXiPopup = function(opts) {
+  opts = opts || {};
+  const cur = window._rankPeriodKey;
+  const validCur = XI_PERIODS.some(x => x[0] === cur) ? cur : 'all';
+  window._xiState = { tab: opts.tab || 'all', period: opts.period || validCur, lockTab: !!opts.lockTab };
+  let m = document.getElementById('xiModal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'xiModal'; m.className = 'xi-modal';
+    m.addEventListener('click', e => { if (e.target === m) closeXiPopup(); });
+    document.body.appendChild(m);
+  }
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderXiPopup();
+};
+window.closeXiPopup = function() {
+  const m = document.getElementById('xiModal');
+  if (m) m.style.display = 'none';
+  document.body.style.overflow = '';
+  window._xiToken++;
+};
+window.setXiTab = function(t) { window._xiState.tab = t; renderXiPopup(); };
+window.setXiPeriod = function(p) { window._xiState.period = p; renderXiPopup(); };
+
+window.renderXiPopup = async function() {
+  const m = document.getElementById('xiModal');
+  if (!m || m.style.display === 'none') return;
+  const token = ++window._xiToken;
+  const { tab, period, lockTab } = window._xiState;
+  const range = (period === 'all' || period === 'season') ? null : _periodRange(period);
+  const label = period === 'all' ? 'All-Time' : period === 'season' ? 'Current Season'
+    : `${range.name} (${_fmtKey(range.start)} – ${_fmtKey(range.end)})`;
+  const pills = (arr, cur, fn) => arr.map(([k, n]) => `<button type="button" class="rank-pill xi-tab${k === cur ? ' active' : ''}" onclick="${fn}('${k}')">${n}</button>`).join('');
+  const head = `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
+      <div><div style="font-weight:800;font-size:15px">⭐ ${XI_TAB_NAME[tab]} — Team XI</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">${label} • ${(period === 'all' || period === 'season') ? 'ranking এর মতোই মোট stats থেকে' : 'ওই সময়ে খেলা ম্যাচ থেকে'} top ১১ • ব্যাজ = গোল/ম্যাচ</div></div>
+      <button type="button" class="btn btn-outline" style="padding:4px 12px;font-size:16px;line-height:1" onclick="closeXiPopup()">✕</button>
+    </div>
+    <div class="xi-tabs">${pills(XI_PERIODS, period, 'setXiPeriod')}</div>
+    ${lockTab ? '' : `<div class="xi-tabs">${pills(XI_TABS, tab, 'setXiTab')}</div>`}`;
+  m.innerHTML = `<div class="xi-modal-box">${head}<div class="text-center" style="padding:44px"><span class="spinner"></span></div></div>`;
+  try {
+    let list, loaded = null;
+    if (period === 'all' || period === 'season') {
+      list = await _xiStatsList(tab, period);                     // টেবিলের মতোই মোট stats
+    } else {
+      const [users, ld] = await Promise.all([getAllUsers(), _loadAllDatedMatches()]);
+      loaded = ld;
+      const byUid = {}; users.forEach(u => { byUid[u.uid] = u; });
+      list = _buildTotals(loaded, byUid, range, tab === 'all' ? null : tab, false);   // ওই সময়ের ম্যাচ থেকে
+    }
+    if (token !== window._xiToken) return;         // এর মধ্যে নতুন filter এসে গেছে
+    const rows = _xiPick(list);
+    const filled = rows.flat().filter(Boolean).length;
+    const note = filled === 0
+      ? `<div style="text-align:center;color:var(--text3);font-size:12px;padding:8px">এই সময়ে ${XI_TAB_NAME[tab]} এ কোনো ম্যাচ পাওয়া যায়নি।${_diagHtml(loaded)}</div>`
+      : (filled < 11 ? `<div style="text-align:center;color:var(--text3);font-size:11px;margin-top:8px">মাত্র ${filled} জন player খেলেছে — বাকি জায়গা ফাঁকা।</div>` : '');
+    m.innerHTML = `<div class="xi-modal-box">${head}${filled === 0 ? '' : `<div class="xi-pitch">${rows.map(r => `<div class="xi-row">${r.map(_xiNode).join('')}</div>`).join('')}</div>`}${note}</div>`;
+  } catch (e) {
+    console.error('XI error:', e);
+    if (token === window._xiToken) m.innerHTML = `<div class="xi-modal-box">${head}<div style="color:var(--red);padding:16px">❌ XI load হয়নি: ${e.message}</div></div>`;
+  }
+};
+
+function _diagHtml(loaded) {
+  const d = loaded && loaded.diag; if (!d) return '';
+  const months = Object.keys(d.byMonth || {}).sort().slice(-6).map(k => `${k}: <b>${d.byMonth[k]}</b>`).join(' • ') || '—';
+  const sk = d.skipped || {};
+  const skTotal = (sk.legacy || 0) + (sk.auction || 0) + (sk.f4m || 0);
+  return `<div style="margin-top:10px;padding:8px 10px;border:1px dashed var(--border);border-radius:8px;font-size:11px;line-height:1.7;color:var(--text3);text-align:left">
+    🔎 ডেটাবেসে তারিখসহ মোট <b>${d.total}</b> ম্যাচ পাওয়া গেছে${d.min ? ` (${d.min} → ${d.max})` : ''}<br>
+    মাস অনুযায়ী: ${months}
+    ${skTotal ? `<br>⚠️ তারিখ নেই/পড়া যায়নি বলে বাদ: Friendly/League ${sk.legacy || 0}, Auction ${sk.auction || 0}, 4-Man ${sk.f4m || 0}` : ''}
+    ${d.friendlyErr ? '<br>⚠️ friendlyMatches পড়া যায়নি (Firebase rules এ public read বন্ধ থাকতে পারে)' : ''}
+  </div>`;
+}
+
+window.loadPeriodRanking = async function(kind) {
+  const container = document.getElementById('rankingTable');
+  container.innerHTML = '<div class="text-center" style="padding:40px"><span class="spinner"></span><p style="color:var(--text3);margin-top:12px">ম্যাচ হিসাব হচ্ছে...</p></div>';
+  try {
+    const range = _periodRange(kind);
+    const [users, loaded] = await Promise.all([getAllUsers(), _loadAllDatedMatches()]);
+    const matches = loaded.matches, mvpList = loaded.mvps;
+    const byUid = {};
+    users.forEach(u => { byUid[u.uid] = u; });
+
+    const periodList = _buildTotals(loaded, byUid, range, null, false);
+
+    window._rankingMode = 'period';
+    window._currentViewedSeasonName = null;
+    window._rankPeriodLabel = `${range.name} (${_fmtKey(range.start)} – ${_fmtKey(range.end)})`;
+    rankingData = periodList;
+    window.rankingData = rankingData;
+    if (!rankingData.length) {
+      window._setRankPill('' + kind);
+      const banner = document.getElementById('rankSeasonBanner');
+      if (banner) banner.style.display = 'none';
+      container.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--text3)">📅 ${window._rankPeriodLabel} — এই সময়ে কোনো ম্যাচ পাওয়া যায়নি।${_diagHtml(loaded)}</div>`;
+      return;
+    }
+    sortRankingData(rankingData);
+    window._setRankPill(kind);
+    renderRanking(rankingData);
+  } catch (e) {
+    console.error('Period ranking error:', e);
+    container.innerHTML = `<div class="card text-center" style="padding:40px;color:var(--red)">❌ Data load হয়নি। Error: ${e.message}</div>`;
+  }
+};
+
+window._setRankPill = function(key) {
+  window._rankPeriodKey = key;
+  document.querySelectorAll('#rankPeriodPills .rank-pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === key);
+  });
+};
+
+window.setRankPeriod = function(key) {
+  window._rankPrevPositions = {};                 // পুরনো view এর ▲▼ delta যেন না আসে
+  const s = document.getElementById('rankSearch'); if (s) s.value = '';
+  window._setRankPill(key);
+  if (key === 'all') return loadMainRanking();
+  if (key === 'season') return loadRanking();
+  return loadPeriodRanking(key);
 };
 
 // A specific past archived season's leaderboard only
@@ -4946,8 +5408,9 @@ window.onRankSeasonChange = function() {
   loadMainRanking();
 };
 window.refreshRankingView = async function() {
-  loadRankingSeasonsList(true);
-  window.onRankSeasonChange();
+  window._periodMatchCache = null; // force fresh match fetch on Sync
+  window._mainRankingCache = null;
+  window.setRankPeriod(window._rankPeriodKey || 'all');
 };
 
 function renderRanking(data) {
@@ -4957,6 +5420,10 @@ function renderRanking(data) {
       banner.style.display = 'block';
       banner.style.borderColor = 'var(--yellow)'; banner.style.color = 'var(--yellow)';
       banner.innerHTML = `📁 আর্কাইভ করা সিজন দেখছো: <b>${window._currentViewedSeasonName||''}</b> — এটা read-only history।`;
+    } else if (window._rankingMode === 'period') {
+      banner.style.display = 'block';
+      banner.style.borderColor = 'var(--green)'; banner.style.color = 'var(--green)';
+      banner.innerHTML = `📅 <b>${window._rankPeriodLabel||''}</b> — শুধু এই সময়ে খেলা ম্যাচ ও পাওয়া MVP এর হিসাব।`;
     } else if (window._rankingMode === 'current') {
       banner.style.display = 'block';
       banner.style.borderColor = 'var(--cyan)'; banner.style.color = 'var(--cyan)';
@@ -8811,6 +9278,20 @@ async function loadRecordsPage() {
     sections.push({ icon:'🏆', title:'সর্বাধিক জয়', rows: topN('wins') });
     sections.push({ icon:'🎮', title:'সর্বাধিক ম্যাচ খেলা', rows: topMatchesN() });
 
+    // Best Win Rate — needs a minimum sample size so a 2-match player with
+    // 2 wins doesn't outrank someone with 40 wins from 60 matches.
+    const MIN_DECIDED_FOR_WINRATE = 5;
+    const winRateList = users
+      .map(u => {
+        const decided = (u.wins||0) + (u.losses||0);
+        return { uid: u.uid, name: u.name, avatarUrl: u.avatarUrl, decided, wp: decided ? (u.wins||0)/decided : 0 };
+      })
+      .filter(u => u.decided >= MIN_DECIDED_FOR_WINRATE)
+      .sort((a,b) => b.wp - a.wp || b.decided - a.decided)
+      .slice(0, 3)
+      .map(u => ({ uid: u.uid, name: u.name, avatarUrl: u.avatarUrl, value: Math.round(u.wp*100) + '%', sub: `${u.decided} নিষ্পত্তিকৃত ম্যাচ` }));
+    sections.push({ icon:'📈', title:'সেরা জয়ের হার (কমপক্ষে ৫ ম্যাচ)', rows: winRateList });
+
     // ── Match-level records ──
     const completed = matches.filter(m => m.status === 'completed' && m.home_score !== undefined && m.away_score !== undefined);
 
@@ -8846,6 +9327,7 @@ async function loadRecordsPage() {
       const singleGoalList = [];
       const cleanSheetList = [];
       const unbeatenList = [];
+      const winStreakList = [];
 
       Object.entries(byPlayer).forEach(([name, list]) => {
         const sorted = [...list].sort((a, b) => (a.date||'').localeCompare(b.date||''));
@@ -8859,6 +9341,11 @@ async function loadRecordsPage() {
         let cur = 0, best = 0;
         sorted.forEach(e => { if (e.goals >= e.against) { cur++; best = Math.max(best, cur); } else cur = 0; });
         if (best > 0) unbeatenList.push({ name, value: best, uid: nameToUid[name]||null });
+
+        // Longest WIN streak — stricter than unbeaten: a draw breaks it too.
+        let curW = 0, bestW = 0;
+        sorted.forEach(e => { if (e.goals > e.against) { curW++; bestW = Math.max(bestW, curW); } else curW = 0; });
+        if (bestW > 0) winStreakList.push({ name, value: bestW, uid: nameToUid[name]||null });
       });
 
       const top3 = (list) => list.sort((a,b) => b.value - a.value).slice(0, 3)
@@ -8866,6 +9353,7 @@ async function loadRecordsPage() {
 
       sections.push({ icon:'🎯', title:'এক ম্যাচে সর্বোচ্চ গোল', rows: top3(singleGoalList) });
       sections.push({ icon:'🛡️', title:'সর্বোচ্চ অপরাজিত (টানা ম্যাচ)', rows: top3(unbeatenList) });
+      sections.push({ icon:'🔥', title:'সর্বোচ্চ টানা জয় (Win Streak)', rows: top3(winStreakList) });
       sections.push({ icon:'🧤', title:'সর্বাধিক ক্লিন শিট', rows: top3(cleanSheetList) });
     }
 
@@ -9336,6 +9824,15 @@ window.openPublicProfile = async function(uid) {
   const p = users.find(u => u.uid === uid);
   if (!p) return;
 
+  // Always read Position fresh from Firebase (tiny read) — the users cache can be
+  // up to 15 min old, and the ranking shortcut below skips users/{uid} entirely,
+  // so a newly-set position was not showing on the profile.
+  try {
+    const posRes = await fetch(`https://typ-championship-default-rtdb.firebaseio.com/users/${uid}/position.json`);
+    const freshPos = await posRes.json();
+    p.position = (typeof freshPos === 'string' && freshPos) ? freshPos.trim().toUpperCase() : null;
+  } catch (e) { /* keep cached value */ }
+
   window._prevPage = document.querySelector('.page.active')?.id || 'page-home';
   const av = document.getElementById('ppAvatar');
   av.innerHTML = p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮';
@@ -9470,6 +9967,8 @@ window.openPublicProfile = async function(uid) {
   // is NOT included here yet — flag to Faisal if that format is still active and
   // needs folding in too.
   let allMatchesForProfile = [];
+  let trnBoutsForPlayer = [];
+  let f4mBoutsForPlayer = [];
   try {
     const RANKING_DB = 'https://typ-championship-default-rtdb.firebaseio.com';
     const [mRes, seasonsRes, trnRes, f4mRes] = await Promise.all([
@@ -9496,7 +9995,7 @@ window.openPublicProfile = async function(uid) {
     // ── Auction Tournament bouts (player1uid / player2uid) ──
     const trnData = await trnRes.json();
     const nameOfUid = (uidX) => (users.find(u => u.uid === uidX) || {}).name || null;
-    const trnBoutsForPlayer = [];
+    trnBoutsForPlayer = [];
     if (trnData && !trnData.error) {
       Object.values(trnData).forEach(b => {
         if (b.status !== 'completed' || b.homeScore == null || b.awayScore == null) return;
@@ -9521,7 +10020,7 @@ window.openPublicProfile = async function(uid) {
 
     // ── 4-Man Tournament bouts (playerAUid / playerBUid, nested inside each matchday) ──
     const f4mData = await f4mRes.json();
-    const f4mBoutsForPlayer = [];
+    f4mBoutsForPlayer = [];
     if (f4mData && !f4mData.error) {
       Object.entries(f4mData).forEach(([mdId, md]) => {
         Object.entries(md.bouts || {}).forEach(([boutKey, b]) => {
@@ -9566,6 +10065,12 @@ window.openPublicProfile = async function(uid) {
     const liveRankIdx = activePlayers.findIndex(u => u.uid === p.uid || u.name === p.name);
     p._liveRank = liveRankIdx !== -1 ? liveRankIdx + 1 : null;
   } catch(e) { p._liveRank = null; }
+
+  // ── THIS WEEK'S FORM (Step 6) — rank/stat movement vs the snapshot from ──
+  // 7 days ago (rankHistory/{uid}/{date}, written daily by _writeRankSnapshots).
+  // Fire-and-forget: doesn't block the rest of the profile render, and the
+  // section stays hidden if no 7-day-old snapshot exists yet.
+  ppRenderWeeklyForm(p.uid, { rank: p._liveRank, matches: m, wins: w, goals: goals, mvp: mvp });
 
   // ── CARD TIER — the whole profile's palette derives from this ──
   // Ranked by career standing (percentile of active players), not recent form —
@@ -9756,6 +10261,14 @@ window.openPublicProfile = async function(uid) {
   // Reuses allMatchesForProfile already fetched above — no extra Firebase reads.
   ppRenderGoalFlowAndProgression(p.name, allMatchesForProfile);
 
+  // ── TOURNAMENT-WISE BREAKDOWN (Auction vs 4-Man) ──
+  // Uses the already-fetched, uid-filtered bout lists — no extra Firebase reads.
+  ppRenderTournamentBreakdown(trnBoutsForPlayer, f4mBoutsForPlayer);
+
+  // ── BEST OPPONENT / NEMESIS ──
+  // Reuses allMatchesForProfile (already merged: legacy/friendly + Auction + 4-Man).
+  ppRenderNemesis(p.name, allMatchesForProfile, users);
+
   window._ppCurrentPlayer = p;
   window._ppCurrentStats = { m, w, d, l, goals, mvp, score, wp, ga: p.goalsAgainst||0 };
 
@@ -9774,6 +10287,10 @@ window.openPublicProfile = async function(uid) {
       posChip.style.display = 'none';
     }
   }
+  // ── POSITION / ROLE CARD (full version — Step 4) ──
+  // Reuses the career totals already computed above (m, w, l, goals, wp, ga) —
+  // no extra Firebase reads.
+  ppRenderPositionCard(p, m, w, l, goals, wp, ga);
   // ── GAME UID / DEVICE NAME — filled in only after admin approves a
   // manager-submitted UID/Device (see playerUidDeviceSubmissions). ──
   {
@@ -10136,6 +10653,224 @@ function ppRenderGoalFlowAndProgression(pName, allMatches) {
 }
 
 // ══════════════════════════════════════════
+// THIS WEEK'S FORM — Step 6: rank/stat movement vs 7 days ago
+// Reads rankHistory/{uid}/{date-7}, written daily by window._writeRankSnapshots
+// (Step 3). No snapshot from 7 days ago yet (new feature, or player wasn't
+// tracked then) → stays hidden rather than showing a fake/zero delta.
+// ══════════════════════════════════════════
+async function ppRenderWeeklyForm(uid, nowStats) {
+  const section = document.getElementById('ppWeeklyFormSection');
+  const box = document.getElementById('ppWeeklyFormBox');
+  if (!section || !box) return;
+  section.style.display = 'none'; // hidden until we confirm a 7-day-old snapshot exists
+  if (!uid) return;
+  try {
+    // RANKING_DB অন্য <script> scope-এ আছে, module-এ visible না — তাই local const
+    const RANKING_DB = 'https://typ-championship-default-rtdb.firebaseio.com';
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    const dateKey = d.toISOString().slice(0, 10);
+    const res = await fetch(`${RANKING_DB}/rankHistory/${uid}/${dateKey}.json`);
+    const old = await res.json();
+    if (!old) return; // no snapshot from 7 days ago yet — stay hidden
+
+    const rankDelta = (old.rank && nowStats.rank) ? (old.rank - nowStats.rank) : null;
+    const weekMatches = nowStats.matches - (old.matches || 0);
+    const weekWins = nowStats.wins - (old.wins || 0);
+    const weekGoals = nowStats.goals - (old.goalsFor || 0);
+    const weekMvp = nowStats.mvp - (old.mvp || 0);
+
+    let rankLine = '';
+    if (rankDelta !== null) {
+      if (rankDelta > 0) rankLine = `<span style="color:var(--green)">▲ ${rankDelta} ধাপ উঠেছে</span> <span style="color:var(--text3)">(#${old.rank} → #${nowStats.rank})</span>`;
+      else if (rankDelta < 0) rankLine = `<span style="color:var(--red)">▼ ${Math.abs(rankDelta)} ধাপ নেমেছে</span> <span style="color:var(--text3)">(#${old.rank} → #${nowStats.rank})</span>`;
+      else rankLine = `<span style="color:var(--text3)">— র‍্যাঙ্ক অপরিবর্তিত (#${nowStats.rank})</span>`;
+    }
+
+    const statBlock = (label, val) => `<div style="text-align:center;flex:1">
+      <div style="font-size:16px;font-weight:800;color:${val > 0 ? 'var(--green)' : 'var(--text3)'}">${val > 0 ? '+' : ''}${val}</div>
+      <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-top:2px">${label}</div>
+    </div>`;
+
+    box.innerHTML = `
+      ${rankLine ? `<div style="font-size:13px;font-weight:700;margin-bottom:10px">${rankLine}</div>` : ''}
+      ${weekMatches > 0
+        ? `<div style="display:flex;gap:6px">${statBlock('ম্যাচ', weekMatches)}${statBlock('জয়', weekWins)}${statBlock('গোল', weekGoals)}${statBlock('MVP', weekMvp)}</div>`
+        : `<div style="font-size:11px;color:var(--text3)">এই সপ্তাহে নতুন কোনো ম্যাচ খেলা হয়নি</div>`}
+    `;
+    section.style.display = '';
+  } catch (e) {
+    console.error('[TYP profile] weekly form fetch failed:', e);
+    // stays hidden on error
+  }
+}
+
+// ══════════════════════════════════════════
+// POSITION / ROLE CARD — Step 4: Profile extension
+// ══════════════════════════════════════════
+function ppRenderPositionCard(p, m, w, l, goals, wp, ga) {
+  const box = document.getElementById('ppPositionBox');
+  if (!box) return;
+
+  const posInfo = {
+    GK: { emoji: '🧤', label: 'গোলরক্ষক (GK)', color: 'var(--yellow)' },
+    DF: { emoji: '🛡️', label: 'রক্ষণভাগ (DF)', color: 'var(--primary)' },
+    MF: { emoji: '⚙️', label: 'মধ্যমাঠ (MF)', color: 'var(--green)' },
+    FW: { emoji: '⚡', label: 'আক্রমণভাগ (FW)', color: 'var(--red)' }
+  };
+  const info = posInfo[p.position];
+  if (!info) {
+    box.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:16px">Position সেট করা নেই</div>';
+    return;
+  }
+  if (!m) {
+    box.innerHTML = `<div style="display:flex;align-items:center;gap:14px">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--bg3);border:2px solid ${info.color};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${info.emoji}</div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:${info.color}">${info.label}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">এখনো কোনো ম্যাচ নেই</div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  let statLines;
+  if (p.position === 'GK' || p.position === 'DF') {
+    statLines = [
+      { label: 'গড় গোল হজম', value: (ga / m).toFixed(2) },
+      { label: 'মোট গোল হজম', value: ga }
+    ];
+  } else if (p.position === 'MF') {
+    statLines = [
+      { label: 'জয়ের হার', value: wp + '%' },
+      { label: 'প্রতি ম্যাচে গোল', value: (goals / m).toFixed(2) }
+    ];
+  } else { // FW
+    statLines = [
+      { label: 'প্রতি ম্যাচে গোল', value: (goals / m).toFixed(2) },
+      { label: 'মোট গোল', value: goals }
+    ];
+  }
+
+  box.innerHTML = `<div style="display:flex;align-items:center;gap:14px">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--bg3);border:2px solid ${info.color};display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${info.emoji}</div>
+    <div style="flex:1">
+      <div style="font-size:15px;font-weight:700;color:${info.color}">${info.label}</div>
+      <div style="display:flex;gap:20px;margin-top:8px">
+        ${statLines.map(s => `<div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em">${s.label}</div>
+          <div style="font-size:16px;font-weight:700;margin-top:2px">${s.value}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// BEST OPPONENT / NEMESIS — Step: Profile extension
+// ══════════════════════════════════════════
+function ppRenderNemesis(pName, allMatches, usersList) {
+  const box = document.getElementById('ppNemesisBox');
+  if (!box) return;
+
+  const played = allMatches.filter(mx => (mx.home_team === pName || mx.away_team === pName) && mx.status === 'completed');
+  const byOpp = {};
+  played.forEach(mx => {
+    const isHome = mx.home_team === pName;
+    const oppN = isHome ? mx.away_team : mx.home_team;
+    if (!oppN || oppN === pName || oppN === '—') return;
+    const myS = parseInt(isHome ? mx.home_score : mx.away_score) || 0;
+    const oppS = parseInt(isHome ? mx.away_score : mx.home_score) || 0;
+    if (!byOpp[oppN]) byOpp[oppN] = { name: oppN, m: 0, w: 0, d: 0, l: 0 };
+    const o = byOpp[oppN];
+    o.m++;
+    if (myS > oppS) o.w++;
+    else if (myS === oppS) o.d++;
+    else o.l++;
+  });
+
+  const list = Object.values(byOpp).filter(o => o.m >= 2);
+  if (!list.length) {
+    box.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">কমপক্ষে ২টা ম্যাচ খেলা কোনো প্রতিপক্ষ এখনো নেই</div>';
+    return;
+  }
+  list.forEach(o => { o.wp = o.w / o.m; });
+
+  const best = [...list].sort((a, b) => b.wp - a.wp || b.w - a.w)[0];
+  const worst = [...list].sort((a, b) => a.wp - b.wp || b.l - a.l)[0];
+  const sameOpponent = best.name === worst.name;
+
+  function card(o, isBest) {
+    const u = usersList.find(x => x.name === o.name);
+    const avatarInner = u?.avatarUrl ? `<img src="${u.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : (o.name.charAt(0).toUpperCase());
+    const color = isBest ? 'var(--green)' : 'var(--red)';
+    const label = isBest ? '🟢 Best Opponent' : '🔴 Nemesis';
+    return `<div style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+      <div style="font-size:10px;color:${color};font-weight:700;margin-bottom:8px">${label}</div>
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg3);border:2px solid ${color};overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 6px">${avatarInner}</div>
+      <div style="font-size:13px;font-weight:700">${o.name}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${o.w} জয় - ${o.d} ড্র - ${o.l} হার</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">${o.m} ম্যাচ · ${(o.wp * 100).toFixed(0)}% win</div>
+    </div>`;
+  }
+
+  if (sameOpponent) {
+    box.innerHTML = `<div style="display:flex">${card(best, best.wp >= 0.5)}</div>`;
+  } else {
+    box.innerHTML = `<div style="display:flex;gap:10px">${card(best, true)}${card(worst, false)}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// TOURNAMENT-WISE BREAKDOWN (Auction vs 4-Man) — Step: Profile extension
+// ══════════════════════════════════════════
+function ppRenderTournamentBreakdown(trnBouts, f4mBouts) {
+  const box = document.getElementById('ppTrnBreakdown');
+  if (!box) return;
+
+  function summarize(bouts) {
+    let m = bouts.length, w = 0, d = 0, l = 0, gf = 0, ga = 0;
+    bouts.forEach(b => {
+      gf += b.home_score; ga += b.away_score;
+      if (b.home_score > b.away_score) w++;
+      else if (b.home_score === b.away_score) d++;
+      else l++;
+    });
+    const wp = m ? ((w / m) * 100).toFixed(0) : '0';
+    return { m, w, d, l, gf, ga, wp };
+  }
+
+  const groups = [
+    { label: 'Auction Tournament', icon: '🏆', stats: summarize(trnBouts) },
+    { label: '4-Man Tournament', icon: '🎮', stats: summarize(f4mBouts) }
+  ];
+
+  if (!groups.some(g => g.stats.m > 0)) {
+    box.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px">এখনো কোনো tournament-ভিত্তিক ম্যাচ রেকর্ড নেই</div>';
+    return;
+  }
+
+  box.innerHTML = groups.map(g => `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700">${g.icon} ${g.label}</span>
+        <span style="font-size:11px;color:var(--text3)">${g.stats.m} ম্যাচ</span>
+      </div>
+      ${g.stats.m === 0 ? '<div style="color:var(--text3);font-size:11px">এই format-এ এখনো খেলা হয়নি</div>' : `
+      <div style="display:flex;gap:14px;font-size:11px;color:var(--text2);margin-bottom:8px">
+        <span>জয় <b style="color:var(--green)">${g.stats.w}</b></span>
+        <span>ড্র <b style="color:var(--tier-b)">${g.stats.d}</b></span>
+        <span>হার <b style="color:var(--red)">${g.stats.l}</b></span>
+        <span>গোল <b>${g.stats.gf}-${g.stats.ga}</b></span>
+      </div>
+      <div class="pp-wr-track"><div style="width:${g.stats.wp}%;height:100%;background:linear-gradient(90deg,var(--tier-a),var(--tier-b));border-radius:4px"></div></div>
+      <div style="text-align:right;font-size:10px;color:var(--text3);margin-top:3px">Win Rate ${g.stats.wp}%</div>
+      `}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
 // MATCH-BY-MATCH HISTORY (profile page)
 // ══════════════════════════════════════════
 function ppRenderMatchHistory() {
@@ -10273,11 +11008,23 @@ window.selectCmpPlayer = async function(uid2) {
   const p1 = { ...p1raw, ...p1stats };
   const p2 = { ...p2raw, ...p2stats };
 
-  // ── Head to Head from friendlyMatches ──
+  // ── Head to Head — merges 3 sources so it works regardless of which format
+  // these two players actually faced each other in:
+  //   • friendlyMatches (matched by player name, as before)
+  //   • matches — main/manual admin entries (matched by player name, friendly mirrors skipped)
+  //   • tournament/matches — Auction Tournament bouts (matched by player uid)
+  //   • typ4man/matchdays.bouts — 4-Man Tournament bouts (matched by player uid)
   let h2h_p1=0, h2h_p2=0, h2h_d=0;
   try {
-    const res = await fetch('https://typ-championship-default-rtdb.firebaseio.com/friendlyMatches.json');
-    const fdata = await res.json();
+    const DB = 'https://typ-championship-default-rtdb.firebaseio.com';
+    const [fRes, trnRes, f4mRes, mainRes] = await Promise.all([
+      fetch(`${DB}/friendlyMatches.json`),
+      fetch(`${DB}/tournament/matches.json`),
+      fetch(`${DB}/typ4man/matchdays.json`),
+      fetch(`${DB}/matches.json`)
+    ]);
+
+    const fdata = await fRes.json();
     if (fdata) {
       Object.values(fdata).forEach(fm => {
         const names = [fm.home_team, fm.away_team];
@@ -10290,7 +11037,65 @@ window.selectCmpPlayer = async function(uid2) {
         else h2h_d++;
       });
     }
-  } catch(e) {}
+
+    // ── Main matches (top-level `matches` node) — manual admin entries where
+    // home_team/away_team = player name (free text), matched by name.
+    // Friendly matches are mirrored here with the same id, so skip those (already
+    // counted above from friendlyMatches). Auction/4-Man fixtures here mirror
+    // TEAM names, not players, so they won't match by player name — those are
+    // covered by the uid-based sources below.
+    const mainData = await mainRes.json();
+    if (mainData && !mainData.error) {
+      Object.entries(mainData).forEach(([mid, m]) => {
+        if (!m) return;
+        if (fdata && fdata[mid]) return;                 // friendly mirror — dedupe
+        if (m.match_type === 'friendly') return;
+        if (m.status && m.status !== 'completed') return;
+        if (m.home_score == null || m.away_score == null) return;
+        const names = [m.home_team, m.away_team];
+        if (!names.includes(p1.name) || !names.includes(p2.name)) return;
+        const p1Home = m.home_team === p1.name;
+        const p1S = Number(p1Home ? m.home_score : m.away_score);
+        const p2S = Number(p1Home ? m.away_score : m.home_score);
+        if (isNaN(p1S) || isNaN(p2S)) return;
+        if (p1S > p2S) h2h_p1++;
+        else if (p1S < p2S) h2h_p2++;
+        else h2h_d++;
+      });
+    }
+
+    const trnData = await trnRes.json();
+    if (trnData && !trnData.error) {
+      Object.values(trnData).forEach(b => {
+        if (b.status !== 'completed' || b.homeScore == null || b.awayScore == null) return;
+        const uids = [b.player1uid, b.player2uid];
+        if (!uids.includes(p1.uid) || !uids.includes(p2.uid)) return;
+        const p1IsHome = b.player1uid === p1.uid;
+        const p1S = p1IsHome ? b.homeScore : b.awayScore;
+        const p2S = p1IsHome ? b.awayScore : b.homeScore;
+        if (p1S > p2S) h2h_p1++;
+        else if (p1S < p2S) h2h_p2++;
+        else h2h_d++;
+      });
+    }
+
+    const f4mData = await f4mRes.json();
+    if (f4mData && !f4mData.error) {
+      Object.values(f4mData).forEach(md => {
+        Object.values(md.bouts || {}).forEach(b => {
+          if (!b.done || b.scoreA == null || b.scoreB == null) return;
+          const uids = [b.playerAUid, b.playerBUid];
+          if (!uids.includes(p1.uid) || !uids.includes(p2.uid)) return;
+          const p1IsA = b.playerAUid === p1.uid;
+          const p1S = p1IsA ? b.scoreA : b.scoreB;
+          const p2S = p1IsA ? b.scoreB : b.scoreA;
+          if (p1S > p2S) h2h_p1++;
+          else if (p1S < p2S) h2h_p2++;
+          else h2h_d++;
+        });
+      });
+    }
+  } catch(e) { console.error('[TYP compare] H2H fetch error:', e); }
 
   // ── Update Player Headers ──
   const C1 = '#3E8FB0'; // purple — player 1
@@ -10413,7 +11218,11 @@ window.downloadStatsCard = async function() {
   btn.innerHTML = '⏳ Generating...';
   btn.disabled = true;
 
-  const W = 900, H = 1200;
+  // Facebook feed post — recommended 1080×1350 px (4:5 portrait, 2026 guidance).
+  // All the pixel-based margins/font sizes below were tuned for a 900-wide
+  // canvas, so SCALE keeps them proportional at the new size.
+  const W = 1080, H = 1350;
+  const SCALE = W / 900;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -10481,13 +11290,13 @@ window.downloadStatsCard = async function() {
   const displayRank = p._liveRank || p.rank;
   if (displayRank) {
     const rankText = `#${displayRank}`;
-    ctx.font = `900 64px Arial Black, Arial, sans-serif`;
+    ctx.font = `900 ${Math.round(64*SCALE)}px Arial Black, Arial, sans-serif`;
     ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.shadowColor = 'rgba(0,0,0,0.95)';
     ctx.shadowBlur = 20;
     ctx.shadowOffsetY = 2;
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(rankText, 32, 40);
+    ctx.fillText(rankText, Math.round(32*SCALE), Math.round(40*SCALE));
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
   }
 
@@ -10497,26 +11306,26 @@ window.downloadStatsCard = async function() {
   // visible mark look pushed off to one side. We trim that transparent margin
   // first, then draw only the real logo shape.
   // ════════════════════════════════════════════
-  const badgeX = W / 2, badgeY = H * 0.62, badgeR = 68; // kept only to anchor name/pill layout below
+  const badgeX = W / 2, badgeY = H * 0.62, badgeR = 68 * SCALE; // kept only to anchor name/pill layout below
 
-  const logoH = 84;
-  const logoY = 40; // same top line as the rank number, but on the other side
+  const logoH = 84 * SCALE;
+  const logoY = 40 * SCALE; // same top line as the rank number, but on the other side
 
   const trimmedLogo = typLogoImg ? bdTrimTransparentEdges(typLogoImg) : null;
 
   if (trimmedLogo) {
     const lw = trimmedLogo.w * (logoH / trimmedLogo.h);
-    const logoX = W - 32 - lw; // right-aligned, mirrors the rank number's left margin
+    const logoX = W - 32 * SCALE - lw; // right-aligned, mirrors the rank number's left margin
     ctx.save();
     ctx.filter = 'drop-shadow(0 2px 10px rgba(0,0,0,0.9))';
     ctx.drawImage(trimmedLogo.canvas, trimmedLogo.x, trimmedLogo.y, trimmedLogo.w, trimmedLogo.h, logoX, logoY, lw, logoH);
     ctx.restore();
   } else {
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 34px Arial Black, Arial, sans-serif';
+    ctx.font = `bold ${Math.round(34*SCALE)}px Arial Black, Arial, sans-serif`;
     ctx.textAlign = 'right'; ctx.textBaseline = 'top';
     ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 10;
-    ctx.fillText('⚡ TYP', W - 32, logoY);
+    ctx.fillText('⚡ TYP', W - 32 * SCALE, logoY);
     ctx.shadowBlur = 0;
     ctx.textAlign = 'left';
   }
@@ -10524,12 +11333,12 @@ window.downloadStatsCard = async function() {
   // ════════════════════════════════════════════
   // LAYER 6: PLAYER NAME — big bold white
   // ════════════════════════════════════════════
-  const nameY = badgeY + badgeR + 28;
+  const nameY = badgeY + badgeR + 28 * SCALE;
   const name = p.name || '—';
-  let fSize = 78;
+  let fSize = Math.round(78 * SCALE);
   ctx.font = `900 ${fSize}px Arial Black, Arial, sans-serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  while (ctx.measureText(name).width > W - 60 && fSize > 34) {
+  while (ctx.measureText(name).width > W - 60 * SCALE && fSize > 34 * SCALE) {
     fSize -= 2;
     ctx.font = `900 ${fSize}px Arial Black, Arial, sans-serif`;
   }
@@ -10541,9 +11350,9 @@ window.downloadStatsCard = async function() {
   ctx.shadowBlur = 0;
 
   // ── Club | District ──
-  const subY = nameY + fSize + 14;
+  const subY = nameY + fSize + 14 * SCALE;
   ctx.fillStyle = '#e2e2e2';
-  ctx.font = 'bold 27px Arial, sans-serif';
+  ctx.font = `bold ${Math.round(27*SCALE)}px Arial, sans-serif`;
   ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12;
   ctx.fillText(`${p.club || '—'}  |  ${p.district || '—'}`, W / 2, subY);
   ctx.shadowBlur = 0;
@@ -10559,12 +11368,12 @@ window.downloadStatsCard = async function() {
     { label: 'GA', value: s.ga },
     { label: '👑', value: s.mvp },
   ];
-  const pillMarginX = 46;
+  const pillMarginX = 46 * SCALE;
   const pillW = W - pillMarginX * 2;
-  const pillH = 118;
-  const pillY = subY + 52;
+  const pillH = 118 * SCALE;
+  const pillY = subY + 52 * SCALE;
   const pillX = pillMarginX;
-  const pillR = 24;
+  const pillR = 24 * SCALE;
 
   // Build a blurred copy of the photo (captured before heavy darkening) so the
   // pill reads as real frosted glass sitting on top of the card, not a flat box.
@@ -10607,21 +11416,21 @@ window.downloadStatsCard = async function() {
   ctx.lineWidth = 1;
   for (let i = 1; i < stats.length; i++) {
     const dx = pillX + colW * i;
-    ctx.beginPath(); ctx.moveTo(dx, pillY + 16); ctx.lineTo(dx, pillY + pillH - 16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dx, pillY + 16 * SCALE); ctx.lineTo(dx, pillY + pillH - 16 * SCALE); ctx.stroke();
   }
 
   stats.forEach((st, i) => {
     const cx = pillX + colW * i + colW / 2;
     // Label
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.font = `bold ${Math.round(22*SCALE)}px Arial, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText(st.label, cx, pillY + 18);
+    ctx.fillText(st.label, cx, pillY + 18 * SCALE);
     // Value — white, bold
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 42px Arial Black, Arial, sans-serif';
+    ctx.font = `900 ${Math.round(42*SCALE)}px Arial Black, Arial, sans-serif`;
     ctx.textBaseline = 'top';
-    ctx.fillText(st.value, cx, pillY + 54);
+    ctx.fillText(st.value, cx, pillY + 54 * SCALE);
   });
   ctx.restore();
 
@@ -10648,9 +11457,9 @@ window.downloadStatsCard = async function() {
   // ════════════════════════════════════════════
   const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
   ctx.fillStyle = 'rgba(200,200,200,0.75)';
-  ctx.font = 'bold 20px Arial, sans-serif';
+  ctx.font = `bold ${Math.round(20*SCALE)}px Arial, sans-serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-  ctx.fillText(`All-Time Official  |  TYP Championship  |  ${dateStr}`, W / 2, H - 24);
+  ctx.fillText(`All-Time Official  |  TYP Championship  |  ${dateStr}`, W / 2, H - 24 * SCALE);
 
   // ── Export ──
   const link = document.createElement('a');
