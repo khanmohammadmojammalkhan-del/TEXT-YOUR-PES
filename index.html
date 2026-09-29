@@ -927,6 +927,17 @@ select.form-input option { background: var(--card); color: var(--text); }
 .btn-admin-edit:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
 .btn-admin-del { background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.2); color:var(--red); padding:6px 14px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
 .btn-admin-del:hover { background:var(--red); color:#fff; }
+.btn-admin-ban { background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.3); color:#dc2626; padding:6px 14px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.btn-admin-ban:hover { background:#dc2626; color:#fff; }
+.btn-admin-ban.is-banned { background:#dc2626; color:#fff; }
+.ban-chip { display:inline-block; font-size:10px; font-weight:800; letter-spacing:0.05em; color:#fff; background:#dc2626; border-radius:4px; padding:2px 7px; margin-left:6px; vertical-align:middle; }
+/* Profile ban banner */
+.pp-ban-banner { max-width:700px; margin:14px auto 0; padding:0 16px; position:relative; z-index:1; }
+.pp-ban-inner { display:flex; gap:12px; align-items:flex-start; background:linear-gradient(135deg,#b91c1c,#dc2626); color:#fff; border-radius:12px; padding:14px 16px; border:1px solid #991b1b; box-shadow:0 6px 20px rgba(220,38,38,0.28); }
+.pp-ban-icon { font-size:26px; line-height:1; flex-shrink:0; }
+.pp-ban-title { font-size:15px; font-weight:800; letter-spacing:0.03em; }
+.pp-ban-line { font-size:13px; margin-top:4px; opacity:0.95; line-height:1.55; word-break:break-word; }
+
 .stats-edit-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin:16px 0; }
 .stats-edit-item label { display:block; font-size:10px; color:var(--text3); margin-bottom:4px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
 .stats-edit-item input { width:100%; background:var(--bg2); border:1px solid var(--border); border-radius:7px; padding:8px 10px; color:var(--text); font-size:14px; outline:none; }
@@ -1994,6 +2005,9 @@ if (document.readyState === 'loading') {
       </div>
     </div>
   </div>
+
+  <!-- BAN BANNER (shown only when admin has banned this player) -->
+  <div id="ppBanBanner" class="pp-ban-banner" style="display:none"></div>
 
   <!-- BADGES -->
   <div id="ppBadges" style="display:flex;gap:6px;flex-wrap:wrap;max-width:700px;margin:12px auto 0;padding:0 16px;position:relative;z-index:1"></div>
@@ -4498,6 +4512,44 @@ if (document.readyState === 'loading') {
   </div>
 </div>
 
+<!-- ═══ BAN PLAYER MODAL ═══ -->
+<div class="modal-overlay" id="banModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-title">🚫 Player Ban</div>
+    <input type="hidden" id="banUid">
+    <div id="banPlayerName" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px"></div>
+    <div class="form-group">
+      <label class="form-label">Ban Type</label>
+      <select class="form-input" id="banType" onchange="banTypeChanged()">
+        <option value="permanent">🚫 Permanent Ban</option>
+        <option value="temporary">⏳ Temporary Ban (তারিখ পর্যন্ত)</option>
+      </select>
+    </div>
+    <div class="form-group" id="banUntilWrap" style="display:none">
+      <label class="form-label">কতদিনের Ban? (দিন লিখলে তারিখ নিজে সেট হবে)</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <input type="number" min="1" max="3650" class="form-input" id="banDays" placeholder="যেমন: 30" style="max-width:110px" oninput="banDaysChanged()">
+        <span style="font-size:12px;color:var(--text3)">দিন</span>
+        <button type="button" class="btn-admin-edit" onclick="banSetDays(7)">৭</button>
+        <button type="button" class="btn-admin-edit" onclick="banSetDays(15)">১৫</button>
+        <button type="button" class="btn-admin-edit" onclick="banSetDays(30)">৩০</button>
+      </div>
+      <label class="form-label">অথবা শেষ তারিখ সরাসরি দিন</label>
+      <input type="date" class="form-input" id="banUntil" oninput="document.getElementById('banDays').value=''">
+    </div>
+    <div class="form-group">
+      <label class="form-label">কারণ (কোন Rule ভেঙেছে)</label>
+      <textarea class="form-input" id="banReason" rows="3" maxlength="200" placeholder="যেমন: Proxy ব্যবহার করেছে..." style="resize:vertical;font-family:'Libre Caslon Text',sans-serif"></textarea>
+    </div>
+    <div class="alert alert-error" id="banError"></div>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-gold" style="flex:1" onclick="saveBan()">🚫 Ban Save</button>
+      <button class="btn btn-outline" id="banRemoveBtn" style="flex:1;display:none" onclick="removeBan()">✅ Ban তুলে নাও</button>
+      <button class="btn btn-outline" style="flex:1" onclick="closeBanModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADMIN: ADD NEW PLAYER MODAL -->
 <div class="modal-overlay" id="adminAddPlayerModal">
   <div class="modal-box" style="max-width:480px">
@@ -6571,12 +6623,13 @@ function renderAdminPlayers(players) {
     <div class="player-admin-card">
       <div class="player-admin-avatar">${p.avatarUrl ? `<img src="${p.avatarUrl}">` : '🎮'}</div>
       <div class="player-admin-info">
-        <div class="player-admin-name">${p.name || '—'} <span style="font-size:11px;color:var(--text3)">@${p.username||'—'}</span></div>
+        <div class="player-admin-name">${p.name || '—'} <span style="font-size:11px;color:var(--text3)">@${p.username||'—'}</span>${ppIsBanActive(p.ban) ? '<span class="ban-chip">BANNED</span>' : ''}</div>
         <div class="player-admin-meta">🏟️ ${p.club||'—'} • 📍 ${p.district||'—'} • M:${p.matches||0} W:${p.wins||0} D:${p.draws||0} L:${p.losses||0} • PTS:${p.points||0}</div>
       </div>
       <div class="player-admin-actions">
         <button class="btn-admin-edit" onclick="openAdminEditProfile('${p.uid}')">👤 Edit Profile</button>
         <button class="btn-admin-edit" onclick="openStatsModal('${p.uid}')">✏️ Edit Stats</button>
+        <button class="btn-admin-ban ${ppIsBanActive(p.ban) ? 'is-banned' : ''}" onclick="openBanModal('${p.uid}')">${ppIsBanActive(p.ban) ? '🚫 Banned' : '🚫 Ban'}</button>
         <button class="btn-admin-del" onclick="deletePlayer('${p.uid}','${(p.name||'').replace(/'/g,'')}')" >🗑️ Delete</button>
       </div>
     </div>
@@ -6740,6 +6793,118 @@ window.saveAdminEditProfile = async function() {
   sucEl.textContent = '✅ Profile save হয়েছে!'; sucEl.classList.add('show');
   setTimeout(() => { closeAdminEditProfile(); renderAdminPlayers(allPlayersCache); }, 1200);
 };
+
+// ── Ban system ──
+// Data lives at users/{uid}/ban = { type:'permanent'|'temporary', reason, until:'YYYY-MM-DD'|null, at:ISO }.
+// No `ban` node = not banned. Temporary bans stop showing automatically once `until` has passed.
+function ppIsBanActive(ban) {
+  if (!ban || typeof ban !== 'object') return false;
+  if (ban.type === 'temporary' && ban.until) {
+    const t = new Date(); t.setHours(0,0,0,0);
+    const [y,mo,d] = String(ban.until).split('-').map(Number);
+    const end = new Date(y, (mo||1)-1, d||1);
+    return end >= t;
+  }
+  return true;
+}
+function _banEsc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+window.banTypeChanged = function() {
+  document.getElementById('banUntilWrap').style.display = document.getElementById('banType').value === 'temporary' ? '' : 'none';
+};
+window.banDaysChanged = function() {
+  const n = parseInt(document.getElementById('banDays').value);
+  if (!n || n < 1) { return; }
+  const d = new Date(); d.setDate(d.getDate() + n);
+  const pad = x => String(x).padStart(2, '0');
+  document.getElementById('banUntil').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+};
+window.banSetDays = function(n) {
+  document.getElementById('banDays').value = n;
+  banDaysChanged();
+};
+window.openBanModal = function(uid) {
+  const p = allPlayersCache.find(x => x.uid === uid);
+  if (!p) return;
+  const b = p.ban && ppIsBanActive(p.ban) ? p.ban : null;
+  document.getElementById('banUid').value = uid;
+  document.getElementById('banPlayerName').textContent = `${p.name || '—'} (@${p.username || '—'})`;
+  document.getElementById('banType').value = b ? (b.type || 'permanent') : 'permanent';
+  document.getElementById('banUntil').value = b && b.until ? b.until : '';
+  document.getElementById('banDays').value = '';
+  document.getElementById('banReason').value = b ? (b.reason || '') : '';
+  document.getElementById('banRemoveBtn').style.display = b ? '' : 'none';
+  document.getElementById('banError').classList.remove('show');
+  banTypeChanged();
+  document.getElementById('banModal').classList.add('show');
+};
+window.closeBanModal = function() {
+  document.getElementById('banModal').classList.remove('show');
+};
+window.saveBan = async function() {
+  const uid = document.getElementById('banUid').value;
+  const p = allPlayersCache.find(x => x.uid === uid);
+  if (!p) return;
+  const type = document.getElementById('banType').value;
+  const until = document.getElementById('banUntil').value;
+  const reason = document.getElementById('banReason').value.trim();
+  const errEl = document.getElementById('banError');
+  errEl.classList.remove('show');
+  if (!reason) { errEl.textContent = '❌ Ban-এর কারণ লিখুন।'; errEl.classList.add('show'); return; }
+  if (type === 'temporary' && !until) { errEl.textContent = '❌ Temporary Ban-এর শেষ তারিখ দিন।'; errEl.classList.add('show'); return; }
+  const ban = { type, reason, until: type === 'temporary' ? until : null, at: new Date().toISOString() };
+  const updates = { ...p, ban };
+  try {
+    await window._set(window._ref(window._db, `users/${uid}`), updates);
+  } catch (e) { errEl.textContent = '❌ Save হয়নি: ' + e.message; errEl.classList.add('show'); return; }
+  window._allUsersCache = [];
+  const idx = allPlayersCache.findIndex(x => x.uid === uid);
+  if (idx !== -1) allPlayersCache[idx] = updates;
+  closeBanModal();
+  renderAdminPlayers(allPlayersCache);
+};
+window.removeBan = async function() {
+  const uid = document.getElementById('banUid').value;
+  const p = allPlayersCache.find(x => x.uid === uid);
+  if (!p) return;
+  if (!confirm(`${p.name || 'Player'}-এর Ban তুলে নিতে চান?`)) return;
+  const { ban, ...updates } = p;
+  try {
+    await window._set(window._ref(window._db, `users/${uid}`), updates);
+  } catch (e) { alert('❌ Save হয়নি: ' + e.message); return; }
+  window._allUsersCache = [];
+  const idx = allPlayersCache.findIndex(x => x.uid === uid);
+  if (idx !== -1) allPlayersCache[idx] = updates;
+  closeBanModal();
+  renderAdminPlayers(allPlayersCache);
+};
+
+// Public profile: red ban banner
+function ppRenderBanBanner(p) {
+  const el = document.getElementById('ppBanBanner');
+  if (!el) return;
+  const ban = p && p.ban;
+  if (!ppIsBanActive(ban)) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const perm = ban.type !== 'temporary';
+  const untilTxt = !perm && ban.until
+    ? new Date(ban.until + 'T00:00:00').toLocaleDateString('bn-BD', { day:'numeric', month:'long', year:'numeric' })
+    : '';
+  el.innerHTML = `
+    <div class="pp-ban-inner">
+      <div class="pp-ban-icon">🚫</div>
+      <div>
+        <div class="pp-ban-title">${perm ? 'PERMANENTLY BANNED' : 'TEMPORARILY BANNED'}</div>
+        <div class="pp-ban-line">Rules ভঙ্গ করায় এই Player-কে ${perm ? 'TYP Community থেকে Ban করা হয়েছে।' : `${untilTxt} পর্যন্ত Ban করা হয়েছে।`}</div>
+        ${ban.reason ? `<div class="pp-ban-line"><strong>কারণ:</strong> ${_banEsc(ban.reason)}</div>` : ''}
+      </div>
+    </div>`;
+  el.style.display = '';
+}
+
+// Expose to the classic <script> that owns openPublicProfile
+window.ppIsBanActive = ppIsBanActive;
+window.ppRenderBanBanner = ppRenderBanBanner;
 
 // ── Admin: Add New Player Modal ──
 window.openAddPlayerModal = function() {
@@ -9832,8 +9997,14 @@ window.openPublicProfile = async function(uid) {
     const freshPos = await posRes.json();
     p.position = (typeof freshPos === 'string' && freshPos) ? freshPos.trim().toUpperCase() : null;
   } catch (e) { /* keep cached value */ }
+  // Ban status is also read fresh (cache can be 15 min old) so a new ban/unban shows immediately.
+  try {
+    const banRes = await fetch(`https://typ-championship-default-rtdb.firebaseio.com/users/${uid}/ban.json`);
+    p.ban = await banRes.json();
+  } catch (e) { /* keep cached value */ }
 
   window._prevPage = document.querySelector('.page.active')?.id || 'page-home';
+  { const bb = document.getElementById('ppBanBanner'); if (bb) { bb.style.display = 'none'; bb.innerHTML = ''; } }
   const av = document.getElementById('ppAvatar');
   av.innerHTML = p.avatarUrl ? `<img src="${p.avatarUrl}" style="width:100%;height:100%;object-fit:cover">` : '🎮';
 
@@ -10274,6 +10445,7 @@ window.openPublicProfile = async function(uid) {
 
   document.getElementById('ppRank').textContent = (p._liveRank || p.rank) ? `RANK #${p._liveRank || p.rank} • TYP PLAYER` : 'TYP PLAYER';
   document.getElementById('ppName').textContent = p.name || '—';
+  ppRenderBanBanner(p);
   document.getElementById('ppClub').textContent = p.club || '—';
   document.getElementById('ppDistrict').textContent = p.district || '—';
   // ── POSITION / ROLE chip (Step 3 field — only shows if admin has set it) ──
