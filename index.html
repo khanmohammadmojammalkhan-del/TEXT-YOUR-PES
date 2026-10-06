@@ -1109,6 +1109,20 @@ select.form-input option { background: var(--card); color: var(--text); }
 .friendly-tab.active { color:var(--text); border-bottom-color:var(--accent); }
 
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+
+/* ── Searchable select (player search) ── */
+.tsp-wrap { position:relative; width:100%; }
+.tsp-wrap > select { display:none !important; }
+.tsp-input { width:100%; cursor:text; padding-right:36px; text-overflow:ellipsis; }
+.tsp-arrow { position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none; font-size:11px; color:var(--text3); }
+.tsp-list { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:9999; max-height:260px; overflow-y:auto;
+  background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.25); display:none; }
+.tsp-wrap.open .tsp-list { display:block; }
+.tsp-item { padding:9px 14px; font-size:14px; cursor:pointer; color:var(--text); font-family:'Libre Caslon Text',sans-serif; }
+.tsp-item.active, .tsp-item:hover { background:var(--primary); color:#fff; }
+.tsp-item.taken { opacity:.45; }
+.tsp-item small { font-size:11px; margin-left:6px; }
+.tsp-empty { padding:12px 14px; font-size:13px; color:var(--text3); }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -21696,6 +21710,102 @@ window.aiqaUseAsFaq = aiqaUseAsFaq;
         .catch((err) => console.warn('Service worker registration failed:', err));
     });
   }
+})();
+</script>
+<script>
+/* ── Searchable select: player search system ── */
+(function(){
+  const IDS = ['duoTeamP1','duoTeamP2'];   // আরো select-এ লাগাতে এখানে id যোগ করো
+  const norm = t => (t||'').toString().toLowerCase().replace(/\s+/g,' ').trim();
+
+  function takenSet(){
+    try { const s=new Set(); duoTeamsCache.forEach(t=>{ s.add(t.p1Uid); s.add(t.p2Uid); }); return s; }
+    catch(e){ return new Set(); }
+  }
+
+  function enhance(id){
+    const sel = document.getElementById(id);
+    if (!sel || sel.dataset.tsp) return;
+    sel.dataset.tsp = '1';
+    const wrap = document.createElement('div'); wrap.className = 'tsp-wrap';
+    sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(sel);
+    const inp = document.createElement('input');
+    inp.type='text'; inp.className='form-input tsp-input'; inp.autocomplete='off'; inp.spellcheck=false;
+    const arrow = document.createElement('span'); arrow.className='tsp-arrow'; arrow.textContent='▼';
+    const list = document.createElement('div'); list.className='tsp-list';
+    wrap.append(inp, arrow, list);
+    let items=[], hi=-1;
+
+    const placeholder = () => (sel.options[0] && sel.options[0].value==='') ? sel.options[0].textContent.replace(/^-+\s*|\s*-+$/g,'') : 'Player';
+    const syncInput = () => {
+      const o = sel.options[sel.selectedIndex];
+      inp.value = (o && o.value) ? o.textContent : '';
+      inp.placeholder = '🔍 ' + placeholder() + ' search করো...';
+    };
+    const open = () => { wrap.classList.add('open'); render(''); };
+    const close = () => { wrap.classList.remove('open'); hi=-1; syncInput(); };
+
+    function render(q){
+      const n = norm(q), taken = takenSet();
+      items = [];
+      Array.from(sel.options).forEach(o => {
+        if (!o.value) return;
+        if (n && !norm(o.textContent).includes(n)) return;
+        items.push(o);
+      });
+      if (!items.length) { list.innerHTML = '<div class="tsp-empty">কোনো player পাওয়া যায়নি</div>'; return; }
+      list.innerHTML = '';
+      items.forEach((o,i) => {
+        const d = document.createElement('div');
+        d.className = 'tsp-item' + (taken.has(o.value)?' taken':'') + (o.value===sel.value?' active':'');
+        d.textContent = o.textContent;
+        if (taken.has(o.value)) { const m=document.createElement('small'); m.textContent='(team-এ আছে)'; d.appendChild(m); }
+        d.addEventListener('mousedown', e => { e.preventDefault(); pick(o); });
+        list.appendChild(d);
+      });
+      hi = -1;
+    }
+    function pick(o){
+      sel.value = o.value;
+      sel.dispatchEvent(new Event('change',{bubbles:true}));  // duoPreviewTeamName() চলবে
+      inp.blur(); close();
+    }
+    function move(d){
+      const els = list.querySelectorAll('.tsp-item'); if (!els.length) return;
+      hi = (hi + d + els.length) % els.length;
+      els.forEach((e,i)=>e.classList.toggle('active', i===hi));
+      els[hi].scrollIntoView({block:'nearest'});
+    }
+
+    inp.addEventListener('focus', () => { inp.select(); open(); });
+    inp.addEventListener('click', () => { if(!wrap.classList.contains('open')) open(); });
+    inp.addEventListener('input', () => { wrap.classList.add('open'); render(inp.value); });
+    inp.addEventListener('blur', () => setTimeout(close, 120));
+    inp.addEventListener('keydown', e => {
+      if (e.key==='ArrowDown'){ e.preventDefault(); move(1); }
+      else if (e.key==='ArrowUp'){ e.preventDefault(); move(-1); }
+      else if (e.key==='Enter'){ e.preventDefault(); const o = items[hi>=0?hi:0]; if (o && wrap.classList.contains('open')) pick(o); }
+      else if (e.key==='Escape'){ inp.blur(); }
+    });
+    // select-এর options বদলালে (loadDuoAdminAll) বা value reset হলে UI sync
+    new MutationObserver(syncInput).observe(sel,{childList:true,subtree:true});
+    sel.addEventListener('change', syncInput);
+    sel._tspSync = syncInput;
+    syncInput();
+  }
+
+  window.tspEnhance = enhance;
+  window.tspSyncAll = () => IDS.forEach(id => { const s=document.getElementById(id); if (s && s._tspSync) s._tspSync(); });
+  function init(){ IDS.forEach(enhance); }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+  // Team create-এর পর value = '' set করলে UI sync করার জন্য
+  const _orig = window.createDuoTeam;
+  if (typeof _orig === 'function') window.createDuoTeam = async function(){ const r = await _orig.apply(this, arguments); window.tspSyncAll(); return r; };
+  else window.addEventListener('load', () => {
+    const o2 = window.createDuoTeam;
+    if (typeof o2 === 'function') window.createDuoTeam = async function(){ const r = await o2.apply(this, arguments); window.tspSyncAll(); return r; };
+  });
 })();
 </script>
 </body>
