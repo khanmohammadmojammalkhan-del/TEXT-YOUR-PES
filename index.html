@@ -1064,6 +1064,8 @@ select.form-input option { background: var(--card); color: var(--text); }
 .f4m-content.active { display:block; }
 .solo-content { display:none; }
 .solo-content.active { display:block; }
+.duo-content { display:none; }
+.duo-content.active { display:block; }
 .trn-admin-section { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; }
 .trn-admin-section-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:14px; letter-spacing:0.04em; }
 .trn-team-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:center; gap:12px; margin-bottom:8px; }
@@ -2551,6 +2553,12 @@ if (document.readyState === 'loading') {
         <div class="ttc-desc">Individual player vs player • Group stage + Knockout • সরাসরি 1v1 ম্যাচ</div>
         <span class="ttc-arrow">➜</span>
       </div>
+      <div class="trn-type-card" onclick="selectTournamentType('duo')">
+        <span class="ttc-icon">🤝</span>
+        <div class="ttc-title">DUO TOURNAMENT</div>
+        <div class="ttc-desc">২ জনের team • 2v2 (২টি 1v1 bout, জিতলে ১ পয়েন্ট) • ৮ Group × ৭ Team, Top 4 → Knockout (R32 → Final)</div>
+        <span class="ttc-arrow">➜</span>
+      </div>
     </div>
   </div>
 
@@ -2739,6 +2747,21 @@ if (document.readyState === 'loading') {
         <div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div>
       </div>
     </div>
+  </div>
+
+  <!-- ═══ DUO TOURNAMENT VIEW ═══ -->
+  <div id="trnDuoView" style="display:none">
+    <button class="trn-back-btn" onclick="backToTournamentSelector()">← Tournament Types</button>
+    <div class="trn-tabs">
+      <button class="trn-tab duo-tab active" onclick="switchDuoTab('standings')">📊 Standings</button>
+      <button class="trn-tab duo-tab" onclick="switchDuoTab('fixtures')">📅 Fixtures</button>
+      <button class="trn-tab duo-tab" onclick="switchDuoTab('knockout')">⚡ Knockout</button>
+      <button class="trn-tab duo-tab" onclick="switchDuoTab('teams')">👥 Teams</button>
+    </div>
+    <div class="duo-content active" id="duotab-standings"><div id="duoStandingsWrap"><div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div></div></div>
+    <div class="duo-content" id="duotab-fixtures"><div id="duoFixturesWrap"><div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div></div></div>
+    <div class="duo-content" id="duotab-knockout"><div id="duoKnockoutWrap"><div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div></div></div>
+    <div class="duo-content" id="duotab-teams"><div id="duoTeamsWrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px"><div style="text-align:center;padding:60px;color:var(--text3)"><span class="spinner"></span> Loading...</div></div></div>
   </div>
 </div>
 
@@ -3170,6 +3193,7 @@ if (document.readyState === 'loading') {
         <div class="admin-tab" onclick="switchAdminTab('tournament')">🏟️ Tournament</div>
         <div class="admin-tab" onclick="switchAdminTab('fourman')">👥 4-Man Tournament</div>
         <div class="admin-tab" onclick="switchAdminTab('solotourney')">🎮 Solo Tournament</div>
+        <div class="admin-tab" onclick="switchAdminTab('duotourney')">🤝 Duo Tournament</div>
         <div class="admin-tab" onclick="switchAdminTab('matchdayctrl')">🗓️ Matchday Control</div>
         <div class="admin-tab" onclick="switchAdminTab('notice')">📢 Notice</div>
         <div class="admin-tab" onclick="switchAdminTab('boutdraw')">🎲 Bout Draw</div>
@@ -4104,6 +4128,82 @@ if (document.readyState === 'loading') {
 
     <div style="font-size:13px;font-weight:700;color:var(--text2);margin:20px 0 10px;border-top:1px solid var(--border);padding-top:16px">📋 সব Knockout Match</div>
     <div id="soloAdminKnockoutList"><div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ DUO TOURNAMENT (ADMIN) ══════════════ -->
+<div class="admin-section" id="adminTab-duotourney">
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">👥 1) Create Team (২ জন player)</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতি team-এ ২ জন player। একজন player শুধু একটা team-এ থাকতে পারবে।</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px">
+      <input class="form-input" id="duoTeamName" placeholder="Team Name (auto: Player 1 x Player 2)" readonly>
+      <select class="form-input" id="duoTeamP1" onchange="duoPreviewTeamName()"><option value="">-- Player 1 --</option></select>
+      <select class="form-input" id="duoTeamP2" onchange="duoPreviewTeamName()"><option value="">-- Player 2 --</option></select>
+    </div>
+    <button class="btn btn-gold" onclick="createDuoTeam()" style="padding:9px 22px;font-size:13px">➕ Team Create করো</button>
+    <span id="duoTeamStatus" style="margin-left:12px;font-size:13px"></span>
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin:20px 0 10px;border-top:1px solid var(--border);padding-top:16px">📋 সব Team</div>
+    <div id="duoAdminTeamsList"><div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div></div>
+    <button class="btn btn-outline" onclick="loadDuoAdminAll()" style="padding:8px 18px;font-size:12px;margin-top:8px">🔄 Reload</button>
+  </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">🏷️ 2) Groups</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">একসাথে random draw (যেমন ৫৬ team → ৮ group = প্রতি group-এ ৭ team), অথবা নিচে manual group বানাও।</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+      <input class="form-input" id="duoDrawN" type="number" min="1" max="26" value="8" style="width:90px">
+      <button class="btn btn-gold" onclick="duoRandomDraw()" style="padding:9px 20px;font-size:13px">🎲 Random Draw into Groups</button>
+      <span id="duoDrawStatus" style="font-size:13px"></span>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin:16px 0 10px;border-top:1px solid var(--border);padding-top:14px">✍️ Manual Group</div>
+    <div class="form-group"><label class="form-label">Group Name</label><input class="form-input" id="duoGrName" placeholder="e.g. Group A"></div>
+    <div class="form-group"><label class="form-label">Teams (Ctrl/Cmd চেপে multiple সিলেক্ট করো)</label><select class="form-input" id="duoGrTeams" multiple size="8" style="height:auto"></select></div>
+    <button class="btn btn-gold" onclick="createDuoGroup()" style="padding:9px 22px;font-size:13px">➕ Group Create করো</button>
+    <span id="duoGrStatus" style="margin-left:12px;font-size:13px"></span>
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin:20px 0 10px;border-top:1px solid var(--border);padding-top:16px">📋 সব Group</div>
+    <div id="duoAdminGroupsList"><div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div></div>
+  </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">📅 3) Generate Group Fixtures</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতি group-এ প্রতিটা team বাকি সবার সাথে ১ বার করে খেলবে (Circle Method, matchday অনুযায়ী)। ৭ team-এর group-এ প্রতি team-এর ৬টা match। আবার generate করলে ওই group-এর আগের fixture/result মুছে যাবে।</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <select class="form-input" id="duoGenGroupSelect" style="flex:1;min-width:200px"><option value="">-- Group বাছাই করো --</option></select>
+      <button class="btn btn-gold" onclick="generateDuoFixtures()" style="padding:9px 20px;font-size:13px">📅 Generate Fixtures</button>
+    </div>
+    <span id="duoGenStatus" style="font-size:13px;display:block;margin-top:8px"></span>
+  </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">⚽ 4) Enter Group Match Result (২টা bout)</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Bout 1 = T1-P1 vs T2-P1, Bout 2 = T1-P2 vs T2-P2 (দরকারে Cross pairing)। Bout-এ বেশি গোল করলে ১ পয়েন্ট, হারলে ০ (bout draw হলে দুইজনেরই ০)। Set-এ বেশি bout-point যার সে জেতে — ২-০ জয়, ১-১ ড্র। Group পয়েন্ট: জয় ৩, ড্র ১, হার ০। Save করলে player profile অটো আপডেট হয়।</p>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <select class="form-input" id="duoMatchSelect" style="flex:1;min-width:220px" onchange="loadDuoMatchForEntry()"><option value="">-- Match বাছাই করো --</option></select>
+      <button class="btn btn-outline" onclick="loadDuoAdminAll()" style="padding:9px 16px;font-size:12px">🔄 Load</button>
+    </div>
+    <div id="duoMatchEntryArea"></div>
+  </div>
+
+  <div class="trn-admin-section">
+    <div class="trn-admin-section-title">⚡ 5) Knockout (Top 4 per group → R32 → R16 → QF → SF → Final)</div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Group stage শেষে "Round of 32 Auto-generate" চাপো (Group A-B, C-D, E-F, G-H জোড়ায় cross-seed: 1st vs 4th, 2nd vs 3rd…)। প্রতি round শেষ হলে "পরের Round" দিয়ে winner-দের নিয়ে অটো তৈরি করো। Tie (১-১) হলে admin winner বাছাই করবে।</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+      <button class="btn btn-gold" onclick="generateDuoR32()" style="padding:9px 18px;font-size:13px">⚡ Round of 32 Auto-generate</button>
+      <select class="form-input" id="duoKoSrcRound" style="width:auto"></select>
+      <button class="btn btn-outline" onclick="generateDuoNextRound()" style="padding:9px 18px;font-size:13px">➡️ Winners → পরের Round</button>
+    </div>
+    <span id="duoKoGenStatus" style="font-size:13px;display:block;margin-bottom:12px"></span>
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin:10px 0;border-top:1px solid var(--border);padding-top:14px">➕ Manual Knockout Match</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px">
+      <select class="form-input" id="duoKoRound"></select>
+      <select class="form-input" id="duoKoT1"><option value="">-- Team 1 --</option></select>
+      <select class="form-input" id="duoKoT2"><option value="">-- Team 2 --</option></select>
+    </div>
+    <button class="btn btn-gold" onclick="createDuoKnockoutMatch()" style="padding:9px 22px;font-size:13px">➕ Knockout Match যোগ করো</button>
+    <span id="duoKoAddStatus" style="margin-left:12px;font-size:13px"></span>
+    <div style="font-size:13px;font-weight:700;color:var(--text2);margin:20px 0 10px;border-top:1px solid var(--border);padding-top:16px">📋 সব Knockout Match</div>
+    <div id="duoAdminKnockoutList"><div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div></div>
   </div>
 </div>
 
@@ -8167,6 +8267,7 @@ window.switchAdminTab = function(tab) {
   if (tab === 'tournament') { loadTrnAdminTeams(); if (typeof loadTrnStatsAdminList === 'function') loadTrnStatsAdminList(); }
   if (tab === 'fourman' && typeof loadF4mAdminSquads === 'function') { loadF4mAdminSquads(); loadF4mAdminMatchdays(); if (typeof loadF4mStatsAdminList === 'function') loadF4mStatsAdminList(); }
   if (tab === 'solotourney' && typeof loadSoloAdminGroups === 'function') { loadSoloAdminGroups(); loadSoloAdminMatches(); loadSoloAdminKnockout(); }
+  if (tab === 'duotourney' && typeof loadDuoAdminAll === 'function') loadDuoAdminAll();
   if (tab === 'matchdayctrl' && typeof loadMatchdayControlList === 'function') loadMatchdayControlList();
   if (tab === 'aiqa' && typeof loadAdminAiQa === 'function') loadAdminAiQa();
   if (tab === 'typadmins' && typeof loadTypAdminsAdminList === 'function') loadTypAdminsAdminList();
@@ -12990,7 +13091,7 @@ window.downloadF4mQuadrixCard = async function(mid) {
   });
 };
 
-async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, awayTotal, homeLogoUrl, awayLogoUrl, matches, dayLabel, mvpName, mvpTeamName, mvpAvatarUrl, opponentName, opponentAvatarUrl, myScore, oppScore, mvpRating, fileSuffix }) {
+async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, awayTotal, homeLogoUrl, awayLogoUrl, matches, dayLabel, mvpName, mvpTeamName, mvpAvatarUrl, opponentName, opponentAvatarUrl, myScore, oppScore, mvpRating, fileSuffix, seasonLabelText, modeLabel, scoreLabel, filePrefix, splitLogos, homeLogo2Url, awayLogo2Url }) {
   const CARD_W = 1000;
   const HEADER_H = 176;
   const SCORE_H = 150;
@@ -13027,6 +13128,8 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
   const opponentAvatarImg = await window.bdLoadImage(opponentAvatarUrl);
   const homeLogoImg = await window.bdLoadImage(homeLogoUrl);
   const awayLogoImg = await window.bdLoadImage(awayLogoUrl);
+  const homeLogo2Img = splitLogos ? await window.bdLoadImage(homeLogo2Url || '') : null;
+  const awayLogo2Img = splitLogos ? await window.bdLoadImage(awayLogo2Url || '') : null;
   const matchAvatarImgs = await Promise.all(
     matches.slice(0, 3).map(async mt => ({
       p1: await window.bdLoadImage(mt.p1AvatarUrl || ''),
@@ -13092,6 +13195,24 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.strokeStyle = ringColor; ctx.lineWidth = ringW || 3; ctx.stroke();
     }
+  }
+  // Duo team logo: দুইজন player-এর ছবি এক গোল frame-এ (বাম/ডান অর্ধেক)
+  function drawSplitAvatar(imgL, imgR, cx, cy, r, ringColor, ringW) {
+    [[imgL, cx - r, r], [imgR, cx, r]].forEach(([img, bx, bw]) => {
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+      ctx.beginPath(); ctx.rect(bx, cy - r, bw, r * 2); ctx.clip();
+      if (img) {
+        const sc = Math.max(bw / img.width, (r * 2) / img.height);
+        const dw = img.width * sc, dh = img.height * sc;
+        ctx.drawImage(img, bx + (bw - dw) / 2, cy - dh / 2, dw, dh);
+      } else { ctx.fillStyle = CREAM_2; ctx.fillRect(bx, cy - r, bw, r * 2); }
+      ctx.restore();
+    });
+    ctx.beginPath(); ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+    ctx.strokeStyle = ringColor || GOLD; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = ringColor || GOLD; ctx.lineWidth = ringW || 4; ctx.stroke();
   }
   function cutCornerPath(x, y, w, h, c) {
     ctx.beginPath();
@@ -13190,7 +13311,7 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
   ctx.fillStyle = 'rgba(255,255,255,0.45)';
   ctx.fillText('E - F O O T B A L L   C O M M U N I T Y', CARD_W / 2, titleCY + 20);
 
-  const seasonLabel = 'QUADRIX · SEASON 1';
+  const seasonLabel = seasonLabelText || 'QUADRIX · SEASON 1';
   ctx.font = '800 13px Arial';
   const sw = ctx.measureText(seasonLabel).width + 40, sh = 30;
   const sx = CARD_W / 2 - sw / 2, sy = titleCY + 34;
@@ -13205,7 +13326,7 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
 
   ctx.font = '700 12px Arial';
   ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  const subtitle = `${matches.length}-A-SIDE MATCHDAY  •  ${dayLabel.toUpperCase()}  •  ${new Date().toLocaleDateString('en-BD', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`;
+  const subtitle = `${modeLabel || (matches.length + '-A-SIDE MATCHDAY')}  •  ${dayLabel.toUpperCase()}  •  ${new Date().toLocaleDateString('en-BD', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}`;
   ctx.fillText(subtitle, CARD_W / 2, sy + sh + 20);
 
   // ══════ SCORE ROW (cream panel) ══════
@@ -13213,8 +13334,13 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
   const teamR = 42;
   const leftCX = 168, rightCX = CARD_W - 168;
   const teamCY = scoreTop + 62;
-  drawCircleAvatar(homeLogoImg, leftCX, teamCY, teamR, GOLD, 4);
-  drawCircleAvatar(awayLogoImg, rightCX, teamCY, teamR, GOLD, 4);
+  if (splitLogos) {
+    drawSplitAvatar(homeLogoImg, homeLogo2Img, leftCX, teamCY, teamR + 4, GOLD, 4);
+    drawSplitAvatar(awayLogoImg, awayLogo2Img, rightCX, teamCY, teamR + 4, GOLD, 4);
+  } else {
+    drawCircleAvatar(homeLogoImg, leftCX, teamCY, teamR, GOLD, 4);
+    drawCircleAvatar(awayLogoImg, rightCX, teamCY, teamR, GOLD, 4);
+  }
 
   ctx.textAlign = 'center';
   const fitName = (name, cx, y) => {
@@ -13236,7 +13362,7 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
 
   ctx.font = '700 10px Arial';
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.fillText('MATCHDAY POINTS', CARD_W / 2, boxY + 16);
+  ctx.fillText(scoreLabel || 'MATCHDAY POINTS', CARD_W / 2, boxY + 16);
 
   const digitW = 56, digitH = 48, gap = 18;
   const dY = boxY + boxH - digitH - 10;
@@ -13417,7 +13543,7 @@ async function _renderF4mQuadrixCard({ homeTeamName, awayTeamName, homeTotal, aw
 
   const link = document.createElement('a');
   const safeName = (fileSuffix || 'matchday').replace(/[^a-zA-Z0-9\-_]/g, '_').slice(0, 60);
-  link.download = `TYP-QUADRIX-Matchday-${safeName}.png`;
+  link.download = `${filePrefix || 'TYP-QUADRIX-Matchday'}-${safeName}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
@@ -14473,12 +14599,544 @@ window.saveSoloKnockoutResult = async function(id) {
   renderSoloAdminKnockoutList();
 };
 
+// ════════════════════════════════════════════════════════
+// DUO TOURNAMENT SYSTEM (2v2 — 2 players per team, 2 × 1v1 bouts per match)
+// Bout win = 1pt, loss = 0 → team with more bout-points wins the set.
+// Group stage (single round-robin) → Top 4 per group → Knockout (R32 → Final)
+// Firebase: typduo/{teams,groups,matches,knockout}
+// ════════════════════════════════════════════════════════
+const DUO_DB = 'https://typ-championship-default-rtdb.firebaseio.com';
+const DUO_QUALIFY = 4;
+const DUO_KO_ROUNDS = ['Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Grand Final'];
+let duoTeamsCache = [], duoGroupsCache = [], duoMatchesCache = [], duoKnockoutCache = [], duoUsersCache = [];
+
+function duoEsc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+async function fetchDuoData() {
+  const parts = await Promise.all(['teams', 'groups', 'matches', 'knockout'].map(p => fetch(`${DUO_DB}/typduo/${p}.json`).then(r => r.json())));
+  const toArr = o => o ? Object.entries(o).map(([id, v]) => ({ id, ...v })) : [];
+  duoTeamsCache = toArr(parts[0]);
+  duoGroupsCache = toArr(parts[1]).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  duoMatchesCache = toArr(parts[2]);
+  duoKnockoutCache = toArr(parts[3]);
+}
+async function duoEnsureUsers() { if (!duoUsersCache.length) duoUsersCache = await getAllUsers(); }
+function duoPlayerName(uid) { const u = duoUsersCache.find(x => x.uid === uid); return u ? u.name : 'Unknown'; }
+function duoTeam(id) { return duoTeamsCache.find(x => x.id === id); }
+function duoTeamName(id) {
+  const t = duoTeam(id); if (!t) return 'Unknown';
+  const a = duoUsersCache.find(x => x.uid === t.p1Uid), b = duoUsersCache.find(x => x.uid === t.p2Uid);
+  return (a && b) ? `${a.name} x ${b.name}` : (t.name || 'Unknown');   // team name = দুইজন player-এর নাম
+}
+// Team logo = দুইজন player-এর avatar এক frame-এ (দুই অর্ধেক)
+function duoTeamLogoHtml(id, size) {
+  size = size || 40;
+  const t = duoTeam(id); if (!t) return '';
+  const half = uid => { const u = duoUsersCache.find(x => x.uid === uid) || {};
+    return u.avatarUrl ? `<img src="${duoEsc(u.avatarUrl)}" alt="" style="width:50%;height:100%;object-fit:cover;display:block">`
+      : `<span style="width:50%;height:100%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.3)}px;color:var(--text3)">${duoEsc((u.name || '?').charAt(0).toUpperCase())}</span>`; };
+  return `<span style="display:inline-flex;gap:2px;width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:2px solid var(--gold);background:var(--gold);flex-shrink:0;vertical-align:middle;box-sizing:border-box">${half(t.p1Uid)}${half(t.p2Uid)}</span>`;
+}
+function duoSortedTeams() { return [...duoTeamsCache].sort((a, b) => duoTeamName(a.id).localeCompare(duoTeamName(b.id))); }
+function duoTeamPlayersText(id) { const t = duoTeam(id); return t ? duoPlayerName(t.p1Uid) + ' & ' + duoPlayerName(t.p2Uid) : ''; }
+function duoGroupName(id) { const g = duoGroupsCache.find(x => x.id === id); return g ? g.name : '—'; }
+
+// ── Core rules ──
+function duoBoutPts(a, b) {
+  if (a == null || b == null) return [0, 0];
+  return a > b ? [1, 0] : b > a ? [0, 1] : [0, 0];
+}
+function duoMatchTotals(m) {
+  const x = duoBoutPts(m.b1s1, m.b1s2), y = duoBoutPts(m.b2s1, m.b2s2);
+  return { p1: x[0] + y[0], p2: x[1] + y[1], g1: (m.b1s1 || 0) + (m.b2s1 || 0), g2: (m.b1s2 || 0) + (m.b2s2 || 0) };
+}
+// bout1 = T1.p1 vs T2.p1 , bout2 = T1.p2 vs T2.p2  (crossed → T1.p1 vs T2.p2 , T1.p2 vs T2.p1)
+function duoBoutPlayers(m) {
+  const t1 = duoTeam(m.team1Id), t2 = duoTeam(m.team2Id);
+  if (!t1 || !t2) return null;
+  return [[t1.p1Uid, m.crossed ? t2.p2Uid : t2.p1Uid], [t1.p2Uid, m.crossed ? t2.p1Uid : t2.p2Uid]];
+}
+function duoGroupStandings(g) {
+  const table = {};
+  (g.teamIds || []).forEach(id => { table[id] = { id, mp: 0, w: 0, d: 0, l: 0, bp: 0, ba: 0, pts: 0 }; });
+  duoMatchesCache.filter(m => m.groupId === g.id && m.status === 'completed').forEach(m => {
+    const a = table[m.team1Id], b = table[m.team2Id];
+    if (!a || !b) return;
+    const t = duoMatchTotals(m);
+    a.mp++; b.mp++;
+    a.bp += t.p1; a.ba += t.p2; b.bp += t.p2; b.ba += t.p1;
+    if (t.p1 > t.p2) { a.w++; a.pts += 3; b.l++; }
+    else if (t.p2 > t.p1) { b.w++; b.pts += 3; a.l++; }
+    else { a.d++; b.d++; a.pts += 1; b.pts += 1; }
+  });
+  // GF/GA/GD = TEAM score (bout points of the match, e.g. 2-0 / 1-1) — player goals are NOT counted.
+  // Sort: Points → GD → GF
+  return Object.values(table).sort((x, y) => y.pts - x.pts || (y.bp - y.ba) - (x.bp - x.ba) || y.bp - x.bp);
+}
+function duoKoWinner(m) {
+  if (m.status !== 'completed') return null;
+  const t = duoMatchTotals(m);
+  if (t.p1 > t.p2) return m.team1Id;
+  if (t.p2 > t.p1) return m.team2Id;
+  return m.tiebreakWinnerId || null;
+}
+function duoCircleRounds(ids) {
+  const arr = [...ids]; if (arr.length % 2) arr.push(null);
+  const n = arr.length, rounds = [];
+  for (let r = 0; r < n - 1; r++) {
+    const pairs = [];
+    for (let i = 0; i < n / 2; i++) { const a = arr[i], b = arr[n - 1 - i]; if (a && b) pairs.push(r % 2 ? [b, a] : [a, b]); }
+    rounds.push(pairs);
+    arr.splice(1, 0, arr.pop());
+  }
+  return rounds;
+}
+function duoBoutDetailHtml(m) {
+  const bp = duoBoutPlayers(m);
+  if (!bp || m.status !== 'completed') return '';
+  return `<div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6">` +
+    `B1: ${duoEsc(duoPlayerName(bp[0][0]))} ${m.b1s1}-${m.b1s2} ${duoEsc(duoPlayerName(bp[0][1]))}<br>` +
+    `B2: ${duoEsc(duoPlayerName(bp[1][0]))} ${m.b2s1}-${m.b2s2} ${duoEsc(duoPlayerName(bp[1][1]))}</div>`;
+}
+
+// ── Public views ──
+window.loadDuoTournament = async function () { switchDuoTab('standings'); };
+
+window.switchDuoTab = function (tab) {
+  document.querySelectorAll('.duo-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.duo-content').forEach(c => c.classList.remove('active'));
+  const btn = document.querySelector(`.duo-tab[onclick="switchDuoTab('${tab}')"]`);
+  if (btn) btn.classList.add('active');
+  const cnt = document.getElementById('duotab-' + tab);
+  if (cnt) cnt.classList.add('active');
+  if (tab === 'standings') loadDuoStandings();
+  if (tab === 'fixtures') loadDuoFixtures();
+  if (tab === 'knockout') loadDuoKnockoutPublic();
+  if (tab === 'teams') loadDuoTeamsPublic();
+};
+
+window.loadDuoStandings = async function () {
+  await fetchDuoData(); await duoEnsureUsers();
+  const wrap = document.getElementById('duoStandingsWrap'); if (!wrap) return;
+  if (!duoGroupsCache.length) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">এখনো কোনো group নেই।</div>`; return; }
+  wrap.innerHTML = `<div style="font-size:11px;color:var(--text3);margin-bottom:12px">সবুজ = Top ${DUO_QUALIFY} (Knockout-এ Qualify) • GF/GA/GD = Team Score (bout জিতলে ১, হারলে ০) — player-এর goal ধরা হয় না</div>` +
+    duoGroupsCache.map(g => {
+      const rows = duoGroupStandings(g);
+      return `<div style="margin-bottom:26px">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;font-family:'Libre Caslon Text',sans-serif">🏷️ ${duoEsc(g.name)}</div>
+        <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+          <table class="standings-table">
+            <thead><tr><th>#</th><th>TEAM</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th class="pts-col">PTS</th></tr></thead>
+            <tbody>${rows.map((r, i) => `<tr${i < DUO_QUALIFY ? ' style="background:rgba(52,211,153,0.06)"' : ''}>
+              <td>${i + 1}</td>
+              <td style="text-align:left;font-weight:700"><div style="display:flex;align-items:center;gap:8px">${duoTeamLogoHtml(r.id, 30)}<span>${duoEsc(duoTeamName(r.id))}</span></div></td>
+              <td>${r.mp}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.bp}</td><td>${r.ba}</td><td>${r.bp - r.ba > 0 ? '+' : ''}${r.bp - r.ba}</td>
+              <td class="pts-col" style="font-weight:800;color:var(--gold)">${r.pts}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div></div>`;
+    }).join('');
+};
+
+window.loadDuoFixtures = async function () {
+  await fetchDuoData(); await duoEnsureUsers();
+  const wrap = document.getElementById('duoFixturesWrap'); if (!wrap) return;
+  if (!duoMatchesCache.length) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">এখনো কোনো fixture তৈরি হয়নি।</div>`; return; }
+  const byGroup = {};
+  duoMatchesCache.forEach(m => { (byGroup[m.groupId] = byGroup[m.groupId] || []).push(m); });
+  wrap.innerHTML = Object.entries(byGroup).map(([gid, ms]) => {
+    const byRound = {};
+    ms.forEach(m => { (byRound[m.round || 1] = byRound[m.round || 1] || []).push(m); });
+    return `<div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;font-family:'Libre Caslon Text',sans-serif">🏷️ ${duoEsc(duoGroupName(gid))}</div>
+      ${Object.keys(byRound).sort((a, b) => a - b).map(r => `
+        <div style="font-size:11px;color:var(--text3);margin:10px 0 6px;font-weight:700">MATCHDAY ${r}</div>
+        ${byRound[r].map(m => `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="flex:1;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px">${duoTeamLogoHtml(m.team1Id, 28)}${duoEsc(duoTeamName(m.team1Id))}</span>
+            <span style="font-weight:800;color:${m.status === 'completed' ? 'var(--text)' : 'var(--text3)'};padding:0 10px">${m.status === 'completed' ? (duoMatchTotals(m).p1 + ' - ' + duoMatchTotals(m).p2) : 'vs'}</span>
+            <span style="flex:1;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:flex-end;gap:8px">${duoEsc(duoTeamName(m.team2Id))}${duoTeamLogoHtml(m.team2Id, 28)}</span>
+          </div>${duoBoutDetailHtml(m)}</div>`).join('')}`).join('')}
+    </div>`;
+  }).join('');
+};
+
+window.loadDuoKnockoutPublic = async function () {
+  await fetchDuoData(); await duoEnsureUsers();
+  const wrap = document.getElementById('duoKnockoutWrap'); if (!wrap) return;
+  if (!duoKnockoutCache.length) { wrap.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">এখনো কোনো knockout match যোগ হয়নি।</div>`; return; }
+  const byRound = {};
+  duoKnockoutCache.forEach(m => { (byRound[m.round || 'Round'] = byRound[m.round || 'Round'] || []).push(m); });
+  const rank = r => { const i = DUO_KO_ROUNDS.indexOf(r); return i < 0 ? 99 : i; };
+  wrap.innerHTML = Object.keys(byRound).sort((a, b) => rank(a) - rank(b)).map(round => `
+    <div style="margin-bottom:22px">
+      <div style="font-size:14px;font-weight:800;color:var(--gold);margin-bottom:10px;font-family:'Playfair Display',serif;letter-spacing:0.03em">⚡ ${duoEsc(round)}</div>
+      ${byRound[round].sort((a, b) => (a.order || 0) - (b.order || 0)).map(m => {
+        const w = duoKoWinner(m), t = duoMatchTotals(m), done = m.status === 'completed';
+        const tie = done && t.p1 === t.p2;
+        return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="flex:1;font-size:14px;font-weight:700;color:${w === m.team1Id ? 'var(--green)' : 'var(--text)'}">${duoEsc(duoTeamName(m.team1Id))}</span>
+            <span style="font-weight:800;padding:0 12px">${done ? (t.p1 + ' - ' + t.p2) : 'VS'}</span>
+            <span style="flex:1;font-size:14px;font-weight:700;text-align:right;color:${w === m.team2Id ? 'var(--green)' : 'var(--text)'}">${duoEsc(duoTeamName(m.team2Id))}</span>
+          </div>
+          ${tie && w ? `<div style="font-size:11px;color:var(--gold);margin-top:4px;text-align:center">Tie-break winner: ${duoEsc(duoTeamName(w))}</div>` : ''}
+          ${duoBoutDetailHtml(m)}</div>`;
+      }).join('')}
+    </div>`).join('');
+};
+
+window.loadDuoTeamsPublic = async function () {
+  await fetchDuoData(); await duoEnsureUsers();
+  const wrap = document.getElementById('duoTeamsWrap'); if (!wrap) return;
+  if (!duoTeamsCache.length) { wrap.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)">এখনো কোনো team নেই।</div>`; return; }
+  const gOf = id => { const g = duoGroupsCache.find(x => (x.teamIds || []).includes(id)); return g ? g.name : ''; };
+  wrap.innerHTML = duoSortedTeams().map(t => `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">${duoTeamLogoHtml(t.id, 52)}<div style="font-weight:800;color:var(--gold);font-family:'Libre Caslon Text',sans-serif">${duoEsc(duoTeamName(t.id))}</div></div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8">• ${duoEsc(duoPlayerName(t.p1Uid))}<br>• ${duoEsc(duoPlayerName(t.p2Uid))}</div>
+      ${gOf(t.id) ? `<div style="font-size:11px;color:var(--text3);margin-top:6px">🏷️ ${duoEsc(gOf(t.id))}</div>` : ''}
+    </div>`).join('');
+};
+
+// ── ADMIN: master loader ──
+window.loadDuoAdminAll = async function () {
+  await fetchDuoData(); await duoEnsureUsers();
+  duoPopulateAdminSelects();
+  renderDuoAdminTeams(); renderDuoAdminGroups(); renderDuoMatchSelect(); renderDuoAdminKnockoutList();
+  const area = document.getElementById('duoMatchEntryArea'); if (area) area.innerHTML = '';
+};
+
+function duoPopulateAdminSelects() {
+  const pOpts = '<option value="">-- Player --</option>' + duoUsersCache.map(u => `<option value="${u.uid}">${duoEsc(u.name)}</option>`).join('');
+  ['duoTeamP1', 'duoTeamP2'].forEach(id => { const el = document.getElementById(id); if (el) { const v = el.value; el.innerHTML = pOpts; el.value = v; } });
+  const tEl = document.getElementById('duoGrTeams');
+  const used = new Set(); duoGroupsCache.forEach(g => (g.teamIds || []).forEach(id => used.add(id)));
+  if (tEl) tEl.innerHTML = duoTeamsCache.map(t => `<option value="${t.id}">${duoEsc(duoTeamName(t.id))}${used.has(t.id) ? ' (group-এ আছে)' : ''}</option>`).join('');
+  const gOpts = '<option value="">-- Group বাছাই করো --</option><option value="__all__">★ সব Group একসাথে</option>' + duoGroupsCache.map(g => `<option value="${g.id}">${duoEsc(g.name)}</option>`).join('');
+  const gEl = document.getElementById('duoGenGroupSelect'); if (gEl) gEl.innerHTML = gOpts;
+  const koTeams = '<option value="">-- Team --</option>' + duoSortedTeams().map(t => `<option value="${t.id}">${duoEsc(duoTeamName(t.id))}</option>`).join('');
+  ['duoKoT1', 'duoKoT2'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = koTeams; });
+  const rEl = document.getElementById('duoKoRound'); if (rEl && !rEl.options.length) rEl.innerHTML = DUO_KO_ROUNDS.map(r => `<option>${r}</option>`).join('');
+  const srEl = document.getElementById('duoKoSrcRound'); if (srEl && !srEl.options.length) srEl.innerHTML = DUO_KO_ROUNDS.slice(0, -1).map(r => `<option>${r}</option>`).join('');
+}
+
+// ── ADMIN: Teams ──
+function renderDuoAdminTeams() {
+  const wrap = document.getElementById('duoAdminTeamsList'); if (!wrap) return;
+  if (!duoTeamsCache.length) { wrap.innerHTML = `<div style="color:var(--text3);font-size:13px">এখনো কোনো team নেই।</div>`; return; }
+  wrap.innerHTML = `<div style="font-size:12px;color:var(--text3);margin-bottom:8px">মোট ${duoTeamsCache.length}টি team</div>` +
+    duoSortedTeams().map(t => `
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:10px">${duoTeamLogoHtml(t.id, 38)}<div><strong>${duoEsc(duoTeamName(t.id))}</strong></div></div>
+      <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteDuoTeam('${t.id}')">🗑️</button>
+    </div>`).join('');
+}
+window.duoPreviewTeamName = function () {
+  const p1 = document.getElementById('duoTeamP1').value, p2 = document.getElementById('duoTeamP2').value;
+  document.getElementById('duoTeamName').value = (p1 && p2 && p1 !== p2) ? `${duoPlayerName(p1)} x ${duoPlayerName(p2)}` : '';
+};
+window.createDuoTeam = async function () {
+  await duoEnsureUsers();
+  const p1 = document.getElementById('duoTeamP1').value, p2 = document.getElementById('duoTeamP2').value;
+  const name = (p1 && p2) ? `${duoPlayerName(p1)} x ${duoPlayerName(p2)}` : '';
+  const st = document.getElementById('duoTeamStatus');
+  const bad = m => { st.textContent = m; st.style.color = 'var(--red)'; };
+  if (!name || !p1 || !p2) return bad('⚠️ ২ জন player বাছাই করো (team নাম auto হবে)।');
+  if (p1 === p2) return bad('⚠️ দুইজন আলাদা player বাছাই করো।');
+  const clash = duoTeamsCache.find(t => [t.p1Uid, t.p2Uid].some(u => u === p1 || u === p2));
+  if (clash) return bad(`⚠️ এই player আগে থেকেই "${clash.name}" team-এ আছে।`);
+  st.textContent = '⏳ Saving...'; st.style.color = 'var(--text3)';
+  await fetch(`${DUO_DB}/typduo/teams.json`, { method: 'POST', body: JSON.stringify({ name, p1Uid: p1, p2Uid: p2, createdAt: new Date().toISOString() }) });
+  document.getElementById('duoTeamName').value = ''; document.getElementById('duoTeamP1').value = ''; document.getElementById('duoTeamP2').value = '';
+  st.textContent = '✅ Team তৈরি হয়েছে!'; st.style.color = 'var(--green)';
+  await loadDuoAdminAll(); setTimeout(() => st.textContent = '', 3000);
+};
+window.deleteDuoTeam = async function (id) {
+  if (!confirm('এই team delete করতে চাও? Group/fixture থেকে আলাদাভাবে সরাতে হবে।')) return;
+  await fetch(`${DUO_DB}/typduo/teams/${id}.json`, { method: 'DELETE' });
+  await loadDuoAdminAll();
+};
+
+// ── ADMIN: Groups ──
+function renderDuoAdminGroups() {
+  const wrap = document.getElementById('duoAdminGroupsList'); if (!wrap) return;
+  if (!duoGroupsCache.length) { wrap.innerHTML = `<div style="color:var(--text3);font-size:13px">এখনো কোনো group নেই।</div>`; return; }
+  wrap.innerHTML = duoGroupsCache.map(g => `
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px">
+      <div><strong>${duoEsc(g.name)}</strong><div style="font-size:12px;color:var(--text3)">${(g.teamIds || []).map(id => duoEsc(duoTeamName(id))).join(', ')} (${(g.teamIds || []).length}টি team)</div></div>
+      <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="deleteDuoGroup('${g.id}')">🗑️</button>
+    </div>`).join('');
+}
+window.createDuoGroup = async function () {
+  const name = document.getElementById('duoGrName').value.trim();
+  const teamIds = Array.from(document.getElementById('duoGrTeams').selectedOptions).map(o => o.value);
+  const st = document.getElementById('duoGrStatus');
+  if (!name || teamIds.length < 2) { st.textContent = '⚠️ নাম দাও ও অন্তত ২টা team সিলেক্ট করো।'; st.style.color = 'var(--red)'; return; }
+  await fetch(`${DUO_DB}/typduo/groups.json`, { method: 'POST', body: JSON.stringify({ name, teamIds, createdAt: new Date().toISOString() }) });
+  document.getElementById('duoGrName').value = '';
+  st.textContent = '✅ Group তৈরি হয়েছে!'; st.style.color = 'var(--green)';
+  await loadDuoAdminAll(); setTimeout(() => st.textContent = '', 3000);
+};
+window.deleteDuoGroup = async function (id) {
+  if (!confirm('এই group delete করতে চাও? এর fixture আলাদাভাবে মুছে দিও।')) return;
+  await fetch(`${DUO_DB}/typduo/groups/${id}.json`, { method: 'DELETE' });
+  await loadDuoAdminAll();
+};
+window.duoRandomDraw = async function () {
+  const n = parseInt(document.getElementById('duoDrawN').value);
+  const st = document.getElementById('duoDrawStatus');
+  await fetchDuoData();
+  if (!n || n < 1 || n > 26 || duoTeamsCache.length < n * 2) { st.textContent = '⚠️ Group সংখ্যা ঠিক নেই (প্রতি group-এ অন্তত ২ team লাগবে)।'; st.style.color = 'var(--red)'; return; }
+  if (!confirm(`${duoTeamsCache.length}টি team ${n}টি group-এ random ভাগ হবে। আগের সব group ও group-stage fixture মুছে যাবে। চালিয়ে যাবে?`)) return;
+  const ids = duoTeamsCache.map(t => t.id);
+  for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+  const now = new Date().toISOString(), groups = {};
+  for (let i = 0; i < n; i++) groups['g' + String.fromCharCode(65 + i)] = { name: 'Group ' + String.fromCharCode(65 + i), teamIds: [], createdAt: now };
+  ids.forEach((id, i) => groups['g' + String.fromCharCode(65 + (i % n))].teamIds.push(id));
+  st.textContent = '⏳ Drawing...'; st.style.color = 'var(--text3)';
+  await fetch(`${DUO_DB}/typduo/matches.json`, { method: 'DELETE' });
+  await fetch(`${DUO_DB}/typduo/groups.json`, { method: 'PUT', body: JSON.stringify(groups) });
+  st.textContent = `✅ ${n}টি group তৈরি হয়েছে!`; st.style.color = 'var(--green)';
+  await loadDuoAdminAll();
+};
+
+// ── ADMIN: Fixtures (Circle Method single round-robin) ──
+window.generateDuoFixtures = async function () {
+  const sel = document.getElementById('duoGenGroupSelect').value, st = document.getElementById('duoGenStatus');
+  if (!sel) { st.textContent = '⚠️ একটা Group বাছাই করো।'; st.style.color = 'var(--red)'; return; }
+  await fetchDuoData();
+  const groups = sel === '__all__' ? duoGroupsCache : duoGroupsCache.filter(g => g.id === sel);
+  if (!groups.length || groups.some(g => (g.teamIds || []).length < 2)) { st.textContent = '⚠️ প্রতি group-এ অন্তত ২টা team থাকতে হবে।'; st.style.color = 'var(--red)'; return; }
+  if (!confirm('এই group(গুলো)-র আগের fixture ও result মুছে নতুন fixture তৈরি হবে (player stats রিসেট হবে না)। চালিয়ে যাবে?')) return;
+  st.textContent = '⏳ Generating...'; st.style.color = 'var(--text3)';
+  const patch = {}, now = new Date().toISOString(); let count = 0;
+  duoMatchesCache.filter(m => groups.some(g => g.id === m.groupId)).forEach(m => { patch[m.id] = null; });
+  groups.forEach(g => duoCircleRounds(g.teamIds).forEach((pairs, ri) => pairs.forEach(([a, b], k) => {
+    patch[`${g.id}_r${String(ri + 1).padStart(2, '0')}_${k}`] = { groupId: g.id, round: ri + 1, team1Id: a, team2Id: b, b1s1: null, b1s2: null, b2s1: null, b2s2: null, crossed: false, status: 'pending', createdAt: now };
+    count++;
+  })));
+  await fetch(`${DUO_DB}/typduo/matches.json`, { method: 'PATCH', body: JSON.stringify(patch) });
+  st.textContent = `✅ ${count}টি match generate হয়েছে!`; st.style.color = 'var(--green)';
+  await loadDuoAdminAll(); setTimeout(() => st.textContent = '', 4000);
+};
+
+// ── ADMIN: result entry (shared by group stage 'm' and knockout 'ko') ──
+function duoEntryHtml(kind, m) {
+  const bp = duoBoutPlayers(m) || [['', ''], ['', '']];
+  const id = `duo-${kind}-${m.id}`, done = m.status === 'completed';
+  const row = (n, pl, a, b) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:11px;color:var(--text3);width:20px">B${n}</span>
+      <span style="flex:1;font-size:13px;font-weight:700">${duoEsc(duoPlayerName(pl[0]))}</span>
+      <input type="number" min="0" class="form-input" id="${id}-b${n}s1" value="${a ?? ''}" style="width:56px;text-align:center;padding:6px">
+      <span style="color:var(--text3)">-</span>
+      <input type="number" min="0" class="form-input" id="${id}-b${n}s2" value="${b ?? ''}" style="width:56px;text-align:center;padding:6px">
+      <span style="flex:1;font-size:13px;font-weight:700;text-align:right">${duoEsc(duoPlayerName(pl[1]))}</span></div>`;
+  return `<div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px">${duoEsc(duoTeamName(m.team1Id))} <span style="color:var(--text3)">vs</span> ${duoEsc(duoTeamName(m.team2Id))}</div>
+    ${row(1, bp[0], m.b1s1, m.b1s2)}${row(2, bp[1], m.b2s1, m.b2s2)}
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin:6px 0">
+      <input type="checkbox" id="${id}-cross" ${m.crossed ? 'checked' : ''} ${done ? 'disabled' : ''} onchange="duoToggleCross('${kind}','${m.id}')"> Cross pairing (T1-P1 vs T2-P2, T1-P2 vs T2-P1)</label>
+    ${kind === 'ko' ? `<div style="display:flex;align-items:center;gap:8px;margin:6px 0"><span style="font-size:12px;color:var(--text2)">Tie (১-১ বা ০-০) হলে winner:</span>
+      <select class="form-input" id="${id}-tb" style="flex:1;padding:6px"><option value="">—</option>
+        <option value="${m.team1Id}" ${m.tiebreakWinnerId === m.team1Id ? 'selected' : ''}>${duoEsc(duoTeamName(m.team1Id))}</option>
+        <option value="${m.team2Id}" ${m.tiebreakWinnerId === m.team2Id ? 'selected' : ''}>${duoEsc(duoTeamName(m.team2Id))}</option></select></div>` : ''}
+    <button class="btn btn-gold" style="padding:8px 20px;font-size:13px;margin-top:4px" onclick="duoSaveResult('${kind}','${m.id}')">💾 Save Result</button>
+    <span id="${id}-st" style="margin-left:10px;font-size:13px"></span>
+    ${done ? duoCardControlsHtml(kind, m) : ''}`;
+}
+function duoCardControlsHtml(kind, m) {
+  const bp = duoBoutPlayers(m); if (!bp) return '';
+  const id = `duo-${kind}-${m.id}`, saved = (window._duoCardMvp || {})[id] || '';
+  const players = [...bp[0], ...bp[1]];
+  return `<div style="margin-top:14px;padding:12px;background:var(--card2);border:1px dashed var(--secondary);border-radius:10px">
+    <div style="font-weight:700;color:var(--secondary);margin-bottom:8px;font-size:13px">🎴 Matchday Card (TYP DUO TOURNAMENT • SEASON 1)</div>
+    <label class="form-label" style="font-size:12px">Man of the Match বাছাই করো</label>
+    <select class="form-input" id="${id}-mvp" style="margin-bottom:8px;width:100%"><option value="">-- MVP (auto-detect) --</option>
+      ${players.map(u => `<option value="${u}" ${saved === u ? 'selected' : ''}>${duoEsc(duoPlayerName(u))}</option>`).join('')}</select>
+    <button class="btn btn-gold" style="margin-top:4px;padding:8px 20px;font-size:13px" onclick="downloadDuoMatchdayCard('${kind}','${m.id}')">🎴 Matchday Card ডাউনলোড করো</button>
+  </div>`;
+}
+
+// 🎴 Duo Matchday Card — 4-Man QUADRIX card-এর same design, heading "TYP DUO TOURNAMENT · SEASON 1",
+// team name = "Player1 x Player2", team logo = দুইজনের ছবি এক frame-এ।
+window.downloadDuoMatchdayCard = async function (kind, mid) {
+  const cache = kind === 'm' ? duoMatchesCache : duoKnockoutCache, m = cache.find(x => x.id === mid);
+  if (!m || m.status !== 'completed') { alert('⚠️ আগে result Save করো।'); return; }
+  const bp = duoBoutPlayers(m); if (!bp) { alert('❌ Team পাওয়া যায়নি।'); return; }
+  const t1 = duoTeam(m.team1Id), t2 = duoTeam(m.team2Id);
+  const um = {}; (await getAllUsers()).forEach(u => um[u.uid] = u);
+  const nm = uid => (um[uid] || {}).name || 'Unknown', av = uid => (um[uid] || {}).avatarUrl || '';
+  const matches = [[bp[0], m.b1s1, m.b1s2], [bp[1], m.b2s1, m.b2s2]].map(([pl, a, b]) => ({
+    homeScore: a, awayScore: b, player1: nm(pl[0]), player2: nm(pl[1]), player1uid: pl[0], player2uid: pl[1],
+    p1AvatarUrl: av(pl[0]), p2AvatarUrl: av(pl[1]) }));
+  const sel = document.getElementById(`duo-${kind}-${mid}-mvp`), chosen = sel ? sel.value : '';
+  window._duoCardMvp = window._duoCardMvp || {}; window._duoCardMvp[`duo-${kind}-${mid}`] = chosen;
+  const { mvpName } = _computeMatchupMvp(matches, chosen ? nm(chosen) : '');
+  if (!mvpName) { alert('⚠️ MVP নির্ধারণ করা যায়নি।'); return; }
+  const mvpRating = _calcAvgMvpRating(matches, mvpName);
+  let mvpUid = '', oppUid = '', myScore = null, oppScore = null, mvpTeamId = '';
+  for (const mt of matches) {
+    if (mt.player1 === mvpName) { mvpUid = mt.player1uid; oppUid = mt.player2uid; myScore = mt.homeScore; oppScore = mt.awayScore; mvpTeamId = m.team1Id; break; }
+    if (mt.player2 === mvpName) { mvpUid = mt.player2uid; oppUid = mt.player1uid; myScore = mt.awayScore; oppScore = mt.homeScore; mvpTeamId = m.team2Id; break; }
+  }
+  const tot = duoMatchTotals(m);
+  const dayLabel = kind === 'm' ? `${duoGroupName(m.groupId)} • MD${m.round || '?'}` : (m.round || 'Knockout');
+  const homeName = duoTeamName(m.team1Id), awayName = duoTeamName(m.team2Id);
+  await _renderF4mQuadrixCard({
+    homeTeamName: homeName, awayTeamName: awayName, homeTotal: tot.p1, awayTotal: tot.p2,
+    homeLogoUrl: av(t1.p1Uid), homeLogo2Url: av(t1.p2Uid), awayLogoUrl: av(t2.p1Uid), awayLogo2Url: av(t2.p2Uid), splitLogos: true,
+    matches, dayLabel, mvpName, mvpTeamName: duoTeamName(mvpTeamId), mvpAvatarUrl: av(mvpUid),
+    opponentName: nm(oppUid), opponentAvatarUrl: av(oppUid), myScore, oppScore, mvpRating,
+    seasonLabelText: 'TYP DUO TOURNAMENT · SEASON 1', modeLabel: '2V2 DUO MATCHDAY', scoreLabel: 'FINAL SCORE',
+    filePrefix: 'TYP-DUO-S1-Matchday', fileSuffix: `${homeName}-vs-${awayName}`
+  });
+};
+function duoReadInputs(kind, m) {
+  const id = `duo-${kind}-${m.id}`;
+  ['b1s1', 'b1s2', 'b2s1', 'b2s2'].forEach(f => { const el = document.getElementById(`${id}-${f}`); if (el) m[f] = el.value === '' ? null : parseInt(el.value); });
+  const tb = document.getElementById(`${id}-tb`); if (tb) m.tiebreakWinnerId = tb.value || null;
+}
+window.duoToggleCross = function (kind, mid) {
+  const cache = kind === 'm' ? duoMatchesCache : duoKnockoutCache, m = cache.find(x => x.id === mid); if (!m) return;
+  duoReadInputs(kind, m);
+  m.crossed = document.getElementById(`duo-${kind}-${mid}-cross`).checked;
+  document.getElementById(`duoEntry-${kind}-${mid}`).innerHTML = duoEntryHtml(kind, m);
+};
+
+function renderDuoMatchSelect() {
+  const sel = document.getElementById('duoMatchSelect'); if (!sel) return;
+  const sorted = [...duoMatchesCache].sort((a, b) => (a.groupId || '').localeCompare(b.groupId || '') || (a.round || 0) - (b.round || 0));
+  sel.innerHTML = '<option value="">-- Match বাছাই করো --</option>' + sorted.map(m => `<option value="${m.id}">[${duoEsc(duoGroupName(m.groupId))} • MD${m.round || '?'}] ${duoEsc(duoTeamName(m.team1Id))} vs ${duoEsc(duoTeamName(m.team2Id))} ${m.status === 'completed' ? '✅' : '⏳'}</option>`).join('');
+}
+window.loadDuoMatchForEntry = function () {
+  const id = document.getElementById('duoMatchSelect').value, area = document.getElementById('duoMatchEntryArea');
+  const m = duoMatchesCache.find(x => x.id === id);
+  if (!m) { area.innerHTML = ''; return; }
+  area.innerHTML = `<div id="duoEntry-m-${m.id}" style="margin:16px 0;padding:14px;background:var(--card2);border:1px solid var(--border);border-radius:12px">${duoEntryHtml('m', m)}</div>`;
+};
+
+async function duoApplyPlayerStat(base, uid, goalsFor, result) {
+  const add = s => ({
+    matches: (s.matches || 0) + 1, wins: (s.wins || 0) + (result === 'w' ? 1 : 0),
+    draws: (s.draws || 0) + (result === 'd' ? 1 : 0), losses: (s.losses || 0) + (result === 'l' ? 1 : 0),
+    goalsFor: (s.goalsFor || 0) + goalsFor
+  });
+  await fetch(`${DUO_DB}/users/${uid}.json`, { method: 'PATCH', body: JSON.stringify(add(base)) });
+  await fetch(`${DUO_DB}/users/${uid}/statsDuo.json`, { method: 'PUT', body: JSON.stringify(add(base.statsDuo || {})) });
+}
+
+window.duoSaveResult = async function (kind, mid) {
+  const cache = kind === 'm' ? duoMatchesCache : duoKnockoutCache, path = kind === 'm' ? 'matches' : 'knockout';
+  const m = cache.find(x => x.id === mid); if (!m) return;
+  const id = `duo-${kind}-${mid}`, st = document.getElementById(`${id}-st`);
+  const vals = {};
+  for (const f of ['b1s1', 'b1s2', 'b2s1', 'b2s2']) {
+    const v = document.getElementById(`${id}-${f}`).value.trim();
+    if (v === '') { st.textContent = '⚠️ ৪টা score-ই বসাও।'; st.style.color = 'var(--red)'; return; }
+    vals[f] = parseInt(v);
+  }
+  const crossed = document.getElementById(`${id}-cross`).checked;
+  const tbEl = document.getElementById(`${id}-tb`), tb = tbEl ? tbEl.value : '';
+  const probe = { ...m, ...vals, crossed }, t = duoMatchTotals(probe);
+  if (kind === 'ko' && t.p1 === t.p2 && !tb) { st.textContent = '⚠️ Tie হয়েছে — Tie-break winner সিলেক্ট করো।'; st.style.color = 'var(--red)'; return; }
+  st.textContent = '⏳ Saving...'; st.style.color = 'var(--text3)';
+  const wasDone = m.status === 'completed', wasLogged = !!m.historyLogged;
+  const patch = { ...vals, crossed, status: 'completed', team1Pts: t.p1, team2Pts: t.p2, historyLogged: true, updatedAt: new Date().toISOString() };
+  if (kind === 'ko') patch.tiebreakWinnerId = (t.p1 === t.p2) ? tb : null;
+  await fetch(`${DUO_DB}/typduo/${path}/${mid}.json`, { method: 'PATCH', body: JSON.stringify(patch) });
+  const bp = duoBoutPlayers(probe);
+  if (bp) {
+    const allUsers = await getAllUsers(), um = {}; allUsers.forEach(u => um[u.uid] = u);
+    const bouts = [[bp[0], vals.b1s1, vals.b1s2], [bp[1], vals.b2s1, vals.b2s2]];
+    for (const [pl, g1, g2] of bouts) {
+      if (!um[pl[0]] || !um[pl[1]]) continue;
+      if (!wasDone) {
+        await duoApplyPlayerStat(um[pl[0]], pl[0], g1, g1 > g2 ? 'w' : g1 < g2 ? 'l' : 'd');
+        await duoApplyPlayerStat(um[pl[1]], pl[1], g2, g2 > g1 ? 'w' : g2 < g1 ? 'l' : 'd');
+      }
+      if (!wasLogged) typRecordMatchHistory({ homeName: um[pl[0]].name, awayName: um[pl[1]].name, homeScore: g1, awayScore: g2, tournament: kind === 'm' ? 'Duo' : 'Duo Knockout', round: kind === 'ko' ? (m.round || '') : '' });
+    }
+  }
+  window._allUsersCache = [];
+  st.textContent = '✅ Saved!'; st.style.color = 'var(--green)';
+  await fetchDuoData();
+  if (kind === 'm') { renderDuoMatchSelect(); document.getElementById('duoMatchSelect').value = mid; loadDuoMatchForEntry(); }
+  else renderDuoAdminKnockoutList();
+};
+
+// ── ADMIN: Knockout ──
+function renderDuoAdminKnockoutList() {
+  const wrap = document.getElementById('duoAdminKnockoutList'); if (!wrap) return;
+  if (!duoKnockoutCache.length) { wrap.innerHTML = `<div style="color:var(--text3);font-size:13px">এখনো কোনো knockout match নেই।</div>`; return; }
+  const rank = r => { const i = DUO_KO_ROUNDS.indexOf(r); return i < 0 ? 99 : i; };
+  const sorted = [...duoKnockoutCache].sort((a, b) => rank(a.round) - rank(b.round) || (a.order || 0) - (b.order || 0));
+  wrap.innerHTML = sorted.map(m => `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="font-size:12px;color:var(--gold)">${duoEsc(m.round || 'Round')}</strong>
+        <button class="btn btn-outline" style="padding:3px 10px;font-size:10px;color:var(--red);border-color:var(--red)" onclick="deleteDuoKnockoutMatch('${m.id}')">🗑️</button>
+      </div>
+      <div id="duoEntry-ko-${m.id}">${duoEntryHtml('ko', m)}</div>
+    </div>`).join('');
+}
+window.createDuoKnockoutMatch = async function () {
+  const round = document.getElementById('duoKoRound').value, t1 = document.getElementById('duoKoT1').value, t2 = document.getElementById('duoKoT2').value;
+  const st = document.getElementById('duoKoAddStatus');
+  if (!round || !t1 || !t2 || t1 === t2) { st.textContent = '⚠️ Round ও দুইটা আলাদা team বাছাই করো।'; st.style.color = 'var(--red)'; return; }
+  await fetch(`${DUO_DB}/typduo/knockout.json`, { method: 'POST', body: JSON.stringify({ round, team1Id: t1, team2Id: t2, b1s1: null, b1s2: null, b2s1: null, b2s2: null, crossed: false, status: 'pending', order: Date.now(), createdAt: new Date().toISOString() }) });
+  st.textContent = '✅ যোগ হয়েছে!'; st.style.color = 'var(--green)';
+  await fetchDuoData(); renderDuoAdminKnockoutList(); setTimeout(() => st.textContent = '', 3000);
+};
+window.deleteDuoKnockoutMatch = async function (id) {
+  if (!confirm('এই knockout match delete করতে চাও?')) return;
+  await fetch(`${DUO_DB}/typduo/knockout/${id}.json`, { method: 'DELETE' });
+  await fetchDuoData(); renderDuoAdminKnockoutList();
+};
+async function duoPutKoMatches(round, pairs) {
+  const patch = {}, base = Date.now(), now = new Date().toISOString(), slug = round.replace(/\s+/g, '').toLowerCase();
+  duoKnockoutCache.filter(m => m.round === round).forEach(m => { patch[m.id] = null; });
+  pairs.forEach(([a, b], i) => { patch[`${slug}_${String(i + 1).padStart(2, '0')}`] = { round, team1Id: a, team2Id: b, b1s1: null, b1s2: null, b2s1: null, b2s2: null, crossed: false, status: 'pending', order: base + i, createdAt: now }; });
+  await fetch(`${DUO_DB}/typduo/knockout.json`, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+// Group-pair (A-B, C-D, ...) cross seeding: A1-B4, A2-B3, A3-B2, A4-B1 → no same-group clash in Round of 32
+window.generateDuoR32 = async function () {
+  const st = document.getElementById('duoKoGenStatus');
+  await fetchDuoData();
+  if (duoGroupsCache.length !== 8) { st.textContent = '⚠️ এই auto-seed ঠিক ৮টা group-এর জন্য। বাকি ক্ষেত্রে manual যোগ করো।'; st.style.color = 'var(--red)'; return; }
+  const top = duoGroupsCache.map(g => duoGroupStandings(g).slice(0, DUO_QUALIFY).map(r => r.id));
+  if (top.some(a => a.length < DUO_QUALIFY)) { st.textContent = '⚠️ কোনো group-এ ৪টা team নেই।'; st.style.color = 'var(--red)'; return; }
+  const pending = duoMatchesCache.filter(m => m.status !== 'completed').length;
+  if (!confirm(`Group stage-এ এখনো ${pending}টি match বাকি। এখনকার standings ধরে Round of 32 তৈরি হবে (আগের Round of 32 মুছে যাবে)। চালিয়ে যাবে?`)) return;
+  const pairs = [];
+  for (let i = 0; i < 8; i += 2) for (let k = 0; k < DUO_QUALIFY; k++) pairs.push([top[i][k], top[i + 1][DUO_QUALIFY - 1 - k]]);
+  await duoPutKoMatches('Round of 32', pairs);
+  st.textContent = `✅ Round of 32: ${pairs.length}টি match তৈরি হয়েছে!`; st.style.color = 'var(--green)';
+  await fetchDuoData(); renderDuoAdminKnockoutList();
+};
+window.generateDuoNextRound = async function () {
+  const src = document.getElementById('duoKoSrcRound').value, st = document.getElementById('duoKoGenStatus');
+  await fetchDuoData();
+  const ms = duoKnockoutCache.filter(m => m.round === src).sort((a, b) => (a.order || 0) - (b.order || 0));
+  if (!ms.length) { st.textContent = `⚠️ ${src}-এ কোনো match নেই।`; st.style.color = 'var(--red)'; return; }
+  const winners = ms.map(duoKoWinner);
+  if (winners.some(w => !w)) { st.textContent = `⚠️ ${src}-এর সব match শেষ হয়নি (বা tie-break winner বাকি)।`; st.style.color = 'var(--red)'; return; }
+  if (winners.length % 2) { st.textContent = '⚠️ জোড় সংখ্যক match দরকার।'; st.style.color = 'var(--red)'; return; }
+  const next = DUO_KO_ROUNDS[DUO_KO_ROUNDS.indexOf(src) + 1];
+  if (!confirm(`${src}-এর winner দিয়ে "${next}" তৈরি হবে (আগের ${next} match থাকলে মুছে যাবে)। চালিয়ে যাবে?`)) return;
+  const pairs = []; for (let i = 0; i < winners.length; i += 2) pairs.push([winners[i], winners[i + 1]]);
+  await duoPutKoMatches(next, pairs);
+  st.textContent = `✅ ${next}: ${pairs.length}টি match তৈরি হয়েছে!`; st.style.color = 'var(--green)';
+  await fetchDuoData(); renderDuoAdminKnockoutList();
+};
+
+
 // ── Tournament Type Selector navigation ──
 window.selectTournamentType = function(type) {
   document.getElementById('trnTypeSelector').style.display = 'none';
   document.getElementById('trnAuctionView').style.display = 'none';
   document.getElementById('trn4ManView').style.display = 'none';
   document.getElementById('trnSoloView').style.display = 'none';
+  document.getElementById('trnDuoView').style.display = 'none';
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (type === 'auction') {
     document.getElementById('trnPageTitle').textContent = '🏆 AUCTION TOURNAMENT';
@@ -14492,6 +15150,10 @@ window.selectTournamentType = function(type) {
     document.getElementById('trnPageTitle').textContent = '🎮 SOLO TOURNAMENT';
     document.getElementById('trnSoloView').style.display = 'block';
     if (typeof loadSoloTournament === 'function') loadSoloTournament();
+  } else if (type === 'duo') {
+    document.getElementById('trnPageTitle').textContent = '🤝 DUO TOURNAMENT';
+    document.getElementById('trnDuoView').style.display = 'block';
+    if (typeof loadDuoTournament === 'function') loadDuoTournament();
   }
 };
 
@@ -14500,6 +15162,7 @@ window.backToTournamentSelector = function() {
   document.getElementById('trnAuctionView').style.display = 'none';
   document.getElementById('trn4ManView').style.display = 'none';
   document.getElementById('trnSoloView').style.display = 'none';
+  document.getElementById('trnDuoView').style.display = 'none';
   document.getElementById('trnTypeSelector').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'instant' });
 };
