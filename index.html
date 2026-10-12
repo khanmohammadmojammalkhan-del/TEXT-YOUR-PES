@@ -2860,15 +2860,16 @@
 .msw-card{text-align:left;position:relative;aspect-ratio:10/11;border-radius:18px;overflow:hidden;background:#05060b;border:1px solid rgba(201,162,74,.35);cursor:pointer;transition:transform .2s;box-shadow:0 12px 32px rgba(0,0,0,.4);isolation:isolate}
 .msw-card:hover{transform:translateY(-4px)}
 .msw-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(201,162,74,.28),transparent 62%);z-index:0}
-.msw-ph{position:absolute;left:8%;right:8%;top:8%;height:63%;width:84%;object-fit:cover;object-position:center 40%;border-radius:14px;z-index:1;-webkit-mask-image:linear-gradient(#000 90%,transparent);mask-image:linear-gradient(#000 90%,transparent);box-sizing:border-box}
+.msw-ph{position:absolute;left:8%;right:8%;top:7%;height:55%;width:84%;object-fit:cover;object-position:center 40%;border-radius:14px;z-index:1;-webkit-mask-image:linear-gradient(#000 90%,transparent);mask-image:linear-gradient(#000 90%,transparent);box-sizing:border-box}
 div.msw-ph{display:flex;align-items:center;justify-content:center;font-size:80px;background:#11131c}
-.msw-fade{position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(transparent,#05060b 72%);z-index:2}
+.msw-fade{position:absolute;left:0;right:0;bottom:0;height:50%;background:linear-gradient(transparent,#05060b 72%);z-index:2}
 .msw-new{position:absolute;top:12px;left:12px;background:#e63946;color:#fff;font-size:10px;font-weight:900;letter-spacing:.08em;padding:4px 10px;border-radius:99px;z-index:4}
 .msw-rank{position:absolute;top:12px;right:12px;background:linear-gradient(135deg,#f5c842,#b8860b);color:#1a1200;font-size:10px;font-weight:900;letter-spacing:.08em;padding:4px 10px;border-radius:99px;z-index:4}
-.msw-kick{position:absolute;left:18px;right:18px;bottom:104px;font-size:9px;font-weight:800;letter-spacing:.28em;color:#c9a24a;z-index:3}
-.msw-txt{position:absolute;left:18px;right:18px;bottom:52px;text-align:left;font:900 22px/1.05 'Libre Caslon Text',sans-serif;text-transform:uppercase;color:#fff;word-break:break-word;z-index:3}
+.msw-bot{position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:3}
+.msw-kick{font-size:9px;font-weight:800;letter-spacing:.22em;color:#c9a24a}
+.msw-txt{text-align:left;font:900 22px/1.12 'Libre Caslon Text',sans-serif;text-transform:uppercase;color:#fff;word-break:break-word}
 .msw-txt b{color:#f5c842}
-.msw-pills{position:absolute;left:18px;right:18px;bottom:14px;display:flex;gap:4px;flex-wrap:wrap;z-index:3}
+.msw-pills{display:flex;gap:4px;flex-wrap:wrap}
 .msw-pills span{border:1px solid rgba(201,162,74,.4);border-radius:6px;padding:3px 6px;font-size:9px;font-weight:700;color:#cfd2dc;background:rgba(201,162,74,.08);white-space:nowrap}
 .msw-pills span i{font-style:normal;color:#fff;margin-left:3px}
 .msw-home{max-width:1040px;margin:26px auto 0;padding:0 16px}.msw-home .msw-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-bottom:14px}
@@ -2895,10 +2896,10 @@ div.msw-ph{display:flex;align-items:center;justify-content:center;font-size:80px
 (function(){
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DEFS=[
- {k:'wins',  tiers:[100,50,25,10], label:n=>n+' WINS',    pts:{100:100,50:70,25:45,10:25}},
- {k:'goals', tiers:[100,50,25],    label:n=>n+' GOALS',   pts:{100:95,50:65,25:40}},
- {k:'mvp',   tiers:[25,10,5],      label:n=>n+' MVP AWARDS',pts:{25:90,10:55,5:30}},
- {k:'matches',tiers:[100,50,25],   label:n=>n+' MATCHES', pts:{100:80,50:50,25:28}}
+ {k:'wins',  tiers:[100,50,25,10], label:n=>n+' WINS',    pts:{100:95,50:65,25:25,10:10}},
+ {k:'goals', tiers:[200,150,100,50,25], label:n=>n+' GOALS',   pts:{200:85,150:75,100:60,50:30,25:15}},
+ {k:'mvp',   tiers:[25,10,5],      label:n=>n+' MVP AWARDS',pts:{25:90,10:58,5:12}},
+ {k:'matches',tiers:[100,50,25],   label:n=>n+' MATCHES', pts:{100:70,50:20,25:10}}
 ];
 const RING='NATIONAL COMMUNITY OF TYP CHAMPIONSHIP • ';
 function card(p,m,rank,opt){
@@ -2909,9 +2910,9 @@ function card(p,m,rank,opt){
   return `<div class="msw-card" ${p.uid&&!opt.noClick?`onclick="openPublicProfile('${esc(p.uid)}')"`:''}>
    ${ph}
    ${m.ts&&Date.now()-m.ts<7*864e5?'<div class="msw-new">🔥 NEW</div>':''}<div class="msw-rank">${rank?'TYP RANK '+rank:'TYP PLAYER'}</div><div class="msw-fade"></div>
-   <div class="msw-kick">${m.text?'★ MILESTONE UNLOCKED':'★ TYP PLAYER'}</div>
+   <div class="msw-bot"><div class="msw-kick">${m.text?'★ MILESTONE UNLOCKED':'★ TYP PLAYER'}</div>
    <div class="msw-txt" style="font-size:${fs}px"><b>${esc(nm)}</b>${m.text?` REACHES <b>${m.text}</b>`:''}</div>
-   <div class="msw-pills">${pill('PL',p.pl)}${pill('W',p.wins||0)}${pill('D',p.draws||0)}${pill('L',p.losses||0)}${pill('GF',p.goalsFor||0)}${p.goalsAgainst?pill('GA',p.goalsAgainst):''}${p.cs?pill('CS',p.cs):''}${pill('MVP',p.mvp||0)}</div>
+   <div class="msw-pills">${pill('PL',p.pl)}${pill('W',p.wins||0)}${pill('D',p.draws||0)}${pill('L',p.losses||0)}${pill('GF',p.goalsFor||0)}${p.goalsAgainst?pill('GA',p.goalsAgainst):''}${p.cs?pill('CS',p.cs):''}${pill('MVP',p.mvp||0)}</div></div>
   </div>`;
 }
 function renderProfileHeader(){
@@ -2966,7 +2967,7 @@ function renderHome(items){
 };
 window.typHomeMilestonesInit=function(){
   try{
-    const c=JSON.parse(localStorage.getItem('typ_msw_v2')||'null');
+    const c=JSON.parse(localStorage.getItem('typ_msw_v3')||'null');
     if(c&&c.items&&Date.now()-c.ts<6*3600*1000){renderHome(c.items);return;}
   }catch(_){}
   if(typeof loadRecordsPage==='function')loadRecordsPage();
@@ -2997,13 +2998,17 @@ window.typMilestoneWall=function(host,players,matches,nameToUid){
   const list=[];
   ps.forEach(p=>{
     const val={wins:p.wins||0,goals:p.goalsFor||0,mvp:p.mvp||0,matches:p.pl};
-    DEFS.forEach(d=>{const t=d.tiers.find(t=>val[d.k]>=t);if(t)list.push({p,k:d.k,text:d.label(t),ts:cross[p.uid+'|'+d.k+'|'+t]||0,pts:d.pts[t]+Math.min(val[d.k]-t,9)/10});});
+    let best=null;
+    DEFS.forEach(d=>{const t=d.tiers.find(t=>val[d.k]>=t);if(t){const it={p,k:d.k,text:d.label(t),ts:cross[p.uid+'|'+d.k+'|'+t]||0,pts:d.pts[t]+Math.min(val[d.k]-t,9)/10};if(!best||it.pts>best.pts)best=it;}});
+    if(best)list.push(best);
   });
   if(!list.length)return;
-  list.sort((a,b)=>(b.ts&&a.ts)?b.ts-a.ts:(b.ts?1:a.ts?-1:b.pts-a.pts));
+  list.sort((a,b)=>b.pts-a.pts||b.ts-a.ts);
+  const major=list.filter(x=>x.pts>=55);
+  if(major.length)list.splice(0,list.length,...major);
   try{
     const slim=list.slice(0,6).map(x=>({p:{uid:x.p.uid,name:x.p.name,avatarUrl:x.p.avatarUrl,pl:x.p.pl,wins:x.p.wins,draws:x.p.draws,losses:x.p.losses,goalsFor:x.p.goalsFor,goalsAgainst:x.p.goalsAgainst,cs:x.p.cs,mvp:x.p.mvp},k:x.k,text:x.text,ts:x.ts,rank:rankBy.findIndex(r=>r.uid===x.p.uid)+1}));
-    try{localStorage.setItem('typ_msw_v2',JSON.stringify({ts:Date.now(),items:slim}));}catch(_){}
+    try{localStorage.setItem('typ_msw_v3',JSON.stringify({ts:Date.now(),items:slim}));}catch(_){}
     renderHome(slim);
   }catch(_){}
   const id='mswGrid'+Date.now();
