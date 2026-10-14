@@ -3248,5 +3248,23 @@ html::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;ba
 #page-friendly>.section::before{background-image:linear-gradient(90deg,rgba(8,10,18,.75),rgba(8,10,18,0) 60%),var(--art-friend);background-position:center,50% 24%}
 </style>
 
+
+<style id="typ-anime-theme-6">
+/* ===== MOBILE TUNING: art as a poster strip (not behind text), lighter GPU load ===== */
+@media (max-width:760px){
+body::before,body::after{display:none}                         /* no big blurred layers on phones */
+html::before{background:linear-gradient(rgba(8,10,18,.7),rgba(8,10,18,.92)),var(--typ-wall,none) center/cover no-repeat}
+#page-home .hero{padding:238px 18px 40px;margin:0;border-radius:0;min-height:0}
+#page-home .hero::before{display:none}
+#page-home .hero::after{inset:0 0 auto 0;height:270px;background:var(--art-hero) center 24%/cover no-repeat;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent);opacity:1}
+#page-home .hero h1{font-size:clamp(1.9rem,9.5vw,2.5rem)}
+.trn-type-card{background-image:linear-gradient(90deg,rgba(8,10,18,.96) 35%,rgba(8,10,18,.72)),var(--art-trn)!important}
+#page-ranking>.section::before,#page-matches>.section::before,#page-friendly>.section::before{height:104px;margin-bottom:14px;border-radius:4px 16px 4px 16px;box-shadow:none}
+#page-ranking>.section::before{background-position:center,50% 6%}
+#introScreen::after{opacity:.24}
+}
+@media (max-width:760px) and (prefers-reduced-motion:no-preference){#introScreen::before{animation-duration:14s}}
+</style>
+
 </body>
 </html>
