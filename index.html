@@ -2913,6 +2913,38 @@ if(opp){let xx=x0+bad+22+scw+22;mo(oz);f.fillStyle=GOLD2;f.fillText(vs,xx,cyy+1)
 f.save();f.shadowColor="rgba(0,0,0,.85)";f.shadowBlur=10;f.textAlign="center";f.font="700 18px Inter, Arial";f.fillStyle=MUTED;const label="TYP CHAMPIONSHIP";
 if(logo){const lh=48,lw=logo.width*(lh/logo.height),tw=f.measureText(label).width+label.length*5,x0=CX-(lw+14+tw)/2;f.drawImage(logo,x0,H-86,lw,lh);f.textAlign="left";spaced(label,x0+lw+14,H-56,5)}else{spaced(label,CX+3,H-58,5)}f.restore()}
 const Z=document.createElement("a");Z.download=`TYP-MOTM-${s||"card"}.png`;Z.href=cv.toDataURL("image/png");Z.click()}function mdcApplyBoutStat(e,t,n,a,o,i){const r=t=>e[t]||(e[t]={matches:0,wins:0,draws:0,losses:0,goalsFor:0}),s=r(t),d=r(n);s.matches+=i,d.matches+=i,s.goalsFor+=i*a,d.goalsFor+=i*o,a>o?(s.wins+=i,d.losses+=i):o>a?(d.wins+=i,s.losses+=i):(s.draws+=i,d.draws+=i)}async function mdcFlushStatDeltas(e){let t=0;for(const[n,a]of Object.entries(e)){if(!(a.matches||a.wins||a.draws||a.losses||a.goalsFor))continue;const e=await fetch(`${TRN_DB}/users/${n}.json`).then(e=>e.json()).catch(()=>null);if(!e)continue;const o={matches:Math.max(0,(e.matches||0)+a.matches),wins:Math.max(0,(e.wins||0)+a.wins),draws:Math.max(0,(e.draws||0)+a.draws),losses:Math.max(0,(e.losses||0)+a.losses),goalsFor:Math.max(0,(e.goalsFor||0)+a.goalsFor)};await fetch(`${TRN_DB}/users/${n}.json`,{method:"PATCH",body:JSON.stringify(o)}),t++}return t}function mdcFmtClock(e,t){let n=e.getHours();const a=String(e.getMinutes()).padStart(2,"0"),o=n>=12?"PM":"AM";return n%=12,0===n&&(n=12),t?`${n}:${a}:${String(e.getSeconds()).padStart(2,"0")} ${o}`:`${n}:${a} ${o}`}function mdcEmojiNum(e){return String(e).split("").map(e=>e+"️⃣").join("")}function buildAuctionFixtureText(e,t,n,a,o,i){if(!e.length)return"";const r="━━━━━━━━━━━━━━━━━━",s=(e,t)=>{const n=i[e];return n&&n.name||t||"—"},d=[{label:"01",dl:"11:00 PM",resp:"10:50 PM – 11:00 PM",sub:"10:49:59 PM",bouts:e.slice(0,3)},{label:"02",dl:"12:00 AM",resp:"11:50 PM – 12:00 AM",sub:"11:49:59 PM",bouts:e.slice(3,5)},{label:"03",dl:"1:00 AM",resp:"12:50 AM – 1:00 AM",sub:"12:49:59 AM",bouts:e.slice(5,8)}];let l=0;const c=[];return c.push(`TYP AUCTION TOUR — SEASON ${o||"?"}`),c.push("MATCH DAY FIXTURE"),c.push(`${t.name||"TEAM"} vs ${n.name||"TEAM"}`),c.push(r),d.forEach(e=>{c.push(`Deadline — ${e.label}`),c.push(`Deadline : ${e.dl}`),c.push(`Response Time : ${e.resp}`),c.push(`Sub/Swap Deadline : ${e.sub}`),c.push(r),e.bouts.forEach(e=>{l++,c.push(`${mdcEmojiNum(l)} ${s(e.player1uid,e.player1)} ( ) vs ${s(e.player2uid,e.player2)} ( )`)}),c.push(r)}),c.push("POINT TABLE"),c.push(""),c.push(`${mdcEmojiNum(1)} ${t.name||"TEAM"} : 00 PTS`),c.push(`${mdcEmojiNum(2)} ${n.name||"TEAM"} : 00 PTS`),c.push(r),c.push("TYP — TEXT YOUR PES"),c.push("🌐 https://typ-bd.vercel.app/"),c.join("\n")}function mdcParseResultText(e){const t={rows:[],bad:[]};return String(e||"").split(/\r?\n/).forEach(e=>{const n=e.replace(/[০-৯]/g,e=>"০১২৩৪৫৬৭৮৯".indexOf(e)).replace(/[\uFE0F\u20E3]/g,"").trim().match(/^(\d{1,2})\s*[).:\-]?\s*(.+)$/);if(!n||!/\svs\.?\s/i.test(n[2]))return;const a=parseInt(n[1],10),o=[...n[2].matchAll(/[(\[（]\s*(\d{1,2})?\s*[)\]）]/g)];if(2!==o.length)return void t.bad.push(a);const i=n[2].replace(/[(\[（][^)\]）]*[)\]）]/g," ").split(/\s+vs\.?\s+/i).map(e=>e.trim());t.rows.push({n:a,home:o[0][1],away:o[1][1],p1:i[0]||"",p2:i[1]||""})}),t}function openPlayerChangeModal(e,t,n,a){const o=trnMatchesCache.find(e=>e.id===t);if(!o)return;const i={};trnTeamsCache.forEach(e=>i[e.id]=e);const r="home"===n?o.homeTeam:o.awayTeam,s=i[r]||{};document.getElementById("pcKey").value=e,document.getElementById("pcMatchId").value=t,document.getElementById("pcSide").value=n,document.getElementById("pcRole").value=a,document.getElementById("pcError").textContent="";const d="home"===n?o.player1uid:o.player2uid,l="home"===n?o.player1:o.player2;document.getElementById("pcInfo").textContent=`${s.name||"Team"} — এখন খেলছে: ${l||"—"}`;document.getElementById("pcPlayerSelect").innerHTML=(s.players||[]).map(e=>`<option value="${e.uid}" ${e.uid===d?"selected":""}>${e.name}</option>`).join(""),document.getElementById("playerChangeModal").classList.add("show")}async function mgrOpenPanel(e,t){window._mgrTeamId=e,window._mgrTeam=t,document.getElementById("mgrPanelTitle").textContent=`👔 ${t.name} — Manager Panel`,document.getElementById("managerPanelModal").classList.add("show"),await mgrRenderMatchdayList()}function mgrRenderLineupPickers(e){const t=(t,n,a)=>{const o=document.getElementById(t);o&&(o.innerHTML=e.map(e=>{const t=window._mgrLineupDraft[n].includes(e.uid);return`<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid ${t?"var(--primary)":"var(--border)"};border-radius:7px;margin-bottom:5px;cursor:pointer;background:${t?"rgba(99,102,241,0.08)":"transparent"}" onclick="mgrTogglePick(event,'${n}','${e.uid}',${a})">\n        <input type="checkbox" ${t?"checked":""} style="pointer-events:none">\n        <span style="font-size:13px">${e.name}</span>\n      </label>`}).join(""))};t("mgrD1List","deadline1",3),t("mgrD2List","deadline2",2),t("mgrD3List","deadline3",3)}window.koWinnerOf=function(m){return m&&m.team1&&m.team2&&m.score1!=null&&m.score2!=null&&Number(m.score1)!==Number(m.score2)?(Number(m.score1)>Number(m.score2)?m.team1:m.team2):""};
+window.koRoundLabel=r=>({qf1:"QUARTER-FINAL 1",qf2:"QUARTER-FINAL 2",semi1:"SEMI-FINAL 1",semi2:"SEMI-FINAL 2",final:"FINAL"})[r]||r.toUpperCase();
+window.koCollect=function(round){
+  const m=(trnKnockoutCache||{})[round]||{},bouts=m.bouts||{},T={};trnTeamsCache.forEach(t=>{T[t.id]=t});
+  const t1=T[m.team1],t2=T[m.team2],g=id=>document.getElementById(id),nameOf=(t,uid,fb)=>(((t||{}).players||[]).find(p=>p.uid===uid)||{}).name||fb||"";
+  const list=Object.keys(bouts).sort((a,b)=>(bouts[a].boutNumber||0)-(bouts[b].boutNumber||0)).map(id=>{
+    const b=bouts[id],s1=g(`kob_p1_${round}_${id}`),s2=g(`kob_p2_${round}_${id}`),hs=g(`kob_hs_${round}_${id}`),as=g(`kob_as_${round}_${id}`);
+    const u1=(s1&&s1.value)||b.player1uid||"",u2=(s2&&s2.value)||b.player2uid||"";
+    const h=hs&&hs.value!==""?parseInt(hs.value):(b.homeScore??null),a=as&&as.value!==""?parseInt(as.value):(b.awayScore??null);
+    return{boutNumber:b.boutNumber,player1uid:u1,player2uid:u2,player1:nameOf(t1,u1,b.player1Name),player2:nameOf(t2,u2,b.player2Name),homeScore:h,awayScore:a,homeTeam:m.team1,awayTeam:m.team2}
+  }).filter(x=>x.homeScore!=null&&x.awayScore!=null&&!isNaN(x.homeScore)&&!isNaN(x.awayScore)&&x.player1uid&&x.player2uid);
+  return{list,t1,t2,m}
+};
+window.koDownloadMotm=async function(round){
+  const {list,t1,t2}=window.koCollect(round);
+  if(!list.length)return void alert("⚠️ আগে Bout-by-bout অংশে player বেছে স্কোর বসিয়ে Save Bout Results করো।");
+  const manual=document.getElementById(`ko_mvp_${round}`)?.value||"";
+  const {mvpName,playerStats}=_computeMatchupMvp(list,manual);
+  if(!mvpName)return void alert("⚠️ MOTM নির্ধারণ করা যায়নি।");
+  let uid="",team=null,opp="",my=0,op=0;
+  for(const b of list){
+    if(b.player1===mvpName){uid=b.player1uid;team=t1;opp=b.player2||"";my=b.homeScore;op=b.awayScore;break}
+    if(b.player2===mvpName){uid=b.player2uid;team=t2;opp=b.player1||"";my=b.awayScore;op=b.homeScore;break}
+  }
+  const user=(await getAllUsers()).find(u=>u.uid===uid)||{},st=playerStats[mvpName]||{gf:0,ga:0};
+  await _renderMVPCard({playerName:mvpName,teamName:(team||{}).name||"—",teamEmoji:(team||{}).emoji||"🛡️",avatarUrl:user.avatarUrl||"",goals:st.gf,conceded:st.ga,dayLabel:window.koRoundLabel(round),fileSuffix:`${round}-${mvpName.replace(/\s+/g,"-")}`,opponentName:opp,myScore:my,oppScore:op,rating:_calcAvgMvpRating(list,mvpName)})
+};
+window.koDownloadResult=async function(round){
+  const {list,t1,t2}=window.koCollect(round);
+  if(!list.length)return void alert("⚠️ আগে Bout-by-bout অংশে player বেছে স্কোর বসিয়ে Save Bout Results করো।");
+  const manual=document.getElementById(`ko_mvp_${round}`)?.value||"";
+  await _renderResultCard({matches:list,homeTeam:t1||{name:"HOME",emoji:"🏟️"},awayTeam:t2||{name:"AWAY",emoji:"🏟️"},dayVal:window.koRoundLabel(round),fileSuffix:`${round}-${((t1||{}).name||"Home")}-vs-${((t2||{}).name||"Away")}`,overrideMvpName:manual})
+};
 function renderKnockoutAdminArea(){
   const box=document.getElementById("trnKnockoutAdminArea");if(!box)return;
   const K=trnKnockoutCache||{},teams={};
@@ -2935,7 +2967,15 @@ function renderKnockoutAdminArea(){
       <summary style="cursor:pointer;font-size:12px;color:var(--text3)">🎮 Bout-by-bout স্কোর (ঐচ্ছিক — শুধু player stats আপডেট করতে চাইলে)</summary>
       <div style="margin-top:10px">
         <button class="btn btn-outline" style="font-size:12px;padding:8px 14px" onclick="generateKnockoutBouts('${round}')">🎮 ${ids.length?"Regenerate":"Generate"} Bouts</button>
-        ${ids.length?`<div style="margin-top:10px">${rows}</div><button class="btn btn-gold" style="width:100%;padding:10px;margin-top:4px" onclick="saveKnockoutBoutResults('${round}')">💾 Save Bout Results</button>`:`<div style="font-size:11px;color:var(--text3);margin-top:6px">আগে উপরে দুই দল Save করো, তারপর Generate Bouts।</div>`}
+        ${ids.length?`<div style="margin-top:10px">${rows}</div><button class="btn btn-gold" style="width:100%;padding:10px;margin-top:4px" onclick="saveKnockoutBoutResults('${round}')">💾 Save Bout Results</button>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">🎴 Card ডাউনলোড (Bout স্কোর Save করার পর)</div>
+          <select class="form-input" id="ko_mvp_${round}" style="font-size:12px;margin-bottom:8px"><option value="">MOTM: Auto (সেরা পারফরম্যান্স)</option>${[...new Set(ids.flatMap(i=>[bouts[i].player1Name,bouts[i].player2Name]).filter(Boolean))].map(n=>`<option value="${n}">${n}</option>`).join("")}</select>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" style="flex:1;padding:10px;font-size:13px;border-color:var(--gold);color:var(--gold)" onclick="koDownloadMotm('${round}')">🎴 MOTM Card</button>
+            <button class="btn btn-outline" style="flex:1;padding:10px;font-size:13px;border-color:var(--secondary);color:var(--secondary)" onclick="koDownloadResult('${round}')">📸 Match Result Card</button>
+          </div>
+        </div>`:`<div style="font-size:11px;color:var(--text3);margin-top:6px">আগে উপরে দুই দল Save করো, তারপর Generate Bouts।</div>`}
       </div>
     </details>`};
 
