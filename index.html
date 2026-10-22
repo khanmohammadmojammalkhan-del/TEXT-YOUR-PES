@@ -2032,6 +2032,15 @@
   </div>
 
   <div class="trn-admin-section">
+    <div class="trn-admin-section-title">📥 Player Result Uploads — Approve All</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+      <button class="btn btn-gold" onclick="rsAdminConfirmAll()" style="padding:9px 20px;font-size:13px">✅ Approve All Pending Results</button>
+      <span style="font-size:12px;color:var(--text3)">সব matchday-র player-upload করা pending result একসাথে confirm হবে</span>
+    </div>
+    <div class="rs-all-msg" style="font-size:12px;color:var(--green);margin-bottom:10px;line-height:1.7"></div>
+  </div>
+
+  <div class="trn-admin-section">
     <div class="trn-admin-section-title">⚡ Knockout Stage</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.7">নিয়ম খুব সহজ: ম্যাচ শেষ হলে <b>দুই দলের স্কোর বসিয়ে Save</b> চাপো। তারপর <b>🤖 Auto Fill</b> চাপলেই পরের রাউন্ডের দল নিজে বসে যাবে (QF → Semi → Final)। Final-এর স্কোর Save করলে Champion নিজেই ঠিক হয়ে যায়।</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
@@ -2358,6 +2367,11 @@
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">🗓️ Matchday Control</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতিটা matchup-এর জন্য lineup submission unlock/lock করো, deadline সেট করো, এবং lineup জমা হওয়ার পর "Start Matchday" চেপে draw + fixture তৈরি করো।</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+      <button class="btn btn-gold" onclick="rsAdminConfirmAll()" style="padding:9px 20px;font-size:13px">✅ Approve All Pending Results</button>
+      <span style="font-size:12px;color:var(--text3)">সব matchday-র player-upload করা pending result একসাথে confirm হবে</span>
+    </div>
+    <div class="rs-all-msg" style="font-size:12px;color:var(--green);margin-bottom:10px;line-height:1.7"></div>
     <button class="btn btn-outline" onclick="loadMatchdayControlList()" style="padding:9px 20px;font-size:13px;margin-bottom:14px">🔄 Load Matchups</button>
     <div id="mdcList"><div style="text-align:center;padding:40px;color:var(--text3)">"Load Matchups" চাপুন।</div></div>
   </div>
@@ -3698,7 +3712,21 @@ function mgrInit(team){
   }
   const s=$("tcMgrSearch");if(s)s.value="";
   mgrChosen();mgrRender(users);
+  mgrRoleInit(team);
   if(typeof window.filterPlayerPick==="function")window.filterPlayerPick();
+}
+/* Manager starter হবে নাকি sub — admin ঠিক করবে (বাধ্যতামূলক নয়) */
+function mgrRoleInit(team){
+  let sel=$("tcMgrRole");
+  if(!sel){
+    const host=$("tcMgrChosen");if(!host)return;
+    const w=document.createElement("div");w.style.cssText="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)";
+    w.innerHTML='<span>👔 Manager-এর ভূমিকা:</span><select id="tcMgrRole" class="form-input" style="flex:1;padding:6px 8px;font-size:12px"><option value="starter">Starter (প্রথম ৯ জনে)</option><option value="sub">Sub (বদলি)</option></select>';
+    host.insertAdjacentElement("afterend",w);sel=$("tcMgrRole");
+  }
+  let role="starter";
+  if(team){const uid=window._tcMgr&&window._tcMgr.uid,p=(team.players||[]).find(x=>x&&uid&&x.uid===uid);if(p&&!p.isStarter)role="sub";}
+  sel.value=role;
 }
 
 /* hooks into existing functions */
@@ -3718,9 +3746,13 @@ window.renderPlayerPickList=function(list){
 const _sv=window.saveTeam;
 window.saveTeam=async function(){
   if(!window._tcMgr){const e=$("createTeamError");if(e)e.textContent="❌ আগে Manager select করুন (Step 1)।";return;}
-  /* Manager-ও সাধারণ player-এর মতো খেলবে: squad-এর প্রথমে (starter) যোগ হবে */
+  /* Manager squad-এ থাকবে; Starter হলে প্রথমে, Sub হলে শেষে বসবে */
   const mu=window._tcMgr.uid;
-  if(mu){const i=_playerPickSelected.indexOf(mu);if(i>-1)_playerPickSelected.splice(i,1);_playerPickSelected.unshift(mu);}
+  if(mu){
+    const i=_playerPickSelected.indexOf(mu);if(i>-1)_playerPickSelected.splice(i,1);
+    const role=($("tcMgrRole")||{}).value||"starter";
+    if(role==="sub")_playerPickSelected.push(mu);else _playerPickSelected.unshift(mu);
+  }
   return _sv.apply(this,arguments);
 };
 /* Manager select থাকলে বাকি player সর্বোচ্চ ১০ জন (১০ + Manager = ১১) */
@@ -3732,7 +3764,7 @@ window.togglePlayerPick=function(uid,el){
 };
 /* পুরনো team-এ manager squad-এ না থাকলে একবারে যোগ করে দেয় */
 window.typAddManagersToSquads=async function(){
-  if(!confirm("যেসব team-এর squad-এ Manager নেই, তাকে squad-এর প্রথমে (starter) যোগ করা হবে। Continue?"))return;
+  if(!confirm("যেসব team-এর squad-এ Manager নেই, তাকে squad-এর শেষে (Sub হিসেবে) যোগ করা হবে; বিদ্যমান starter বদলাবে না। পরে Edit Team থেকে Manager-কে Starter করা যাবে। Continue?"))return;
   const DBU=(typeof TRN_DB!=="undefined"?TRN_DB:""),{list}=await usersMap();
   const r=await fetch(DBU+"/tournament/teams.json"),teams=await r.json()||{};
   let added=0,skip=0,full=[];
@@ -3742,12 +3774,12 @@ window.typAddManagersToSquads=async function(){
     if(!mu&&t.manager)mu=list.find(x=>(x.name||"").trim().toLowerCase()===String(t.manager).trim().toLowerCase());
     if(!mu||pl.some(p=>p.uid===mu.uid)){skip++;continue}
     if(pl.length>=11){full.push(t.name||id);continue}
-    const np=[{uid:mu.uid,name:mu.name||t.manager||"—"},...pl].map((p,i)=>({...p,isStarter:i<9}));
+    const np=[...pl,{uid:mu.uid,name:mu.name||t.manager||"—"}].map((p,i)=>({...p,isStarter:i<9}));
     const body={players:np};if(!t.managerUid)body.managerUid=mu.uid;
     const ok=(await fetch(DBU+"/tournament/teams/"+id+".json",{method:"PATCH",body:JSON.stringify(body)})).ok;
     if(ok)added++;await new Promise(e=>setTimeout(e,150));
   }
-  alert("✅ "+added+"টা team-এ manager যোগ হয়েছে, "+skip+"টা আগে থেকেই ঠিক ছিল."+(full.length?"\n⚠️ আগে থেকেই ১১ জন, তাই বাদ: "+full.join(", "):"")+"\n\nFixture আগে generate হয়ে থাকলে 🔄 Regenerate Fixtures চাপো।");
+  alert("✅ "+added+"টা team-এ manager (Sub হিসেবে) যোগ হয়েছে, "+skip+"টা আগে থেকেই ঠিক ছিল."+(full.length?"\n⚠️ আগে থেকেই ১১ জন, তাই বাদ: "+full.join(", "):"")+"\n\nFixture আগে generate হয়ে থাকলে 🔄 Regenerate Fixtures চাপো।");
   try{await loadTrnAdminTeams()}catch(e){}
 };
 
@@ -4385,6 +4417,7 @@ async function adminRender(key){
       <button class="btn btn-gold" onclick="rsAdminConfirm('${key}')" style="padding:7px 14px;font-size:11px;flex:1">✅ Confirm Selected &amp; Save to Profiles</button>
       <button class="btn btn-outline" onclick="rsAdminFill('${key}')" style="padding:7px 14px;font-size:11px">⬇️ Score box-এ বসাও</button>
     </div>
+    ${pend?`<div style="margin-top:8px"><button class="btn btn-gold" onclick="rsAdminConfirmKey('${key}')" style="padding:7px 14px;font-size:11px;width:100%">✅ Approve ALL ${pend} Pending (এই matchday-র সব bout একসাথে)</button></div>`:""}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
       <button class="btn btn-outline" onclick="rsCopyUpdated('${key}')" style="padding:7px 14px;font-size:11px;flex:1">📋 Copy Updated Fixture</button>
       <button class="btn btn-outline" onclick="rsCopyLink('${key}')" style="padding:7px 14px;font-size:11px">🔗 Upload Link</button>
@@ -4419,6 +4452,56 @@ window.rsAdminConfirm=async function(key){
       await fetch(SUBS+"/"+key+"/"+id+".json",{method:"PATCH",body:JSON.stringify({status:"confirmed",confirmedAt:new Date().toISOString()})});ok++}}
   await adminRender(key);
   const m2=$("rs-admin-msg-"+key);if(m2)m2.textContent=`✅ ${ok}/${ids.length}টা confirm হয়েছে।`;
+};
+/* একটা matchday-র সব pending bout একসাথে confirm (DOM-এর checkbox ছাড়াই) */
+async function approveKey(key,note){
+  const subs=await get(SUBS+"/"+key+".json")||{};
+  const ids=Object.entries(subs).filter(([id,x])=>x&&x.status==="pending").map(([id])=>id);
+  if(!ids.length)return 0;
+  if(!$("mdc-fixture-"+key))return 0;
+  if(typeof window.mdcShowFixture==="function")await window.mdcShowFixture(key);
+  const n=await fillBoxes(key,ids);
+  if(!n)return 0;
+  await window.mdcSaveBoutResults(key);
+  const match={};(typeof trnMatchesCache!=="undefined"?trnMatchesCache:[]).forEach(x=>match[x.id]=x);
+  const fresh=await get(SUBS+"/"+key+".json")||{};let ok=0;
+  for(const id of ids){
+    const b=match[id],sb=fresh[id];
+    if(b&&sb&&b.status==="completed"&&Number(b.homeScore)===Number(sb.homeScore)&&Number(b.awayScore)===Number(sb.awayScore)){
+      await fetch(SUBS+"/"+key+"/"+id+".json",{method:"PATCH",body:JSON.stringify({status:"confirmed",confirmedAt:new Date().toISOString()})});ok++}}
+  return ok;
+}
+window.rsAdminConfirmKey=async function(key){
+  const subs=await get(SUBS+"/"+key+".json")||{};
+  const n=Object.values(subs).filter(x=>x&&x.status==="pending").length;
+  if(!n)return alert("কোনো pending upload নেই।");
+  if(!confirm(`✅ এই matchday-র ${n}টা pending result সব একসাথে confirm করে player profile-এ save করবে?\n\n(Proof screenshot দেখে নিয়েছ তো?)`))return;
+  const m=$("rs-admin-msg-"+key);if(m)m.textContent="⏳ Saving...";
+  const _b=window.typResultBanner;window.typResultBanner=function(){};
+  let ok=0;try{ok=await approveKey(key)}finally{window.typResultBanner=_b}
+  await adminRender(key);
+  const m2=$("rs-admin-msg-"+key);if(m2)m2.textContent=`✅ ${ok}/${n}টা confirm হয়েছে।`;
+};
+/* সব matchday-র সব pending result একসাথে confirm */
+window.rsAdminConfirmAll=async function(){
+  const out=[...document.querySelectorAll(".rs-all-msg")],say=t=>out.forEach(e=>e.textContent=t);
+  say("⏳ Pending result খুঁজছি...");
+  const all=await get(SUBS+".json")||{};
+  const keys=Object.entries(all).map(([k,v])=>[k,Object.values(v||{}).filter(x=>x&&x.status==="pending").length]).filter(x=>x[1]>0);
+  const total=keys.reduce((a,x)=>a+x[1],0);
+  if(!total){say("");return alert("কোনো pending player upload নেই।")}
+  if(!confirm(`✅ ${keys.length}টা matchday-র মোট ${total}টা pending result একসাথে confirm করে player profile-এ save করবে?\n\n(Proof screenshot দেখে নিয়েছ তো? Confirm-এর পর বদলাতে হলে আলাদাভাবে edit করতে হবে।)`)){say("");return}
+  if(typeof window.loadMatchdayControlList==="function"&&keys.some(([k])=>!$("mdc-fixture-"+k))){say("⏳ Matchday list load হচ্ছে...");await window.loadMatchdayControlList()}
+  const _b=window.typResultBanner;window.typResultBanner=function(){};
+  let ok=0,fail=[],i=0;
+  try{
+    for(const [k,n] of keys){
+      i++;say(`⏳ ${i}/${keys.length} matchday confirm হচ্ছে...`);
+      try{const c=await approveKey(k);ok+=c;if(c<n)fail.push(k)}catch(e){console.warn("approve all",k,e);fail.push(k)}
+    }
+  }finally{window.typResultBanner=_b}
+  say(`✅ ${ok}/${total}টা result confirm হয়েছে।`+(fail.length?` ⚠️ ${fail.length}টা matchday-তে সব bout হয়নি — ওই matchday খুলে আলাদা করে দেখো।`:""));
+  try{if(typeof window.loadMatchdayControlList==="function")await window.loadMatchdayControlList()}catch(e){}
 };
 window.rsAdminEdit=async function(key,id){
   const sb=await get(SUBS+"/"+key+"/"+id+".json");if(!sb)return;
