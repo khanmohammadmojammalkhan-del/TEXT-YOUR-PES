@@ -4181,8 +4181,6 @@ window.rsChangeOpen=function(id,side){
     <div style="font-size:12px;color:var(--text3);margin-bottom:10px">${esc(team.name||"Team")} — এখন খেলছে: <b style="color:var(--text)">${esc(curName||"—")}</b></div>
     <div class="form-group"><label class="form-label">নতুন Player বাছাই করো</label>
       <select class="form-input" id="rsChgSel"><option value="">-- Player বাছাই করো --</option>${opts}</select></div>
-    <div class="form-group"><label class="form-label">${esc(team.name||"Team")} Manager Password</label>
-      <input type="password" class="form-input" id="rsChgPass" placeholder="Manager password" autocomplete="off"></div>
     <div id="rsChgMsg" style="font-size:12px;margin-bottom:10px;line-height:1.6;color:var(--red)"></div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-gold" id="rsChgBtn" style="flex:1" onclick="rsChangeConfirm()">✅ Confirm Change</button>
@@ -4193,16 +4191,13 @@ window.rsChangeConfirm=async function(){
   const c=S.chg||{},id=c.id,side=c.side,msg=$("rsChgMsg"),btn=$("rsChgBtn");
   const say=(t,col)=>{msg.style.color=col||"var(--red)";msg.textContent=t};
   const b=S.bouts.find(x=>x.id===id);if(!b)return;
-  const newUid=$("rsChgSel").value,pass=$("rsChgPass").value;
+  const newUid=$("rsChgSel").value;
   if(!newUid)return say("নতুন player বাছাই করো।");
-  if(!pass)return say("এই team-এর Manager password দাও।");
   const teamId=side==="home"?b.homeTeam:b.awayTeam,uk=side==="home"?"player1uid":"player2uid",nk=side==="home"?"player1":"player2";
   btn.disabled=true;say("⏳ চেক করছি...","var(--text3)");
   try{
     const team=await get(DB+"/tournament/teams/"+teamId+".json");
-    if(!team||!team.managerPassword)throw new Error("এই team-এর manager password সেট করা নেই — Admin-কে জানাও।");
-    const hashed=typeof window.typHashPassword==="function"?await window.typHashPassword(pass):pass;
-    if(pass!==team.managerPassword&&hashed!==team.managerPassword)throw new Error("ভুল Manager password।");
+    if(!team)throw new Error("Team পাওয়া যায়নি।");
     const [fresh,cur,matches,used]=await Promise.all([get(DB+"/tournament/matches/"+id+".json"),get(SUBS+"/"+S.key+"/"+id+".json"),get(DB+"/tournament/matches.json"),get(DB+"/tournament/matchdaySubs/"+S.key+"/"+teamId+".json")]);
     if(!fresh)throw new Error("Bout পাওয়া যায়নি।");
     if((fresh.status==="completed"&&fresh.homeScore!=null)||(cur&&cur.status!=="rejected"))throw new Error("এই bout-এর result upload/confirm হয়ে গেছে — আর player বদলানো যাবে না।");
