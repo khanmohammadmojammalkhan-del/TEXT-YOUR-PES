@@ -2003,6 +2003,7 @@
       <button class="btn btn-outline" onclick="openCreateTeamModal()" style="padding:9px 20px;font-size:13px">➕ Create New Team</button>
       <button class="btn" onclick="confirmRegenerateFixtures()" style="padding:9px 20px;font-size:13px;background:rgba(52,211,153,0.1);border:1px solid var(--green);color:var(--green)">🔄 Regenerate Fixtures</button>
       <button class="btn" onclick="fixStartersTo9()" style="padding:9px 20px;font-size:13px;background:rgba(251,191,36,0.1);border:1px solid var(--gold);color:var(--gold)">🔧 Fix Starters (→9)</button>
+      <button class="btn" onclick="typAddManagersToSquads()" style="padding:9px 20px;font-size:13px;background:rgba(96,165,250,0.1);border:1px solid var(--primary);color:var(--primary)">👔 Add Managers to Squad</button>
     </div>
   </div>
 
@@ -3717,7 +3718,37 @@ window.renderPlayerPickList=function(list){
 const _sv=window.saveTeam;
 window.saveTeam=async function(){
   if(!window._tcMgr){const e=$("createTeamError");if(e)e.textContent="❌ আগে Manager select করুন (Step 1)।";return;}
+  /* Manager-ও সাধারণ player-এর মতো খেলবে: squad-এর প্রথমে (starter) যোগ হবে */
+  const mu=window._tcMgr.uid;
+  if(mu){const i=_playerPickSelected.indexOf(mu);if(i>-1)_playerPickSelected.splice(i,1);_playerPickSelected.unshift(mu);}
   return _sv.apply(this,arguments);
+};
+/* Manager select থাকলে বাকি player সর্বোচ্চ ১০ জন (১০ + Manager = ১১) */
+const _tg=window.togglePlayerPick;
+window.togglePlayerPick=function(uid,el){
+  const m=window._tcMgr&&window._tcMgr.uid;
+  if(m&&!_playerPickSelected.includes(uid)&&_playerPickSelected.filter(x=>x!==m).length>=10){alert("Maximum 10 player + Manager = 11 জন (9 starters + 2 subs)।");return;}
+  return _tg.apply(this,arguments);
+};
+/* পুরনো team-এ manager squad-এ না থাকলে একবারে যোগ করে দেয় */
+window.typAddManagersToSquads=async function(){
+  if(!confirm("যেসব team-এর squad-এ Manager নেই, তাকে squad-এর প্রথমে (starter) যোগ করা হবে। Continue?"))return;
+  const DBU=(typeof TRN_DB!=="undefined"?TRN_DB:""),{list}=await usersMap();
+  const r=await fetch(DBU+"/tournament/teams.json"),teams=await r.json()||{};
+  let added=0,skip=0,full=[];
+  for(const [id,t] of Object.entries(teams)){
+    const pl=(t.players||[]).filter(Boolean);
+    let mu=t.managerUid&&list.find(x=>x.uid===t.managerUid);
+    if(!mu&&t.manager)mu=list.find(x=>(x.name||"").trim().toLowerCase()===String(t.manager).trim().toLowerCase());
+    if(!mu||pl.some(p=>p.uid===mu.uid)){skip++;continue}
+    if(pl.length>=11){full.push(t.name||id);continue}
+    const np=[{uid:mu.uid,name:mu.name||t.manager||"—"},...pl].map((p,i)=>({...p,isStarter:i<9}));
+    const body={players:np};if(!t.managerUid)body.managerUid=mu.uid;
+    const ok=(await fetch(DBU+"/tournament/teams/"+id+".json",{method:"PATCH",body:JSON.stringify(body)})).ok;
+    if(ok)added++;await new Promise(e=>setTimeout(e,150));
+  }
+  alert("✅ "+added+"টা team-এ manager যোগ হয়েছে, "+skip+"টা আগে থেকেই ঠিক ছিল."+(full.length?"\n⚠️ আগে থেকেই ১১ জন, তাই বাদ: "+full.join(", "):"")+"\n\nFixture আগে generate হয়ে থাকলে 🔄 Regenerate Fixtures চাপো।");
+  try{await loadTrnAdminTeams()}catch(e){}
 };
 
 /* ───────── Card renderer ───────── */
@@ -4163,16 +4194,27 @@ window.rsClose=function(){
   try{if(/[?&]md=/.test(location.search))history.replaceState(null,"",location.pathname)}catch(e){}
 };
 
+/* Manager-ও খেলোয়াড়: team.players-এ manager না থাকলে squad-এ যোগ করো (মোট ১১ জন) */
+function rsSquad(team){
+  const sq=(team.players||[]).filter(Boolean).slice();
+  let mu=null;
+  const users=window._trnAllUsers||[];
+  if(team.managerUid)mu=users.find(x=>x.uid===team.managerUid)||{uid:team.managerUid,name:team.manager};
+  if(!mu&&team.manager)mu=users.find(x=>(x.name||"").trim().toLowerCase()===String(team.manager).trim().toLowerCase());
+  if(mu&&mu.uid&&!sq.some(p=>p.uid===mu.uid))sq.push({uid:mu.uid,name:mu.name||team.manager||"Manager",isManager:true});
+  else if(mu&&mu.uid)sq.forEach(p=>{if(p.uid===mu.uid)p.isManager=true});
+  return sq;
+}
 window.rsChangeClose=function(){const m=$("rsChgModal");if(m)m.remove()};
 window.rsChangeOpen=function(id,side){
   const b=S.bouts.find(x=>x.id===id);if(!b)return;
   const team=side==="home"?S.home:S.away;
   const curUid=side==="home"?b.player1uid:b.player2uid,curName=side==="home"?b.player1:b.player2;
-  const squad=team.players||[];
+  const squad=rsSquad(team);
   if(!squad.length){alert("❌ এই team-এর squad পাওয়া যায়নি।");return}
   const playing={};
   S.bouts.forEach((x,i)=>{const u=side==="home"?x.player1uid:x.player2uid;if(u)playing[u]=i+1});
-  const opts=squad.filter(p=>p.uid!==curUid).map(p=>`<option value="${esc(p.uid)}">${esc(p.name||"—")}${playing[p.uid]?" — ⇄ Swap (Bout #"+playing[p.uid]+")":" — 🔁 Sub"}</option>`).join("");
+  const opts=squad.filter(p=>p.uid!==curUid).map(p=>`<option value="${esc(p.uid)}">${esc(p.name||"—")}${p.isManager?" 👔":""}${playing[p.uid]?" — ⇄ Swap (Bout #"+playing[p.uid]+")":" — 🔁 Sub"}</option>`).join("");
   rsChangeClose();
   S.chg={id,side};
   const d=document.createElement("div");d.id="rsChgModal";d.className="modal-overlay show";d.style.zIndex="100000";
@@ -4212,7 +4254,7 @@ window.rsChangeConfirm=async function(){
     const u=used||{subsUsed:0,swapsUsed:0};
     if(other&&(u.swapsUsed||0)>=2)throw new Error("2টা Swap Card ব্যবহার হয়ে গেছে।");
     if(!other&&(u.subsUsed||0)>=2)throw new Error("2টা Substitution Card ব্যবহার হয়ে গেছে।");
-    const np=(team.players||[]).find(p=>p.uid===newUid),newName=(np&&np.name)||"—";
+    const np=rsSquad(team).find(p=>p.uid===newUid),newName=(np&&np.name)||"—";
     const patch=async(mid,body)=>{const r=await fetch(DB+"/tournament/matches/"+mid+".json",{method:"PATCH",body:JSON.stringify(body)});if(!r.ok)throw new Error("Save হয়নি — আবার চেষ্টা করো।")};
     await patch(id,{[uk]:newUid,[nk]:newName});
     if(other)await patch(other.id,{[uk]:oldUid,[nk]:oldName});
