@@ -2034,8 +2034,8 @@
   <div class="trn-admin-section">
     <div class="trn-admin-section-title">📥 Player Result Uploads — Approve All</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-      <button class="btn btn-gold" onclick="rsAdminConfirmAll()" style="padding:9px 20px;font-size:13px">✅ Approve All Pending Results</button>
-      <span style="font-size:12px;color:var(--text3)">সব matchday-র player-upload করা pending result একসাথে confirm হবে</span>
+      <button class="btn btn-gold" onclick="rsAdminConfirmAll()" style="padding:9px 20px;font-size:13px">👁 Review &amp; Approve All Pending</button>
+      <span style="font-size:12px;color:var(--text3)">কে কী upload করেছে দেখে, ঠিক থাকলে সব matchday-র result একসাথে confirm করো</span>
     </div>
     <div class="rs-all-msg" style="font-size:12px;color:var(--green);margin-bottom:10px;line-height:1.7"></div>
   </div>
@@ -2368,8 +2368,8 @@
     <div class="trn-admin-section-title">🗓️ Matchday Control</div>
     <p style="font-size:13px;color:var(--text3);margin-bottom:14px">প্রতিটা matchup-এর জন্য lineup submission unlock/lock করো, deadline সেট করো, এবং lineup জমা হওয়ার পর "Start Matchday" চেপে draw + fixture তৈরি করো।</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-      <button class="btn btn-gold" onclick="rsAdminConfirmAll()" style="padding:9px 20px;font-size:13px">✅ Approve All Pending Results</button>
-      <span style="font-size:12px;color:var(--text3)">সব matchday-র player-upload করা pending result একসাথে confirm হবে</span>
+      <button class="btn btn-gold" onclick="rsAdminConfirmAll()" style="padding:9px 20px;font-size:13px">👁 Review &amp; Approve All Pending</button>
+      <span style="font-size:12px;color:var(--text3)">কে কী upload করেছে দেখে, ঠিক থাকলে সব matchday-র result একসাথে confirm করো</span>
     </div>
     <div class="rs-all-msg" style="font-size:12px;color:var(--green);margin-bottom:10px;line-height:1.7"></div>
     <button class="btn btn-outline" onclick="loadMatchdayControlList()" style="padding:9px 20px;font-size:13px;margin-bottom:14px">🔄 Load Matchups</button>
@@ -4327,7 +4327,7 @@ window.rsSubmit=async function(id){
   const b=S.bouts.find(x=>x.id===id);if(!b)return;
   const side=S.who[id];
   if(!side)return say("আগে সিলেক্ট করো তুমি কে।");
-  const my=parseInt($("rs-my-"+id).value),op=parseInt($("rs-op-"+id).value),file=null;
+  const my=parseInt($("rs-my-"+id).value),op=parseInt($("rs-op-"+id).value),file=($("rs-file-"+id)||{files:[]}).files[0]||null;
   if(isNaN(my)||isNaN(op)||my<0||op<0||my>99||op>99)return say("দুই জনের goal সঠিকভাবে লেখো।");
   if(my<op)return say("শুধু বিজয়ী (বা ড্র হলে যেকোনো একজন) upload করবে — তোমার goal কম হলে প্রতিপক্ষ upload করবে।");
   const uid=side==="home"?b.player1uid:b.player2uid,name=side==="home"?b.player1:b.player2;
@@ -4408,7 +4408,7 @@ async function adminRender(key){
         <input type="checkbox" class="rs-chk" data-id="${b.id}" ${sb.status==="pending"?"checked":"disabled"}>
         <div style="flex:1;min-width:0">
           <div>#${i+1} ${esc(b.player1||"—")} <b style="color:var(--gold)">${esc(sb.homeScore)} – ${esc(sb.awayScore)}</b> ${esc(b.player2||"—")}</div>
-          <div style="font-size:10px;color:var(--text3)">by ${esc(sb.uploaderName||"?")} · ${esc(fmtT(sb.submittedAt))} · ${badge(sb.status)}${ok?"":' · <span style="color:var(--red)">⚠️ bout-এর player বদলেছে</span>'}</div>
+          <div style="font-size:10px;color:var(--text3)">by ${esc(sb.uploaderName||"?")} · ${esc(fmtT(sb.submittedAt))} · ${badge(sb.status)}${sb.proofUrl?` · <a href="${esc(sb.proofUrl)}" target="_blank" rel="noopener" style="color:var(--gold)">🖼️ Screenshot</a>`:""}${ok?"":' · <span style="color:var(--red)">⚠️ bout-এর player বদলেছে</span>'}</div>
         </div>
         ${sb.status==="pending"?`<button class="btn btn-outline" onclick="rsAdminEdit('${key}','${b.id}')" style="padding:4px 8px;font-size:10px" title="Score edit">✏️</button><button class="btn btn-outline" onclick="rsAdminReject('${key}','${b.id}')" style="padding:4px 8px;font-size:10px" title="Reject">✖</button>`:""}
         <button class="btn btn-outline" onclick="rsAdminDelete('${key}','${b.id}')" style="padding:4px 8px;font-size:10px" title="Delete">🗑</button>
@@ -4417,7 +4417,7 @@ async function adminRender(key){
       <button class="btn btn-gold" onclick="rsAdminConfirm('${key}')" style="padding:7px 14px;font-size:11px;flex:1">✅ Confirm Selected &amp; Save to Profiles</button>
       <button class="btn btn-outline" onclick="rsAdminFill('${key}')" style="padding:7px 14px;font-size:11px">⬇️ Score box-এ বসাও</button>
     </div>
-    ${pend?`<div style="margin-top:8px"><button class="btn btn-gold" onclick="rsAdminConfirmKey('${key}')" style="padding:7px 14px;font-size:11px;width:100%">✅ Approve ALL ${pend} Pending (এই matchday-র সব bout একসাথে)</button></div>`:""}
+    ${pend?`<div style="margin-top:8px"><button class="btn btn-gold" onclick="rsAdminConfirmKey('${key}')" style="padding:7px 14px;font-size:11px;width:100%">👁 Review &amp; Approve ALL ${pend} Pending (এই matchday)</button></div>`:""}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
       <button class="btn btn-outline" onclick="rsCopyUpdated('${key}')" style="padding:7px 14px;font-size:11px;flex:1">📋 Copy Updated Fixture</button>
       <button class="btn btn-outline" onclick="rsCopyLink('${key}')" style="padding:7px 14px;font-size:11px">🔗 Upload Link</button>
@@ -4440,7 +4440,7 @@ window.rsAdminFill=async function(key){
 };
 window.rsAdminConfirm=async function(key){
   const ids=picked(key);if(!ids.length)return alert("কোনো pending upload সিলেক্ট করা নেই।");
-  if(!confirm(`✅ ${ids.length}টা result confirm করে player profile-এ save করবে?\n\n(Proof screenshot দেখে নিয়েছ তো?)`))return;
+  if(!confirm(`✅ ${ids.length}টা result confirm করে player profile-এ save করবে?\n\n(কে কী score দিয়েছে দেখে নিয়েছ তো?)`))return;
   const m=$("rs-admin-msg-"+key);if(m)m.textContent="⏳ Saving...";
   await fillBoxes(key,ids);
   await window.mdcSaveBoutResults(key);
@@ -4454,9 +4454,9 @@ window.rsAdminConfirm=async function(key){
   const m2=$("rs-admin-msg-"+key);if(m2)m2.textContent=`✅ ${ok}/${ids.length}টা confirm হয়েছে।`;
 };
 /* একটা matchday-র সব pending bout একসাথে confirm (DOM-এর checkbox ছাড়াই) */
-async function approveKey(key,note){
+async function approveKey(key,onlyIds){
   const subs=await get(SUBS+"/"+key+".json")||{};
-  const ids=Object.entries(subs).filter(([id,x])=>x&&x.status==="pending").map(([id])=>id);
+  const ids=Object.entries(subs).filter(([id,x])=>x&&x.status==="pending"&&(!onlyIds||onlyIds.includes(id))).map(([id])=>id);
   if(!ids.length)return 0;
   if(!$("mdc-fixture-"+key))return 0;
   if(typeof window.mdcShowFixture==="function")await window.mdcShowFixture(key);
@@ -4471,38 +4471,93 @@ async function approveKey(key,note){
       await fetch(SUBS+"/"+key+"/"+id+".json",{method:"PATCH",body:JSON.stringify({status:"confirmed",confirmedAt:new Date().toISOString()})});ok++}}
   return ok;
 }
-window.rsAdminConfirmKey=async function(key){
-  const subs=await get(SUBS+"/"+key+".json")||{};
-  const n=Object.values(subs).filter(x=>x&&x.status==="pending").length;
-  if(!n)return alert("কোনো pending upload নেই।");
-  if(!confirm(`✅ এই matchday-র ${n}টা pending result সব একসাথে confirm করে player profile-এ save করবে?\n\n(Proof screenshot দেখে নিয়েছ তো?)`))return;
-  const m=$("rs-admin-msg-"+key);if(m)m.textContent="⏳ Saving...";
-  const _b=window.typResultBanner;window.typResultBanner=function(){};
-  let ok=0;try{ok=await approveKey(key)}finally{window.typResultBanner=_b}
-  await adminRender(key);
-  const m2=$("rs-admin-msg-"+key);if(m2)m2.textContent=`✅ ${ok}/${n}টা confirm হয়েছে।`;
-};
-/* সব matchday-র সব pending result একসাথে confirm */
-window.rsAdminConfirmAll=async function(){
-  const out=[...document.querySelectorAll(".rs-all-msg")],say=t=>out.forEach(e=>e.textContent=t);
-  say("⏳ Pending result খুঁজছি...");
+/* ───── Review & Approve: কে কোন bout-এর result upload করেছে দেখে তবেই approve ───── */
+window.rsReviewClose=function(){const m=$("rsReviewModal");if(m)m.remove()};
+async function rsReviewBuild(onlyKey){
   const all=await get(SUBS+".json")||{};
-  const keys=Object.entries(all).map(([k,v])=>[k,Object.values(v||{}).filter(x=>x&&x.status==="pending").length]).filter(x=>x[1]>0);
-  const total=keys.reduce((a,x)=>a+x[1],0);
-  if(!total){say("");return alert("কোনো pending player upload নেই।")}
-  if(!confirm(`✅ ${keys.length}টা matchday-র মোট ${total}টা pending result একসাথে confirm করে player profile-এ save করবে?\n\n(Proof screenshot দেখে নিয়েছ তো? Confirm-এর পর বদলাতে হলে আলাদাভাবে edit করতে হবে।)`)){say("");return}
-  if(typeof window.loadMatchdayControlList==="function"&&keys.some(([k])=>!$("mdc-fixture-"+k))){say("⏳ Matchday list load হচ্ছে...");await window.loadMatchdayControlList()}
-  const _b=window.typResultBanner;window.typResultBanner=function(){};
-  let ok=0,fail=[],i=0;
+  const matches=(typeof trnMatchesCache!=="undefined"?trnMatchesCache:[]);
+  const teams=(typeof trnTeamsCache!=="undefined"?trnTeamsCache:[]);
+  const tn=id=>((teams.find(t=>t.id===id)||{}).name)||"Team";
+  const groups=[];
+  Object.entries(all).forEach(([key,v])=>{
+    if(onlyKey&&key!==onlyKey)return;
+    const bouts=matches.filter(m=>mkey(m)===key).sort((x,y)=>(x.boutNumber||0)-(y.boutNumber||0));
+    const rows=[];
+    bouts.forEach((b,i)=>{
+      const sb=(v||{})[b.id];if(!sb||sb.status!=="pending")return;
+      const warn=[];
+      if(sb.uploaderUid!==b.player1uid&&sb.uploaderUid!==b.player2uid)warn.push("uploader এই bout-এর player নয় (player বদলানো হয়েছে?)");
+      const my=sb.side==="home"?sb.homeScore:sb.awayScore,op=sb.side==="home"?sb.awayScore:sb.homeScore;
+      if(Number(my)<Number(op))warn.push("uploader নিজের হার upload করেছে");
+      if(b.status==="completed"&&b.homeScore!=null&&(Number(b.homeScore)!==Number(sb.homeScore)||Number(b.awayScore)!==Number(sb.awayScore)))warn.push(`আগে থেকে ${b.homeScore}–${b.awayScore} save করা আছে`);
+      rows.push({b,i,sb,warn});
+    });
+    if(rows.length){const f=bouts[0]||{};groups.push({key,title:`${tn(f.homeTeam)} vs ${tn(f.awayTeam)}`,rows,tn,home:tn(f.homeTeam),away:tn(f.awayTeam)})}
+  });
+  groups.sort((x,y)=>(parseInt(x.key)||0)-(parseInt(y.key)||0));
+  return groups;
+}
+window.rsReview=async function(onlyKey){
+  const msgEls=[...document.querySelectorAll(".rs-all-msg")];msgEls.forEach(e=>e.textContent="⏳ Pending result load হচ্ছে...");
+  let groups;
   try{
-    for(const [k,n] of keys){
-      i++;say(`⏳ ${i}/${keys.length} matchday confirm হচ্ছে...`);
-      try{const c=await approveKey(k);ok+=c;if(c<n)fail.push(k)}catch(e){console.warn("approve all",k,e);fail.push(k)}
+    if(typeof fetchTrnData==="function")await fetchTrnData();
+    groups=await rsReviewBuild(onlyKey);
+  }catch(e){msgEls.forEach(x=>x.textContent="");return alert("❌ Load করা যায়নি: "+(e.message||e))}
+  msgEls.forEach(e=>e.textContent="");
+  if(!groups.length)return alert("কোনো pending player upload নেই।");
+  rsReviewClose();
+  const total=groups.reduce((n,g)=>n+g.rows.length,0);
+  const d=document.createElement("div");d.id="rsReviewModal";d.className="modal-overlay show";d.style.zIndex="100000";
+  d.innerHTML=`<div class="modal-box" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">👁 Review &amp; Approve (${total}টা upload)</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:10px">কে কোন bout-এর result দিয়েছে দেখো। ঠিক থাকলে টিক রাখো, ভুল মনে হলে টিক তুলে দাও (সেটা pending-ই থাকবে)। ⚠️ চিহ্নিতগুলো আগে থেকেই আনটিক করা।</div>
+    <label style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer"><input type="checkbox" id="rsRvAll" checked> সব সিলেক্ট / আনসিলেক্ট</label>
+    ${groups.map(g=>`<div style="border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:4px">🗓️ ${esc(g.title)} <span style="font-weight:400;color:var(--text3)">· ${g.rows.length}টা upload</span></div>
+      ${g.rows.map(({b,i,sb,warn})=>{
+        const team=sb.side==="home"?g.home:g.away;
+        return `<label style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-top:1px solid var(--border);font-size:12px;cursor:pointer">
+          <input type="checkbox" class="rs-rv-chk" data-key="${esc(g.key)}" data-id="${esc(b.id)}" ${warn.length?"":"checked"} style="margin-top:3px">
+          <div style="flex:1;min-width:0">
+            <div>#${b.boutNumber||i+1} ${esc(b.player1||"—")} <b style="color:var(--gold)">${esc(sb.homeScore)} – ${esc(sb.awayScore)}</b> ${esc(b.player2||"—")}</div>
+            <div style="font-size:10px;color:var(--text3)">📤 ${esc(sb.uploaderName||"?")} (${esc(team)}) upload করেছে · ${esc(fmtT(sb.submittedAt))}${sb.editedByAdmin?" · ✏️ admin edit":""}</div>
+            ${warn.map(w=>`<div style="font-size:10px;color:var(--red)">⚠️ ${esc(w)}</div>`).join("")}
+          </div>
+          ${sb.proofUrl?`<a href="${esc(sb.proofUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="বড় করে দেখো"><img src="${esc(sb.proofUrl)}" alt="proof" style="width:96px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></a>`:""}
+          </label>`}).join("")}
+    </div>`).join("")}
+    <div id="rsRvMsg" style="font-size:12px;margin:6px 0;line-height:1.6;color:var(--green)"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" id="rsRvBtn" style="flex:1" onclick="rsReviewApprove()">✅ Approve Selected</button>
+      <button class="btn btn-outline" style="flex:1" onclick="rsReviewClose()">Cancel</button></div></div>`;
+  document.body.appendChild(d);
+  const all=$("rsRvAll");
+  all.onchange=()=>d.querySelectorAll(".rs-rv-chk").forEach(c=>c.checked=all.checked);
+};
+window.rsReviewApprove=async function(){
+  const chk=[...document.querySelectorAll("#rsReviewModal .rs-rv-chk:checked")];
+  if(!chk.length)return alert("কিছু সিলেক্ট করা নেই।");
+  const by={};chk.forEach(c=>{(by[c.dataset.key]=by[c.dataset.key]||[]).push(c.dataset.id)});
+  const keys=Object.keys(by),btn=$("rsRvBtn"),msg=$("rsRvMsg");
+  if(!confirm(`✅ ${chk.length}টা result confirm করে player profile-এ save করবে?`))return;
+  btn.disabled=true;
+  if(typeof window.loadMatchdayControlList==="function"&&keys.some(k=>!$("mdc-fixture-"+k))){msg.textContent="⏳ Matchday list load হচ্ছে...";await window.loadMatchdayControlList()}
+  const _b=window.typResultBanner;window.typResultBanner=function(){};
+  let ok=0,bad=0,i=0;
+  try{
+    for(const k of keys){
+      i++;msg.textContent=`⏳ ${i}/${keys.length} matchday confirm হচ্ছে...`;
+      try{const c=await approveKey(k,by[k]);ok+=c;bad+=by[k].length-c}catch(e){console.warn("approve",k,e);bad+=by[k].length}
     }
   }finally{window.typResultBanner=_b}
-  say(`✅ ${ok}/${total}টা result confirm হয়েছে।`+(fail.length?` ⚠️ ${fail.length}টা matchday-তে সব bout হয়নি — ওই matchday খুলে আলাদা করে দেখো।`:""));
-  try{if(typeof window.loadMatchdayControlList==="function")await window.loadMatchdayControlList()}catch(e){}
+  rsReviewClose();
+  alert(`✅ ${ok}টা result confirm হয়েছে।`+(bad?`\n⚠️ ${bad}টা confirm করা যায়নি — ওই matchday খুলে আলাদা করে দেখো।`:""));
+  try{if(typeof window.loadMatchdayControlList==="function"&&$("mdcList"))await window.loadMatchdayControlList()}catch(e){}
+  for(const k of keys){try{if($("mdc-fixture-"+k))await adminRender(k)}catch(e){}}
 };
+window.rsAdminConfirmKey=function(key){return window.rsReview(key)};
+window.rsAdminConfirmAll=function(){return window.rsReview(null)};
 window.rsAdminEdit=async function(key,id){
   const sb=await get(SUBS+"/"+key+"/"+id+".json");if(!sb)return;
   const v=prompt("সঠিক স্কোর লেখো (Home – Away), যেমন 3-1",sb.homeScore+"-"+sb.awayScore);if(v==null)return;
