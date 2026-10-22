@@ -4080,7 +4080,7 @@ function boutCard(b,i){
   return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px">
     <div style="font-size:10px;color:var(--text3);margin-bottom:6px">${dl} · Bout #${i+1}</div>
     <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:10px">
-      <span style="flex:1;min-width:0">${esc(nice(b.player1||""))}</span>${score}<span style="flex:1;min-width:0;text-align:right">${esc(nice(b.player2||""))}</span>
+      <span style="flex:1;min-width:0">${esc(nice(b.player1||""))}${st.t==="none"?`<button type="button" onclick="rsChangeOpen('${b.id}','home')" class="btn btn-outline" title="Player Change" style="padding:2px 7px;font-size:11px;margin:0 4px;vertical-align:middle">🔁</button>`:""}</span>${score}<span style="flex:1;min-width:0;text-align:right">${st.t==="none"?`<button type="button" onclick="rsChangeOpen('${b.id}','away')" class="btn btn-outline" title="Player Change" style="padding:2px 7px;font-size:11px;margin:0 4px;vertical-align:middle">🔁</button>`:""}${esc(nice(b.player2||""))}</span>
     </div>${tail}
     <div id="rs-form-${b.id}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)">${formHtml(b)}</div>
   </div>`;
@@ -4161,6 +4161,72 @@ window.rsOpen=async function(key){
 window.rsClose=function(){
   $("rsModal").classList.remove("show");
   try{if(/[?&]md=/.test(location.search))history.replaceState(null,"",location.pathname)}catch(e){}
+};
+
+window.rsChangeClose=function(){const m=$("rsChgModal");if(m)m.remove()};
+window.rsChangeOpen=function(id,side){
+  const b=S.bouts.find(x=>x.id===id);if(!b)return;
+  const team=side==="home"?S.home:S.away;
+  const curUid=side==="home"?b.player1uid:b.player2uid,curName=side==="home"?b.player1:b.player2;
+  const squad=team.players||[];
+  if(!squad.length){alert("❌ এই team-এর squad পাওয়া যায়নি।");return}
+  const playing={};
+  S.bouts.forEach((x,i)=>{const u=side==="home"?x.player1uid:x.player2uid;if(u)playing[u]=i+1});
+  const opts=squad.filter(p=>p.uid!==curUid).map(p=>`<option value="${esc(p.uid)}">${esc(p.name||"—")}${playing[p.uid]?" — ⇄ Swap (Bout #"+playing[p.uid]+")":" — 🔁 Sub"}</option>`).join("");
+  rsChangeClose();
+  S.chg={id,side};
+  const d=document.createElement("div");d.id="rsChgModal";d.className="modal-overlay show";d.style.zIndex="100000";
+  d.innerHTML=`<div class="modal-box" style="max-width:380px">
+    <div class="modal-title">🔁 Change Player</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">${esc(team.name||"Team")} — এখন খেলছে: <b style="color:var(--text)">${esc(curName||"—")}</b></div>
+    <div class="form-group"><label class="form-label">নতুন Player বাছাই করো</label>
+      <select class="form-input" id="rsChgSel"><option value="">-- Player বাছাই করো --</option>${opts}</select></div>
+    <div class="form-group"><label class="form-label">${esc(team.name||"Team")} Manager Password</label>
+      <input type="password" class="form-input" id="rsChgPass" placeholder="Manager password" autocomplete="off"></div>
+    <div id="rsChgMsg" style="font-size:12px;margin-bottom:10px;line-height:1.6;color:var(--red)"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-gold" id="rsChgBtn" style="flex:1" onclick="rsChangeConfirm()">✅ Confirm Change</button>
+      <button class="btn btn-outline" style="flex:1" onclick="rsChangeClose()">Cancel</button></div></div>`;
+  document.body.appendChild(d);
+};
+window.rsChangeConfirm=async function(){
+  const c=S.chg||{},id=c.id,side=c.side,msg=$("rsChgMsg"),btn=$("rsChgBtn");
+  const say=(t,col)=>{msg.style.color=col||"var(--red)";msg.textContent=t};
+  const b=S.bouts.find(x=>x.id===id);if(!b)return;
+  const newUid=$("rsChgSel").value,pass=$("rsChgPass").value;
+  if(!newUid)return say("নতুন player বাছাই করো।");
+  if(!pass)return say("এই team-এর Manager password দাও।");
+  const teamId=side==="home"?b.homeTeam:b.awayTeam,uk=side==="home"?"player1uid":"player2uid",nk=side==="home"?"player1":"player2";
+  btn.disabled=true;say("⏳ চেক করছি...","var(--text3)");
+  try{
+    const team=await get(DB+"/tournament/teams/"+teamId+".json");
+    if(!team||!team.managerPassword)throw new Error("এই team-এর manager password সেট করা নেই — Admin-কে জানাও।");
+    const hashed=typeof window.typHashPassword==="function"?await window.typHashPassword(pass):pass;
+    if(pass!==team.managerPassword&&hashed!==team.managerPassword)throw new Error("ভুল Manager password।");
+    const [fresh,cur,matches,used]=await Promise.all([get(DB+"/tournament/matches/"+id+".json"),get(SUBS+"/"+S.key+"/"+id+".json"),get(DB+"/tournament/matches.json"),get(DB+"/tournament/matchdaySubs/"+S.key+"/"+teamId+".json")]);
+    if(!fresh)throw new Error("Bout পাওয়া যায়নি।");
+    if((fresh.status==="completed"&&fresh.homeScore!=null)||(cur&&cur.status!=="rejected"))throw new Error("এই bout-এর result upload/confirm হয়ে গেছে — আর player বদলানো যাবে না।");
+    const oldUid=fresh[uk],oldName=fresh[nk]||"—";
+    if(newUid===oldUid)throw new Error("একই player — কোনো পরিবর্তন হয়নি।");
+    const same=Object.entries(matches||{}).map(([i,m])=>({id:i,...m})).filter(m=>mkey(m)===S.key);
+    const other=same.find(m=>m.id!==id&&m[uk]===newUid);
+    if(other){
+      const oc=await get(SUBS+"/"+S.key+"/"+other.id+".json");
+      if((other.status==="completed"&&other.homeScore!=null)||(oc&&oc.status!=="rejected"))throw new Error("যার সাথে swap হবে তার bout-এর result আগেই এসে গেছে।");
+    }
+    const u=used||{subsUsed:0,swapsUsed:0};
+    if(other&&(u.swapsUsed||0)>=2)throw new Error("2টা Swap Card ব্যবহার হয়ে গেছে।");
+    if(!other&&(u.subsUsed||0)>=2)throw new Error("2টা Substitution Card ব্যবহার হয়ে গেছে।");
+    const np=(team.players||[]).find(p=>p.uid===newUid),newName=(np&&np.name)||"—";
+    const patch=async(mid,body)=>{const r=await fetch(DB+"/tournament/matches/"+mid+".json",{method:"PATCH",body:JSON.stringify(body)});if(!r.ok)throw new Error("Save হয়নি — আবার চেষ্টা করো।")};
+    await patch(id,{[uk]:newUid,[nk]:newName});
+    if(other)await patch(other.id,{[uk]:oldUid,[nk]:oldName});
+    await fetch(DB+"/tournament/matchdaySubs/"+S.key+"/"+teamId+".json",{method:"PATCH",body:JSON.stringify(other?{swapsUsed:(u.swapsUsed||0)+1}:{subsUsed:(u.subsUsed||0)+1})});
+    rsChangeClose();
+    alert("✅ "+(other?"Swap":"Substitution")+" সম্পন্ন! "+oldName+" → "+newName);
+    try{if(typeof fetchTrnData==="function")fetchTrnData()}catch(e){}
+    await rsOpen(S.key);
+  }catch(e){say("❌ "+(e.message||e));btn.disabled=false}
 };
 window.rsToggleForm=function(id){const f=$("rs-form-"+id);if(f)f.style.display=f.style.display==="none"?"block":"none"};
 window.rsPickWho=function(id,side){
