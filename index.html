@@ -2348,6 +2348,10 @@
   </div>
 </div>
 
+<style>
+/* Ballon d'Or Fan Vote Ranking — শুধু PC/ডেস্কটপে দেখাবে, মোবাইল/ট্যাবলেটে লুকানো */
+@media (max-width:1024px), (hover:none) and (pointer:coarse){.bda-pc-only{display:none!important}}
+</style>
 <!-- ADMIN BALLON D'OR VOTING SECTION -->
 <div class="admin-section" id="adminTab-ballondor">
   <div style="max-width:760px">
@@ -2385,9 +2389,11 @@
     <div id="bdaSaveStatus" style="font-size:13px;color:var(--green);margin-bottom:24px"></div>
 
     <!-- Fan Vote Ranking -->
+    <div class="bda-pc-only">
     <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;border-top:1px solid var(--border);padding-top:18px">📊 Fan Vote Ranking</div>
     <div id="bdaRankingTable" style="margin-bottom:24px">
       <div style="color:var(--text3);font-size:13px">লোড হচ্ছে...</div>
+    </div>
     </div>
 
     <!-- Vote log / fraud check -->
