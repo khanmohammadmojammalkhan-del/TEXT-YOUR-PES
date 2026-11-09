@@ -8525,5 +8525,74 @@ nav,.bottom-nav,.bd-card,.bd-rank-row,.bd-pick-slot,.match1v1-row,.user-dropdown
 .modal-overlay,.xi-modal{background:rgba(2,6,14,.45)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 [data-theme=light] .modal-overlay,[data-theme=light] .xi-modal{background:rgba(220,228,244,.4)!important}
 </style>
+<script>
+/* ===== TYP AI Result Reader — list text → score auto-fill ===== */
+(function(){
+  var AI_URL="https://typ-ai-proxy.vercel.app/api/read-result";
+  var norm=function(s){return String(s||"").toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g,"")};
+  var like=function(a,b){a=norm(a);b=norm(b);return !!a&&!!b&&(a.indexOf(b)>-1||b.indexOf(a)>-1)};
+
+  function getToken(force){
+    var t=null;try{t=localStorage.getItem("typAiToken")}catch(e){}
+    if(!t||force){t=(prompt("AI Admin Token দাও (একবারই লাগবে):")||"").trim();
+      try{if(t)localStorage.setItem("typAiToken",t)}catch(e){}}
+    return t;
+  }
+  /* Auto Fill box-এর নিচে AI box বসানো (matchup খুললেই HTML নতুন করে আঁকা হয়, তাই observer) */
+  function inject(){
+    var st=document.getElementById("trn-paste-status");
+    if(!st||document.getElementById("trn-ai-box"))return;
+    var d=document.createElement("div");d.id="trn-ai-box";
+    d.style.cssText="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)";
+    d.innerHTML='<button class="btn btn-gold" onclick="trnAiReadShots()" style="padding:7px 14px;font-size:11px;width:100%">🤖 AI দিয়ে Score Fill করো (উপরের list থেকে)</button>'+
+      '<div id="trn-ai-status" style="font-size:11px;margin-top:6px;line-height:1.6"></div>';
+    st.parentNode.appendChild(d);
+  }
+  new MutationObserver(inject).observe(document.body,{childList:true,subtree:true});inject();
+
+  window.trnAiReadShots=async function(){
+    var area=document.getElementById("trnMatchEntryArea"),st=document.getElementById("trn-ai-status");
+    var ta=document.getElementById("trn-paste-text");if(!area||!st||!ta)return;
+    var say=function(h,c){st.style.color=c||"var(--text3)";st.innerHTML=h};
+    var text=(ta.value||"").trim();
+    if(!text)return say("❌ আগে উপরের box-এ matchday-র list paste করো।","var(--red)");
+    var homes=[].slice.call(area.querySelectorAll(".trn-score-home")),aways=[].slice.call(area.querySelectorAll(".trn-score-away"));
+    if(!homes.length)return say("❌ কোনো bout খুঁজে পাওয়া যায়নি।","var(--red)");
+    var token=getToken();if(!token)return say("❌ Token ছাড়া চলবে না।","var(--red)");
+
+    var users={};try{(await getAllUsers()).forEach(function(u){users[u.uid]=u})}catch(e){}
+    var cache=(typeof trnMatchesCache!=="undefined")?trnMatchesCache:[];
+    var sel=function(id,c){var e=area.querySelector("."+c+'[data-id="'+id+'"]');return e&&e.value&&e.selectedIndex>=0?e.options[e.selectedIndex].text:""};
+    var bouts=homes.map(function(h,i){
+      var id=h.dataset.id,m=cache.find(function(x){return x.id===id})||{};
+      return{n:i+1,p1:sel(id,"trn-player1-select")||m.player1||(users[m.player1uid]||{}).name||"",
+             p2:sel(id,"trn-player2-select")||m.player2||(users[m.player2uid]||{}).name||""};
+    });
+
+    say("⏳ AI list পড়ছে...");
+    try{
+            var r=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:token,text:text,bouts:bouts})});
+      if(r.status===401){try{localStorage.removeItem("typAiToken")}catch(e){}throw new Error("Token ভুল — আবার চাপো, নতুন token দাও।")}
+      var j=await r.json();if(!r.ok)throw new Error(j.error||("Server error "+r.status));
+
+      var filled=[],warn=[],unread=[];
+      (j.bouts||[]).forEach(function(x){
+        var i=x.n-1;if(i<0||i>=homes.length)return;
+        if(x.home==null||x.away==null){unread.push("#"+x.n);return}
+        homes[i].value=x.home;aways[i].value=x.away;
+        var ok=like(x.p1,bouts[i].p1)&&like(x.p2,bouts[i].p2)&&x.sure!==false;
+        [homes[i],aways[i]].forEach(function(el){el.dispatchEvent(new Event("input",{bubbles:true}));el.style.borderColor=ok?"var(--green)":"var(--gold)"});
+        filled.push(x.n);if(!ok)warn.push("#"+x.n);
+      });
+      var out=[];
+      out.push(filled.length?"✅ "+filled.length+"টা bout fill হয়েছে — list-এর সাথে মিলিয়ে দেখে \"Save Match Result\" চাপো।":"ℹ️ কোনো score পড়তে পারেনি।");
+      if(warn.length)out.push("⚠️ নাম মেলেনি/অনিশ্চিত (সোনালি border) — নিজে দেখো: "+warn.join(", "));
+      if(unread.length)out.push("⚠️ পড়া যায়নি: "+unread.join(", "));
+      say(out.join("<br>"),warn.length||unread.length||!filled.length?"var(--gold)":"var(--green)");
+    }catch(e){say("❌ "+(e.message||e),"var(--red)")}
+  };
+})();
+
+</script>
 </body>
 </html>
