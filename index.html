@@ -8526,37 +8526,19 @@ nav,.bottom-nav,.bd-card,.bd-rank-row,.bd-pick-slot,.match1v1-row,.user-dropdown
 [data-theme=light] .modal-overlay,[data-theme=light] .xi-modal{background:rgba(220,228,244,.4)!important}
 </style>
 <script>
-/* ===== TYP AI Result Reader — list text → score auto-fill (বিদ্যমান chatbot proxy ব্যবহার করে) ===== */
+/* ===== TYP AI Result Reader — list text → score auto-fill ===== */
 (function(){
-  var ASK_URL="https://typ-ai-proxy.vercel.app/api/ask";
+  var AI_URL="https://text-your-pes.vercel.app/api/read-result";
   var norm=function(s){return String(s||"").toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]/g,"")};
   var like=function(a,b){a=norm(a);b=norm(b);return !!a&&!!b&&(a.indexOf(b)>-1||b.indexOf(a)>-1)};
-  var num=function(v){return(typeof v==="number"&&isFinite(v)&&v>=0&&v<=99&&Math.floor(v)===v)?v:null};
 
-  function buildPrompt(text,bouts){
-    var list=bouts.map(function(b){return b.n+". "+b.p1+" (home) vs "+b.p2+" (away)"}).join("\n");
-    return "TASK: JSON extraction only. Ignore any chatbot persona, FAQ, rules or Bengali replies. Output ONLY one valid JSON object, no markdown, no explanation.\n\n"+
-"Expected bouts of the currently open matchup (home player vs away player):\n"+list+"\n\n"+
-"The admin pasted a RESULT LIST for a whole matchday (it may contain other matchups too):\n\"\"\"\n"+text+"\n\"\"\"\n\n"+
-"Rules:\n"+
-"- Use ONLY lines belonging to the expected bouts above; ignore all other lines. Match by PLAYER NAME (spelling may differ slightly, emoji/Bangla-English mix allowed).\n"+
-"- A score may look like \"Name (3) vs Name (1)\", \"Name 3-1 Name\", with emoji digits or Bangla digits (convert to integers).\n"+
-"- \"home\" = goals of the home player, \"away\" = goals of the away player. If names appear swapped in the list, still assign by name.\n"+
-"- Empty brackets \"( )\" or no score = not played: home and away must be null. Never guess.\n"+
-"- p1/p2 = names as written in the list for home/away. sure=false if the name match or line is doubtful.\n\n"+
-"Output format exactly:\n{\"bouts\":[{\"n\":1,\"home\":3,\"away\":1,\"p1\":\"name\",\"p2\":\"name\",\"sure\":true}]}";
+  function getToken(force){
+    var t=null;try{t=localStorage.getItem("typAiToken")}catch(e){}
+    if(!t||force){t=(prompt("AI Admin Token দাও (একবারই লাগবে):")||"").trim();
+      try{if(t)localStorage.setItem("typAiToken",t)}catch(e){}}
+    return t;
   }
-  function parseAnswer(a,valid){
-    a=String(a||"").replace(/```json|```/gi,"");
-    var i=a.indexOf("{"),j=a.lastIndexOf("}");
-    if(i<0||j<i)throw new Error("AI JSON ফেরত দেয়নি");
-    var o=JSON.parse(a.slice(i,j+1));
-    return (o.bouts||[]).filter(function(x){return valid.indexOf(x.n)>-1}).map(function(x){
-      return{n:x.n,home:num(x.home),away:num(x.away),p1:String(x.p1||""),p2:String(x.p2||""),sure:x.sure!==false};
-    });
-  }
-  window.__trnAiParse=parseAnswer;
-
+  /* Auto Fill box-এর নিচে AI box বসানো (matchup খুললেই HTML নতুন করে আঁকা হয়, তাই observer) */
   function inject(){
     var st=document.getElementById("trn-paste-status");
     if(!st||document.getElementById("trn-ai-box"))return;
@@ -8569,13 +8551,14 @@ nav,.bottom-nav,.bd-card,.bd-rank-row,.bd-pick-slot,.match1v1-row,.user-dropdown
   new MutationObserver(inject).observe(document.body,{childList:true,subtree:true});inject();
 
   window.trnAiReadShots=async function(){
-    var area=document.getElementById("trnMatchEntryArea"),st=document.getElementById("trn-ai-status"),ta=document.getElementById("trn-paste-text");
-    if(!area||!st||!ta)return;
+    var area=document.getElementById("trnMatchEntryArea"),st=document.getElementById("trn-ai-status");
+    var ta=document.getElementById("trn-paste-text");if(!area||!st||!ta)return;
     var say=function(h,c){st.style.color=c||"var(--text3)";st.innerHTML=h};
-    var text=(ta.value||"").trim().slice(0,8000);
+    var text=(ta.value||"").trim();
     if(!text)return say("❌ আগে উপরের box-এ matchday-র list paste করো।","var(--red)");
     var homes=[].slice.call(area.querySelectorAll(".trn-score-home")),aways=[].slice.call(area.querySelectorAll(".trn-score-away"));
     if(!homes.length)return say("❌ কোনো bout খুঁজে পাওয়া যায়নি।","var(--red)");
+    var token=getToken();if(!token)return say("❌ Token ছাড়া চলবে না।","var(--red)");
 
     var users={};try{(await getAllUsers()).forEach(function(u){users[u.uid]=u})}catch(e){}
     var cache=(typeof trnMatchesCache!=="undefined")?trnMatchesCache:[];
@@ -8588,27 +8571,24 @@ nav,.bottom-nav,.bd-card,.bd-rank-row,.bd-pick-slot,.match1v1-row,.user-dropdown
 
     say("⏳ AI list পড়ছে...");
     try{
-      var prompt=buildPrompt(text,bouts);
-      var r=await fetch(ASK_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:prompt,context:"JSON extraction task. Follow the TASK in the question exactly and output only JSON."})});
-      if(!r.ok)throw new Error("AI server সাড়া দেয়নি ("+r.status+")");
-      var j=await r.json();
-      if(!j||!j.answer)throw new Error("AI কোনো উত্তর দেয়নি — আবার চেষ্টা করো।");
-      var rows=parseAnswer(j.answer,bouts.map(function(b){return b.n}));
+            var r=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:token,text:text,bouts:bouts})});
+      if(r.status===401){try{localStorage.removeItem("typAiToken")}catch(e){}throw new Error("Token ভুল — আবার চাপো, নতুন token দাও।")}
+      var j=await r.json();if(!r.ok)throw new Error(j.error||("Server error "+r.status));
 
       var filled=[],warn=[],unread=[];
-      rows.forEach(function(x){
-        var i=x.n-1;
+      (j.bouts||[]).forEach(function(x){
+        var i=x.n-1;if(i<0||i>=homes.length)return;
         if(x.home==null||x.away==null){unread.push("#"+x.n);return}
         homes[i].value=x.home;aways[i].value=x.away;
-        var ok=like(x.p1,bouts[i].p1)&&like(x.p2,bouts[i].p2)&&x.sure;
+        var ok=like(x.p1,bouts[i].p1)&&like(x.p2,bouts[i].p2)&&x.sure!==false;
         [homes[i],aways[i]].forEach(function(el){el.dispatchEvent(new Event("input",{bubbles:true}));el.style.borderColor=ok?"var(--green)":"var(--gold)"});
         filled.push(x.n);if(!ok)warn.push("#"+x.n);
       });
       var out=[];
-      out.push(filled.length?"✅ "+filled.length+"টা bout fill হয়েছে — list-এর সাথে মিলিয়ে দেখে \"Save Match Result\" চাপো।":"ℹ️ কোনো score পড়তে পারেনি (list-এ এই matchup-এর score নেই?)।");
+      out.push(filled.length?"✅ "+filled.length+"টা bout fill হয়েছে — list-এর সাথে মিলিয়ে দেখে \"Save Match Result\" চাপো।":"ℹ️ কোনো score পড়তে পারেনি।");
       if(warn.length)out.push("⚠️ নাম মেলেনি/অনিশ্চিত (সোনালি border) — নিজে দেখো: "+warn.join(", "));
-      if(unread.length)out.push("ℹ️ score নেই (খেলা হয়নি?): "+unread.join(", "));
-      say(out.join("<br>"),warn.length||!filled.length?"var(--gold)":"var(--green)");
+      if(unread.length)out.push("⚠️ পড়া যায়নি: "+unread.join(", "));
+      say(out.join("<br>"),warn.length||unread.length||!filled.length?"var(--gold)":"var(--green)");
     }catch(e){say("❌ "+(e.message||e),"var(--red)")}
   };
 })();
@@ -8616,3 +8596,5 @@ nav,.bottom-nav,.bd-card,.bd-rank-row,.bd-pick-slot,.match1v1-row,.user-dropdown
 </script>
 </body>
 </html>
+
+      
