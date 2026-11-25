@@ -9105,15 +9105,15 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 <div class="modal-overlay" id="trlAdminModal">
   <div class="modal-box" style="max-width:780px;width:100%;max-height:90vh;overflow-y:auto">
     <div class="modal-title">🔗 Team Registration Links</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">link বানানোর সময় Team-এর নাম দাও (প্রতি লাইনে একটা)। Manager/Player link-এ ঢুকে Logo, ১১ জন player আর Manager Password দেবে, Submit করলেই team <b>অটো</b> Auction Tournament-এ যোগ হবে। Group Draw আর Fixture তুমি নিজে করবে।</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.7">প্রতি team-এর <b>নাম</b> আর <b>Manager password</b> দাও (password ফাঁকা রাখলে অটো ৬ digit হবে)। <b>link সবাইকে দিতে পারো</b>, কিন্তু password শুধু Manager-কে দেবে। প্রথমবার team add করতে password লাগে না, পরে edit করতে লাগে। Manager/Player link-এ ঢুকে Logo, ১১ জন player আর Manager Password দেবে, Submit করলেই team <b>অটো</b> Auction Tournament-এ যোগ হবে। Group Draw আর Fixture তুমি নিজে করবে।</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-      <textarea id="trlGenNames" class="form-input" rows="3" placeholder="Team-এর নাম লেখো, প্রতি লাইনে একটা (যেমন:
-Alpha FC
-Beta United)" style="flex:1;min-width:220px;resize:vertical"></textarea>
+      <div id="trlGenRows" style="width:100%"></div>
+      <button class="btn btn-outline" onclick="trlAddRow()" style="padding:8px 16px;font-size:12px">➕ আরেকটা Team</button>
       <button class="btn btn-gold" onclick="trlGenerate()" style="padding:8px 16px;font-size:12px">➕ Link তৈরি করো</button>
       <button class="btn btn-outline" onclick="trlAdminLoad()" style="padding:8px 16px;font-size:12px">🔄 Refresh</button>
       <button class="btn btn-outline" onclick="document.getElementById('trlAdminModal').classList.remove('show')" style="padding:8px 16px;font-size:12px;margin-left:auto">✖ Close</button>
     </div>
+    <div id="trlGenResult"></div>
     <div id="trlAdminList"></div>
   </div>
 </div>
@@ -9272,16 +9272,30 @@ window.trlClose=function(){$("trlModal").classList.remove("show");try{if(/[?&]tr
 
 /* ───────── ADMIN ───────── */
 const A={links:{},regs:{},teams:{}};
-window.trlAdminOpen=function(){$("trlAdminModal").classList.add("show");trlAdminLoad()};
+window.trlAddRow=function(){
+  const d=document.createElement("div");d.className="trlRow";d.style.cssText="display:flex;gap:8px;margin-bottom:8px;width:100%;flex-wrap:wrap";
+  d.innerHTML='<input class="trl-in trlN" placeholder="Team-এর নাম (যেমন: Alpha FC)" maxlength="30" style="flex:2;min-width:160px"><input class="trl-in trlP" placeholder="Manager password (ফাঁকা = অটো)" style="flex:1;min-width:140px"><button type="button" onclick="var r=this.parentNode;if(r.parentNode.children.length>1)r.remove()" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer">✖</button>';
+  $("trlGenRows").appendChild(d);
+};
+window.trlAdminOpen=function(){$("trlAdminModal").classList.add("show");if(!$("trlGenRows").children.length)trlAddRow();trlAdminLoad()};
 const rnd=()=>{const a=new Uint8Array(9);crypto.getRandomValues(a);return Array.from(a,x=>(x%36).toString(36)).join("")};
 window.trlGenerate=async function(){
-  const names=($("trlGenNames").value||"").split("\n").map(x=>x.trim()).filter(Boolean).slice(0,30);
-  if(!names.length)return alert("❌ অন্তত একটা Team-এর নাম লেখো।");
-  const dup=names.find(n=>Object.values(A.links||{}).some(l=>(l.teamName||"").toLowerCase()===n.toLowerCase()));
-  if(dup)return alert("❌ \""+dup+"\" নামে link আগেই আছে।");
-  const cur=Object.values(A.links||{}).reduce((m,l)=>Math.max(m,l.slot||0),0);
-  try{for(let i=0;i<names.length;i++){await W("PUT","/tournament/teamLinks/"+rnd()+".json",{slot:cur+i+1,label:names[i],teamName:names[i],createdAt:new Date().toISOString(),locked:false})}}catch(e){return alert("❌ "+e.message)}
-  $("trlGenNames").value="";trlAdminLoad();
+  if(typeof window.typMakeHash!=="function")return alert("❌ Password hash function পাওয়া যায়নি — page reload দিয়ে আবার চেষ্টা করো।");
+  const rows=Array.from(document.querySelectorAll("#trlGenRows .trlRow")).map(d=>({name:d.querySelector(".trlN").value.trim(),pw:d.querySelector(".trlP").value.trim()})).filter(r=>r.name);
+  if(!rows.length)return alert("❌ অন্তত একটা Team-এর নাম লেখো।");
+  const bad=rows.find(r=>r.pw&&r.pw.length<4);if(bad)return alert("❌ \""+bad.name+"\"-এর password কমপক্ষে ৪ অক্ষরের দাও।");
+  const dup=rows.find(r=>Object.values(A.links||{}).some(l=>(l.teamName||"").toLowerCase()===r.name.toLowerCase()));
+  if(dup)return alert("❌ \""+dup.name+"\" নামে link আগেই আছে।");
+  const cur=Object.values(A.links||{}).reduce((m,l)=>Math.max(m,l.slot||0),0),out=[];
+  try{for(let i=0;i<rows.length;i++){
+    const r=rows[i],pw=r.pw||String(Math.floor(100000+Math.random()*900000)),tok=rnd();
+    await W("PUT","/tournament/teamLinks/"+tok+".json",{slot:cur+i+1,label:r.name,teamName:r.name,managerPassword:await window.typMakeHash(pw),createdAt:new Date().toISOString(),locked:false});
+    out.push({name:r.name,pw:pw,url:link(tok)});
+  }}catch(e){return alert("❌ "+e.message)}
+  const txt=out.map(o=>o.name+"\nLink: "+o.url+"\nManager Password: "+o.pw).join("\n\n");
+  $("trlGenResult").innerHTML='<div style="background:var(--bg3);border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:14px"><div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:6px">✅ তৈরি হয়েছে — এখনই copy করে Manager-দের পাঠাও (password আর পরে দেখা যাবে না)</div><textarea class="trl-in" readonly rows="'+Math.min(12,out.length*3+2)+'" onclick="this.select()" style="font-size:12px;line-height:1.6">'+esc(txt)+'</textarea></div>';
+  try{await navigator.clipboard.writeText(txt)}catch(e){}
+  $("trlGenRows").innerHTML="";trlAddRow();trlAdminLoad();
 };
 window.trlAdminLoad=async function(){
   const box=$("trlAdminList");box.innerHTML=SP;
@@ -9301,7 +9315,7 @@ window.trlAdminLoad=async function(){
       <div style="display:flex;gap:6px;margin-top:10px;align-items:center"><input class="trl-in" readonly value="${esc(link(k))}" onclick="this.select()" style="font-size:12px;padding:7px 9px"><button class="btn btn-outline" onclick="trlCopy('${k}')" style="padding:7px 12px;font-size:12px;white-space:nowrap">📋 Copy</button></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
         ${R?`<button class="btn btn-outline" onclick="trlReview('${k}')" style="padding:6px 12px;font-size:12px">👁 Review / ✏️ Edit</button>`:""}
-        ${R?`<button class="btn btn-outline" onclick="trlPwReset('${k}')" style="padding:6px 12px;font-size:12px">🔑 Password Reset</button>`:""}
+        <button class="btn btn-outline" onclick="trlPwReset('${k}')" style="padding:6px 12px;font-size:12px">🔑 Password বদলাও</button>
         <button class="btn btn-outline" onclick="trlLock('${k}',${!L.locked})" style="padding:6px 12px;font-size:12px">${L.locked?"🔓 Unlock":"🔒 Lock"}</button>
         <button class="btn btn-outline" onclick="trlDelLink('${k}')" style="padding:6px 12px;font-size:12px;color:var(--red);border-color:var(--red)">🗑️</button>
       </div><div id="trlRev-${k}"></div></div>`}).join("");
@@ -9324,9 +9338,16 @@ window.trlAdminSave=async function(k){
   trlAdminLoad();
 };
 window.trlPwReset=async function(k){
-  const L=A.links[k];if(!A.regs[k])return;
-  if(!confirm("Manager Password মুছে ফেলবে? পরের বার Manager নতুন password দেবে।"))return;
-  try{await W("PATCH","/tournament/teamRegistrations/"+k+".json",{managerPassword:""});if(L.teamId&&A.teams[L.teamId])await W("PATCH","/tournament/teams/"+L.teamId+".json",{managerPassword:""});alert("✅ Password মুছে গেছে।")}catch(e){alert("❌ "+e.message)}
+  const L=A.links[k];if(!L)return;
+  const v=(prompt("নতুন Manager Password দাও (কমপক্ষে ৪ অক্ষর):","")||"").trim();
+  if(!v)return;if(v.length<4)return alert("❌ কমপক্ষে ৪ অক্ষর দাও।");
+  if(typeof window.typMakeHash!=="function")return alert("❌ Password hash function পাওয়া যায়নি — page reload দাও।");
+  try{const hs=await window.typMakeHash(v);
+    await W("PATCH","/tournament/teamLinks/"+k+".json",{managerPassword:hs});
+    if(A.regs[k])await W("PATCH","/tournament/teamRegistrations/"+k+".json",{managerPassword:hs});
+    if(L.teamId&&A.teams[L.teamId])await W("PATCH","/tournament/teams/"+L.teamId+".json",{managerPassword:hs});
+    alert("✅ নতুন password সেট হয়েছে: "+v+"\n(Manager Panel-এও এটাই চলবে)");
+  }catch(e){alert("❌ "+e.message)}
   trlAdminLoad();
 };
 window.trlApply=async function(k){
@@ -9360,5 +9381,3 @@ window.trlDelLink=async function(k){
 
 </body>
 </html>
-
-      
